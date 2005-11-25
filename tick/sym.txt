@@ -1,0 +1,2 @@
+MSFT.O
+IBM.N

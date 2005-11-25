@@ -1,0 +1,51 @@
+there are 3 cases:
+
+1. c dynamic loads called by q, e.g. analytics
+2. c callbacks into q, e.g. feedhandlers
+3. c clients talking to q servers. e.g. feedhandlers and clients(link with c.so)
+
+q data are simple c structs.  see http://kx.com/q/c/k.h
+requires gcc 3.0 or later for anonymous unions and structs.
+
+B(bool8) G(byte8) H(short16) I(int32) J(long64) E(real32) F(float64) C(char8) S(symbol32) D(date32) T(time32) Z(datetime64)
+
+type: KB KG KH KI KJ KE KF KC KS KD KT KZ 0(nested list)
+atom: kb(I) kg(I) kh(I) ki(I) kj(J) ke(F) kf(F) kc(I) ks(S) kc(I) kt(I) kz(I)  
+list: x=ktn(type,length);x=knk(n,x,y,z);  e.g. x=knk(2,kf(2.3),ktn(KI,10));
+also: K kp(string);K kpn(string,length);S ss(string); //intern string
+
+base types are: GHIJEFS (G handles BC) (I handles DT) (F handles Z)
+atom access: x->g  x->h  x->i  x->j  x->e  x->f  x->s
+list access: kG(x) kH(x) kI(x) kJ(x) kE(x) kF(x) kS(x) kK(x)
+list append: ja(K*,V*); js(K*,S); jk(K*,K);  join atom/string/k e.g. K r=ktn(KI,0);int i=2;ja(&r,&i);
+
+examples:
+K r=ktn(KI,5);  //integer list of 5
+K r=knk(2,kf(2.3),ktn(KC,3)); // nested list
+K r=kp("asdf"); // char list
+S s=ss("asdf"); // internedstring from string
+i=23;ja(&r,&i); // join atom to list
+ja(&r,ss("q")); // join S
+
+dict=xD(K,K); e.g. x=ktn(KS,2);kS(x)[0]=ks(ss("a"));kS(x)[1]=ks(ss("b"));y=ktn(KI,2);kI(y)[0]=2;kI(y)[1]=3;r=xD(x,y);
+table=xT(K);  // table from dictionary
+table=ktd(K); // simple table from keyed-table.
+
+r1(x) increment ref count
+r0(x) decrement ref count
+
+krr(S) signal error
+I ymd(year,month,day) e.g. 0==ymd(2000,1,1)
+
+1. dynamic load, e.g. q/c/a.c K f(K x,K y){return ki(x->i+y->i);}
+2. callbacks,  e.g. q/c/ssl.c
+ sd1(d,f); // put V f(I d){..} on q mainloop given socket d
+ sd0(d);   // remove it
+3. clients(link with c.so)
+ int h=khp("host",port); // connect
+ k(-h,"func|exp",..,0); //asynch
+ r=k(h,"func|exp",..,0); //synch
+
+ args are decremented. must eventually do r0(r).
+
+with kdb+2.2 up to 8 args.

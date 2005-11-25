@@ -1,0 +1,48 @@
+Mathematica5 -> Q interface
+----------------------------
+(Felix LUNGU, First Derivatives PLC)
+
+1. download (http://kx.com/q/c/c.java),compile and jar the c.java
+in $QHOME (c:\q or $HOME/q) as c.jar:
+
+Unix:
+cd $HOME/q
+mkdir tmp
+javac -d tmp c.java
+jar cvf c.jar -C tmp .
+rm -fr tmp
+
+Windows:
+cd c:\q
+mkdir tmp
+javac -d tmp c.java
+jar cvf c.jar -C tmp .
+rmdir -fr tmp
+
+2. Start Mathematica Kernel console
+
+3. Load the JLink module:
+
+Needs["JLink`"]
+
+4. Start Java: 
+
+InstallJava[CommandLine -> "javaw", ClassPath -> "c:\\q\\c.jar"]
+
+5. Create c object:
+
+c = JavaNew["c", "localhost", 5001]
+
+6. Call the "k" method to execute queries:
+
+c@k["tables`."]
+r = c@k["select from trade"]
+
+7. Inspect the a flip from query:
+r@x
+r@y
+
+Note: some classes (Date,...) don't have a direct mappings
+in Mathematica.
+You may want to write a wrapper to addapt them to Mathematica or
+call the "toString" method on them.

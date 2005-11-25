@@ -1,0 +1,417 @@
+<html><head><style>a{text-decoration:none}a:link{color:024C7E}a:visited{color:024C7E}a:active{color:958600}body{font:10pt verdana;text-align:justify}</style></head><body>Copyright &copy; <font color=024C7E><b>kx</b></font><font color=958600><b>.com</b></font>
+<h5>Abridged Kdb+ Database Manual</h5>
+<p>Arthur Whitney</p>
+<p><h5 id='Summary'>1 Summary</h5></p>
+<p>Kdb+ is an RDBMS and a general purpose programming language: <a href='http://kx.com/q/d/q.htm'>http://kx.com/q/d/q.htm</a></p>
+<p>* OLTP from 100 thousand to 1 million records per second per cpu.</p>
+<p>* OLAP from 1 million to 100 million records per second per cpu.</p>
+<p>* Solaris, Linux and Windows. 32bit and 64bit.</p>
+
+<xmp>trade:([]time:`time$();sym:`symbol$();price:`float$();size:`int$()) / create
+`trade insert(12:34:56.789;`xx;93.5;300)                            / insert
+select sum size by sym from trade                                   / select
+</xmp>
+<p>The realtime OLTP+OLAP part of the database is generally in memory with an optional update log. There is no limit to the size of the OLAP historical databases on disk. Typical customers run realtime analysis on 100 million transactions per day and historical analysis on the accumulated billions of records.</p>
+<p><h5 id='Install'>2 Install</h5></p>
+<p>Unzip kdb+ (and <code><nobr>k4.lic</nobr></code> ) in QHOME (default: <code><nobr>q</nobr></code> ).</p>
+
+<xmp>SOL64> unzip s64.zip -d q                (q/s64/q)
+LIN64> unzip l64.zip -d q                (q/l64/q)
+WIN32> w32.exe            (WINDIR/q.exe)          
+</xmp>
+<p>Executable is <code><nobr>q</nobr></code> . Put <code><nobr>QHOME/{s64|l64}</nobr></code> on PATH.</p>
+<p><h5 id='Server'>3 Server</h5></p>
+
+<xmp>>q [f] [-p p] [-s s] [-t t] [-T T] [-o o] [-u u] [-w w] [-r r] [-l]
+ f load script (*.q), file or directory                            
+-p port kdbc(/jdbc/odbc) http(html xml txt csv)                    
+-s slaves for parallel execution                                   
+-t timer milliseconds                                              
+-T timeout seconds                                                 
+-o offset hours(from GMT: affects .z.z)                            
+-u usr:pwd file                                                    
+-w workspace MB limit                                              
+-r replicate from :host:port (-R sync)                             
+-l log updates to filesystem (-L sync)                             
+</xmp>
+<p>The simplest database is just a process which may be initialized with a script. Each process handles any number of concurrent http and kdbc (jdbc/odbc) clients. For example, start a trade.q database listening on port 5001.</p>
+
+<xmp>>q trade.q -p 5001
+</xmp>
+<p>View the database with a browser: <a href='http://localhost:5001'>http://localhost:5001</a></p>
+<p><h5 id='Client'>4 Client</h5></p>
+<p>Kdb+ returns text (html, txt, csv or xml) to http queries.</p>
+
+<xmp>browser                                                 
+http://localhost:5001/?select sum size by sym from trade
+</xmp>
+
+<xmp>browser/excel                                                
+http://localhost:5001/q.csv?select sum size by sym from trade
+</xmp>
+
+<xmp>excel/rtd                          
+http://www.skelton.de/rtdserver.htm
+</xmp>
+
+<xmp>excel (data/getexternaldata/newwebquery)                     
+http://localhost:5001/q.txt?select sum size by sym from trade
+</xmp>
+
+<xmp>console (q/l32/qcon localhost:5001)             
+localhost:5001>select sum size by sym from trade
+</xmp>
+
+<xmp>perl (use LWP::Simple;)                                            
+get("http://localhost:5001/.txt?select sum size by sym from trade")
+</xmp>
+<p>Kdb+ returns data to java, .net, c, jdbc/odbc or q clients. The results are atom, list, dict or table.</p>
+
+<xmp>Result=k(string | {function,args})
+</xmp>
+
+<xmp>java (q/c/c.java)                                                                                 
+import java.sql.*;                                                                                
+try{c c=new c("localhost",5001);                    // connect                                    
+ Object[]x={new Time(System.currentTimeMillis()%86400000),"xx",new Double(93.5),new Integer(300)};
+ c.k("insert","trade",x);                           // insert                                     
+ Object r=c.k("select sum size by sym from trade"); // select                                     
+}catch(Exception e){}                                                                             
+</xmp>
+
+<xmp>c    (q/c/c.c)                                                          
+#include"k.h"                                                           
+int main(){K x;int c=khp("localhost",5001);if(c==-1)return c; // connect
+ x=knk(4,kt(1000*(time(0)%86400)),ks("xx"),kf(93.5),ki(300));           
+ k(-c,"insert",ks("trade"),x,0);                              // insert 
+ x=k(c,"select sum size by sym from trade",0);r0(x);          // select 
+ return 0;}                                                             
+</xmp>
+
+<xmp>q                                                   
+c:hopen`:localhost:5001                    / connect
+c("insert";`trade;("t"$.z.Z;`xx;93.5;300)) / insert 
+c"select sum size by sym from trade"       / select 
+</xmp>
+<p>Data is faster and more flexible than text. You should get 100,000 single record selects, inserts, updates [and deletes] per second. You can insert or update a million records per second in bulk. Kdb+ is generally faster than the network.</p>
+<p><h5 id='Datatypes'>5 Datatypes</h5></p>
+
+<xmp>t| size literal      q        sql       java      .net     xmlschema 
+---------------------------------------------------------------------
+b  1    0b           boolean            Boolean   boolean  boolean   
+x  1    0x0          byte               Byte      byte     byte      
+h  2    0h           short    smallint  Short     int16    short     
+i  4    0            int      int       Integer   int32    int       
+j  8    0j           long     bigint    Long      int64    long      
+e  4    0e           real     real      Float     single   single    
+f  8    0.0          float    float     Double    double   double    
+c  1    " "          char               Character char               
+s  .    `            symbol   varchar   String    string   string    
+m  4    2000.01m     month                                           
+d  4    2000.01.01   date     date      Date               date      
+z  8    dateTtime    datetime timestamp Timestamp DateTime dateTime  
+u  4    00:00        minute                                          
+v  4    00:00:00     second                                          
+t  4    00:00:00.000 time     time      Time      TimeSpan time      
+*  4    `s$`         enum                                            
+</xmp>
+<p>All but boolean and byte have nulls. The int, float, char and symbol literal nulls are: <code><nobr>0N 0n " " `</nobr></code> . The rest use type extensions, e.g. <code><nobr>0Nd</nobr></code> . Each type also a list notation, e.g. in the following nested list:</p>
+
+<xmp>(01b;0x00ff;0 1h;0 1;0 1j;0 1e;0 1.0;"ab";`a`b;2000.01 2000.02m;2000.01.01 2000.01.02;..)
+</xmp>
+<p>There must be no spaces in symbol lists, e.g. <code><nobr>`a`b`c</nobr></code> . Symbols can have any non-zero characters (e.g. `$"a-b") but identifiers must be alphanumeric.</p>
+<p><h5 id='Insert and Upsert'>6 Insert and Upsert</h5></p>
+<p>The q</p>
+
+<xmp>`t insert ..
+</xmp>
+<p>is similar to the sql</p>
+
+<xmp>insert into t ..
+</xmp>
+<p>It will check primary key violations. The q</p>
+
+<xmp>`t upsert ..  (also t,:..)
+</xmp>
+<p>is insert for tables and upsert (update existing and insert new) for keyed tables.</p>
+<p><h5 id='Select and Update'>7 Select and Update</h5></p>
+<p>q is an extension of sql capabilities. Expressions are short and simple.</p>
+
+<xmp>select vwap:size wavg price by sym from trade     / volume weighted average price
+select from trade where sym=`IBM, 0<deltas price  / price went up                
+select sum qty by order.customer.nation from item / rollup of 4-way join         
+</xmp>
+<p>These all run at several million records per second. In general:</p>
+
+<xmp>select [a] [by b] from t [where c]
+update [a] [by b] from t [where c]
+</xmp>
+<p>These are similar to (but more powerful than) the sql</p>
+
+<xmp>select [b,] [a] from t [where c] [group by b order by b]
+update t set [a] [where c]                              
+</xmp>
+<p>In sql the <code><nobr>where</nobr></code> and <code><nobr>group</nobr></code> clauses are atomic and the <code><nobr>select</nobr></code> and <code><nobr>update</nobr></code> clauses are atomic or aggregate if grouping. In q the <code><nobr>where</nobr></code> and <code><nobr>by</nobr></code> clauses are uniform and the <code><nobr>select</nobr></code> and <code><nobr>update</nobr></code> clauses are uniform or aggregate if grouping ( <code><nobr>by</nobr></code> ). All clauses execute on the columns and therefore q can take advantage of order. Sql can't tell the difference. Sql repeats the <code><nobr>group by</nobr></code> expressions in the <code><nobr>select</nobr></code> and the <code><nobr>where</nobr></code> clause is one boolean expression. The q <code><nobr>where</nobr></code> clause is a cascading list of constraints which nicely obviates some complex sql correlated subqueries and also gets rid of some parentheses. q relational queries are generally half the size of the corresponding sql. Ordered and functional queries do things that are difficult in sql. See <a href='http://kx.com/q/e'>http://kx.com/q/e</a> for examples.  <code><nobr>i</nobr></code> is a special token that indicates record handle.</p>
+<p><h5 id='Default Column Names'>8 Default Column Names</h5></p>
+<p>Create, select and update will create names from expressions if there is no assignment. The name is last token (first token if operation is % or -) in the expression or <code><nobr>x</nobr></code> if this token isn't a valid name, e.g.</p>
+
+<xmp>select count i,sum qty by order.customer.nation ..
+</xmp>
+<p>is short for</p>
+
+<xmp>select x:count i,qty:sum qty by nation:order.customer.nation ..
+</xmp>
+<p><h5 id='Parameterized Queries'>9 Parameterized Queries</h5></p>
+
+<xmp>r=k("{[s]select last price by sym from trade where sym in s}";`IBM`MSFT)
+</xmp>
+<p><h5 id='Table Arithmetic'>10 Table Arithmetic</h5></p>
+
+<xmp>t:([x:`a`b]y:2 3)        
+u:([x:`b`c]y:4 5)        
+t+u / ([x:`a`b`c]y:2 7 5)
+</xmp>
+<p>It is common to want to do arithmetic with tables. Extending arithmetic to tables replaces complicated sql coalescing and outer joins.</p>
+<p><h5 id='Foreign Keys'>11 Foreign Keys</h5></p>
+<p>Foreign keys are useful in q, e.g. given</p>
+
+<xmp>s:([s]name;city;..)                                
+p:([p]name;city;..)                                
+sp:([]s:`s$();p:`p$();..) / foreign key definitions
+</xmp>
+<p>then</p>
+
+<xmp>select .. from sp where s.city=p.city / supplier city equal part city
+update .. from sp where s.city=p.city / try that in sql              
+</xmp>
+<p>See <a href='http://kx.com/q/e/tpcd.q'>http://kx.com/q/e/tpcd.q</a> for more examples.</p>
+<p><h5 id='Joins'>12 Joins</h5></p>
+<p>Joins generally run at 10 to 100 million records per second.</p>
+<p>See <a href='http://kx.com/q/e/tpcd.txt'>http://kx.com/q/e/tpcd.txt</a> for an 8-way join</p>
+<p><h5 id='Q from SQL'>13 Q from SQL</h5></p>
+<p>Following is a map of how to do sql things in q. There is no reverse map since q is a much richer language than sql. With respect to CJDate "The SQL Standard"</p>
+
+<xmp>s)create table s(s varchar(*)primary key,name varchar(*),status int,city varchar(*))
+q)s:([s:`symbol$()]name:`symbol$();status:`symbol$();city:`symbol$())               
+</xmp>
+
+<xmp>s)create table sp(s varchar(*)references s,p varchar(*)references p,qty int)
+q)sp:([]s:`s$();p:`p$();qty:`int$())                                        
+</xmp>
+
+<xmp>s)insert into s values('s1','smith',20,'london')
+q)`s insert(`s1;`smith;20;`london)              
+</xmp>
+
+<xmp>s)update s set status=1+status where s='s1'
+q)update 1+status from`s where s=`s1       
+</xmp>
+
+<xmp>s)delete from s where s='s1'  
+q)delete from`s where s=`s1   
+                              
+s)select * from s where s='s1'
+q)select from s where s=`s1   
+</xmp>
+
+<xmp>s)select s,count(*)as x from sp group by s order by s
+q)select count i by s from sp                        
+</xmp>
+
+<xmp>s)select s,sum(qty)as qty from sp,s,p where sp.s=s.s and sp.p=p.p and p.city=s.city group s order s
+q)select sum qty by s from sp where s.city=p.city                                                  
+                                                                                                   
+s)select distinct ..                                                                               
+q)select distinct ..                                                                               
+                                                                                                   
+s)count sum min max avg                                                                            
+q)count sum min max avg prd first last wavg wsum ..                                                
+</xmp>
+
+<xmp>s)+ - * / < > = <= >= <> like between-and not and or   
+q)+ - * % < > = <= >= <> like within      not &   |  ..
+</xmp>
+<p><h5 id='Stored Procedures'>14 Stored Procedures</h5></p>
+<p>Server functions and procedures are written in q. Why not java? q is faster, smaller and better than java. For example, a server function to subtract a client table p from a server table P is <code><nobr>f:{[p]P-:p}</nobr></code></p>
+<p><h5 id='Rename, Rearrange'>15 Rename, Rearrange</h5></p>
+
+<xmp>xcol  [p]rename    `a`b xcol sp 
+xcols [p]rearrange `p`s xcols sp
+</xmp>
+<p><h5 id='Correlated Subquery'>16 Correlated Subquery</h5></p>
+
+<xmp>(aggr;exp)fby exp
+</xmp>
+<p>obviates common correlated subqueries, e.g.</p>
+
+<xmp>select from sp where qty>(avg;qty)fby p      
+select from sp where s=`s1,qty>(avg;qty)fby p
+</xmp>
+<p>see also <a href='http://kx.com/q/e/tpcd.q'>http://kx.com/q/e/tpcd.q</a></p>
+<p><h5 id='Performance'>17 Performance</h5></p>
+<p>Choose layout and optimizations to fit the important queries:</p>
+
+<xmp>   type    bytes      
+----------------------
+`s sorted  0     bin  
+`u unique  12    hash 
+`p parted  u     hash 
+`g grouped u+4   hash 
+</xmp>
+
+<xmp>don't bother with any on fewer than one million rows.
+don't bother with `p  on fewer than one billion rows.
+</xmp>
+<p>think about the queries. think about disk. e.g. if you want fast access on terabytes by time and customer store it both ways.</p>
+<p><h5 id='Layout'>18 Layout</h5></p>
+<p>Tables are:</p>
+
+<xmp>size| small medium    large     
+--------------------------------
+32bit 1GB   32M rows  unlimited 
+64bit 10GB  512M rows unlimited 
+store file  directory partitions
+query .01ms .3ms      10ms(seek)
+      tick            taq       
+</xmp>
+<p>large are usually sorted and parted so that important queries are one seek.</p>
+<p>64bit can generally handle realtime tables around 10 times bigger than 32bit.</p>
+<p>64bit has an advantage on medium (and large) because queries on 32bit are dominated by mapping.</p>
+<p><h5 id='Small'>19 Small</h5></p>
+<p><a href='http://kx.com/q/tick'>http://kx.com/q/tick</a></p>
+<p>Queries are around 10 microseconds.</p>
+<p><h5 id='Medium'>20 Medium</h5></p>
+
+<xmp>t `s#date,`g#mas, ..
+</xmp>
+<p>dayend append (and `g#mas) is fast.</p>
+<p>once data is cached in memory</p>
+
+<xmp>\t select i from t where date=..
+\t select i from t where mas=.. 
+</xmp>
+<p>Queries are around 1 millisecond.</p>
+<p><h5 id='Large'>21 Large</h5></p>
+<p><a href='http://kx.com/q/taq'>http://kx.com/q/taq</a></p>
+
+<xmp>trade `p#sym
+quote `p#sym
+</xmp>
+<p>Queries run from disk at 10ms per date/sym/field.</p>
+<p>The partition field is <code><nobr>date month year or int</nobr></code> and is virtual.</p>
+<p>Kdb+taq is more than 2500 partitions of daily trades and quotes. Each new day is more than 1GB. [Queries on partitioned databases can run in parallel.] To set a subview -- handy for test and development:</p>
+
+<xmp>.Q.view 2#date / view two first partitions
+.Q.view[]      / reset                    
+</xmp>
+<p><h5 id='Limits'>22 Limits</h5></p>
+<p>Each database runs in memory and/or disk map-on-demand -- possibly partitioned. There is no limit on the size of a partitioned database but on 32-bit systems the main memory OLTP portion of a database is limited to about 1GB of raw data, i.e. 1/4 of the address space. The raw data of a main memory 64bit process should be limited to about 1/2 of available RAM.</p>
+<p><h5 id='Partition'>23 Partition</h5></p>
+<p>A kdb+ historical database is a file system directory. Small tables are simply binary files inside this directory. Medium-sized tables (<100 million rows) are splayed (a file for each column) across a subdirectory. Big tables (billions of rows) are horizontally partitioned (often by date) and then splayed across a directory. An example layout for kdb+taq is:</p>
+
+<xmp>/data/db/                    
+ sym  /enumeration of symbols
+ mas  /master table          
+ 2005.03.15/                 
+  trade/time ..              
+  quote/time ..              
+ 2005.03.16/                 
+  trade/time ..              
+  quote/time ..              
+ ..                          
+</xmp>
+<p>Kdb+ databases run 24*7. After a new date is added a simple reset message is sent to the server. Small tables are in memory. The big table columns are mapped in and out on demand. To avoid swapping RAM should be at least 10* size of the largest column, e.g. if one table in one partition can have 100 million rows there should be 8GB (10*8(byte float)*100,000,000) of RAM. [Address usage is 20* size of the largest column so on 32bit systems tables shouldn't have more than 16.7 million rows.] The number of partitions, tables and columns doesn't matter. Some customers have 1000's of partitions. Some have 1000's of tables. Some have 1000's of columns in the tables.</p>
+<p>Tables with many columns are good splayed table candidates because the bulk of these tables will always be out of memory (queries rarely require access to more than a few columns at a time). The performance characteristics of splayed tables are independent of the number of columns in the table. They depend only on the number of columns that must be in memory at any one time, which in turn depends on the specific queries being executed. Columns of Kdb+ splayed tables are stored contiguously on disk and laid out contiguously in real memory when accessed. This organization gives optimal disk access performance. The operating system caches accessed columns in real memory. Consequently, if the real memory hit-rate is high, the performance is real memory performance. (This is often the case because many database applications have a few heavily used queries that reference the same few columns). There can be one or many instances of the database. All instances point to the same data.  All processes will reside on the server including a gateway should one be required. The system can be implemented with or without a gateway process. In a system without a gateway, users connect directly to a database instance and send queries, with a gateway the users connect and send queries to the gateway process which allocates the query based on which instance is free. This can be handy for running more than one query at a time but overall throughput can of course suffer to the extent that the queries are competing for disk. But this is a way to let an important user get something quick while some bigger analysis is going on in another instance.</p>
+<p><h5 id='Parallel'>24 Parallel</h5></p>
+<p>Partitioned databases can run in parallel. But if we run in parallel it is best to have parallel i/o. Each kdb+ process can easily consume 100MB per second. Therefore the fastest multi-terabyte kdb+ databases use parallel i/o with guaranteed no contention. Customers do this with DAS (direct attached storage). U320 scsi controllers are fast and inexpensive. Customers sometimes use SAN (200MB/sec total) or NAS (80MB/sec total) because the IT departments insist on it. That is ok. But this is the limiting factor. If you use NAS be sure to have at least 1Gbit ethernet. </p>
+<p>If you use NAS there is no point in going parallel -- i.e. one kdb+ process can easily consume everything the filesystem throws at it. 4 slaves will saturate SAN. With DAS (direct attached storage) we can have one slave per disk array and ideally at least 2 disk arrays per cpu core.</p>
+<p>If all queries access just one partition/date then there is no point in going parallel. If you have DAS and have queries that span more than one partition then the best setup is to have one or more disk arrays per slave process (thus no contention) with approximately 2 slaves processes per cpu. (one is crunching while the other is reading). But be sure to have enough RAM per process so that there is no swapping, e.g.  a machine with 4cpu/32GBram/4controllers(2channels each)/8diskarray(14*146GB drives each) can have 8 slave processes on 50 million row (per partition) tables and 4 slave processes on 100 million row (per partition) tables. The o/s independent way to allocate partitions to different disk-arrays is to use a file (par.txt) that lists the different directories, e.g.</p>
+
+<xmp>/data/db/
+ sym     
+ mas     
+ par.txt 
+</xmp>
+<p>where par.txt is</p>
+
+<xmp>/0/db
+/1/db
+/2/db
+/3/db
+</xmp>
+<p>and these directories are:</p>
+
+<xmp>/0/db                  
+ 2005.03.15/trade quote
+ 2005.03.19/trade quote
+/1/db                  
+ 2005.03.16/trade quote
+ 2005.03.20/trade quote
+..                     
+</xmp>
+<p>Partitions are round-robin allocated mod N where N is the number of partitions. Round-robin is to get maximum parallelization on date ranges.</p>
+<p><h5 id='Logs'>25 Logs</h5></p>
+<p>Log/commit strategies are none, file (-l) or synch (-L). None is good for test, readonly, readmostly, trusted, duplicated or cache db's. File (100,000 transactions per second) is useful if you trust (or duplicate) the machine. Synch is 100 times per second with SCSI disk and 10,000 times per second with SSD(solid state disk). In any case a single drive can commit more than 40MB of updates per second. A logging database is [script/][state/]log, e.g.</p>
+
+<xmp>>q d -l / loads d.q(func), d.qdb(data), d.log(updates)
+\l      / checkpoint d.qdb and empty d.log            
+</xmp>
+<p>i.e. put code in d.q in directory .u(utilities). all update messages are logged. To send a message from the console use 0, e.g. <code><nobr>0"v+:1"</nobr></code> . An error after a partial update will cause rollback. d can start empty. d, d.q and d.log should all be in the same launch directory. In general only log in production. Keep the database as simple as possible.</p>
+<p><h5 id='Load'>26 Load</h5></p>
+
+<xmp>(types;widths)0:file / text load
+(types;widths)1:file / data load
+</xmp>
+<p>The windows version comes with an odbc loader, e.g.</p>
+
+<xmp>>q w32/odbc.k                                         
+q).odbc.load`northwind.mdb / will load entire database
+</xmp>
+<p>You should get 10MB/sec -- if the source rdbms and network are up to it. Also,</p>
+
+<xmp>h:.odbc.open`       
+t:.odbc.tables h    
+r:.odbc.eval[h]"..."
+  .odbc.close h     
+</xmp>
+<p>$bcp t out t.txt -c</p>
+<p><h5 id='Archive'>27 Archive</h5></p>
+<p>It is trivial to incrementally archive the large parallel databases: simply move the old directories away and send the reset message.</p>
+<p><h5 id='User'>28 User</h5></p>
+<p>Servers can control access with a file of usr:pwd's, e.g.</p>
+
+<xmp>>q f -p 1234 -u ../user.txt
+</xmp>
+<p>Clients connect with:</p>
+
+<xmp>     q> c:hopen`:host:1234:usr:pwd         
+c.java> c c=new k.c("host",1234,"usr:pwd");
+  c.cs> c c=new k.c("host",1234,"usr:pwd");
+   c.o> int c=khpu("host",1234,"usr:pwd"); 
+</xmp>
+<p>Even when there is no server -u the q client still sends username. All incoming messages reflect:</p>
+
+<xmp>.z.w / who-socket
+.z.a / address   
+.z.u / user      
+</xmp>
+<p>Clients can only do file i/o in the server directory.</p>
+<p><h5 id='Grid'>29 Grid</h5></p>
+<p>Kdb+ is a parallel/grid programming system.</p>
+
+<xmp>>q [f] -s n / will start n slaves threads
+{..}peach x / parallel execute on x, e.g.
+</xmp>
+<p>The overhead is conditional threads - 1 microsecond - so use accordingly. Test overhead with:</p>
+
+<xmp>\t {x}peach til 1000
+</xmp>
+<p>Ideal parallel cpu candidate has high cpu%data, e.g.</p>
+
+<xmp>{sum exp x?1.0}peach 2#1000000 / should be twice as fast with 2 cpu's
+</xmp>
+<p>Peach is also good for going after many different drives at once even if you only have one cpu.</p>
+
+<xmp>
+</xmp>
+</body></html>

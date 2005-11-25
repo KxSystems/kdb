@@ -1,0 +1,125 @@
+<html><head><style>a{text-decoration:none}a:link{color:024C7E}a:visited{color:024C7E}a:active{color:958600}body{font:10pt verdana;text-align:justify}</style></head><body>Copyright &copy; kx.com
+<h5>Abridged Kdb+tick Manual</h5>
+<p><h5 id='Summary'>1 Summary</h5></p>
+<p>Kdb+tick captures, publishes and analyzes millions of streaming ticks as well as the accumulating terabytes of historical data. The realtime and historical databases are in kdb+. Realtime analytic/alert clients can be written in java, .net, c or q. Kdb+tick includes some example clients. see below</p>
+<p><h5 id='Architecture'>2 Architecture</h5></p>
+
+<xmp>feed>tick>rdb>hdb(historical db)
+         >clients(java,.net,c,q)
+</xmp>
+<p>Each tickerplant and rdb(realtime db) can handle 100,000 records per second -- more than enough to deal with all trades and quotes, level2 quotes or options. The tickerplant, rdb and hdb(historical) are all 24/7. The latency between feed and rdb is less than one millisecond. Real-time analytic/alert clients can be written in java, c or q. The rdb resets the hdb once a day. See <a href='http://kx.com/q/d/taq.htm'>http://kx.com/q/d/taq.htm</a> for a hdb example: nyse trade and quote</p>
+<p><h5 id='Hardware'>3 Hardware</h5></p>
+
+<xmp>o/s: solaris, linux, windows (32bit or 64bit)         
+cpu: 4 (feed,tick,rdb,hdb,..)                         
+ram: 4*daily e.g. 8GB for all US trades and quotes    
+dsk: 2*daily*days(U320 or SAN). 10000rpm+ scsi drives.
+</xmp>
+<p>The kdb+ storage factor is about 1. Get 2 times as much disk for raid, staging and scratch space. In production (staying less than 50% cpu) the user should have 4 cpus(feed,tick,rdb,hdb) per 4GB of intraday data(with peak 50000 records per second). Backup and development can run with half. The rdb and hdb should be 64bit cpu's.</p>
+<p><h5 id='Data'>4 Data</h5></p>
+<p>All US equities per day(2004): </p>
+
+<xmp>trades  200MB
+quotes  2GB  
+level2  4GB  
+options 6GB  
+</xmp>
+<p><h5 id='Install'>5 Install</h5></p>
+<p>Install kdb+. Unzip tick.zip in q/</p>
+<p><h5 id='Run'>6 Run</h5></p>
+<p>A tickerplant system usually has the tickerplant, realtime db, historical db, one or more feeds and several clients, e.g.</p>
+
+<xmp>>q tick.k sym DST      -p 5010 / load schema tick/sym.q and sets log `:DST/symYYYY.MM.DD
+>q tick/r.k 5010       -p 5011 / rdb (realtime db gets everything)                      
+>q DST/sym             -p 5012 / hdb (historical db gets daily snapshot)                
+>q tick/c.q last 5010  / sample last client                                             
+>q tick/c.q vwap 5010  / sample vwap client                                             
+>q tick/ssl.q sym 5010 / triarch ssl feed using tick/sym.txt                            
+</xmp>
+
+<xmp>feed   (java, .net, c or q) send (".u.upd";table;records)'s to tick.          
+client (java, .net, c or q) subscribe: e.g. .u.sub[`trade`quote;`MSFT.O`IBM.N]
+</xmp>
+<p>All programs run 24/7. The logs are updated immediately. The clients are updated on a timer loop. </p>
+<p>All messages are lists of records -- for higher throughput. The schemas must be <code><nobr>([]time;sym;..)</nobr></code> . </p>
+<p>The feeds must call <code><nobr>(".u.upd";`table;(syms;..))</nobr></code> messages, i.e. <code><nobr>time</nobr></code> is set by the tickerplant. </p>
+<p>The historical database port should be 1+realtime port -- e.g. 5012 -- so the tickerplant can send the reset message.</p>
+<p>We provide triarch/ssl and bloomberg feed handlers. The handlers can be on any machine. They can parse about 100,000 records per second -- i.e. more than the feeds can send.</p>
+<p><h5 id='Options'>7 Options</h5></p>
+
+<xmp>>q tick.k SRC DST [-p 5010] [-t 1000] [-o hours]                                
+SRC                                              default: sym (tick/sym.q)      
+DST                                              default: none (no log. no rdb.)
+-p port                                          default: 5010                  
+-t timer milliseconds                            default: 1000                  
+-o gmt offset hours                              default: localtime             
+</xmp>
+<p>For testing and replay(<a href='http://kx.com/q/tow'>http://kx.com/q/tow</a>) don't provide a DST, e.g.</p>
+
+<xmp>>q tick.k sym
+</xmp>
+<p><h5 id='Client'>8 Client</h5></p>
+<p>Subscribe with:</p>
+
+<xmp>h:hopen`:host:port                                                               
+h".u.sub[`trade;`MSFT.O`IBM.N]"                                / subscribe       
+upd:{[t;x]vwap+:select size wsum price,sum size by sym from x} / incremental vwap
+</xmp>
+<p>The incoming messages are <code><nobr>("upd";`table;table)</nobr></code> i.e. in general many records at once.</p>
+
+<xmp>upd:{[t;x].[t;();,;x]}                                     / all 
+upd:{[t;x].[t;();,;select by sym from x}                   / last
+upd:{[t;x].[t;();,'';select time,price,size by sym from x} / nest
+</xmp>
+<p>In java and c#: (using <a href='http://kx.com/q/c/c.java'>http://kx.com/q/c/c.java</a> or <a href='http://kx.com/q/c/c.cs'>http://kx.com/q/c/c.cs</a>)</p>
+
+<xmp>k.c(".u.sub[`trade;`MSFT.O`IBM.N]");                                                        
+while(true){Object x=k.c();Console.WriteLine(at(x,1));alerts..} // print incoming table name
+</xmp>
+<p>In c:</p>
+
+<xmp>k(c,".u.sub[`trade;`MSFT.O`IBM.N]",0);                  
+while(1){K x=k(c,0);printf("%s\n",KK(x)[1]->s);alerts..}
+</xmp>
+<p>Watch out: a bad client(doesn't keep up) will cause the tickerplant to buffer up all the messages.</p>
+<p><h5 id='Maintenance'>9 Maintenance</h5></p>
+<p>Possibly reset feed subscription list every day.</p>
+<p><h5 id='Feed'>10 Feed</h5></p>
+<p>triarch/ssl subscribers</p>
+
+<xmp>l32/ssl.so 
+s32/ssl.so 
+w32/ssl.dll
+</xmp>
+<p>these have to run 32bit because triarch is 32bit.</p>
+<p>the tickerplant can be anywhere/anything.</p>
+<p><h5 id='Examples'>11 Examples</h5></p>
+<p>options and underlying: two tick's. one client subscribes to both.</p>
+<p>rolling vwap, e.g. every 10 seconds</p>
+
+<xmp>sub[`trade;..]                                                     
+upd:insert                                                         
+.z.ts:{push r:select size wavg price by sym from trade;trade::();r}
+\t 10000                                                           
+/ all trades with then current quote                               
+upd:{[t;x]$[t~`trade;trade,:x lj quote;                            
+ quote,:select last bid,last ask by sym from x]}                   
+</xmp>
+<p>We can also keep track of nbbo (or the entire book) if there are multiple market makers,</p>
+<p><h5 id='Comments'>12 Comments</h5></p>
+<p>Minimal Ticker Plant Memory usage</p>
+<p>The kdb+ TP holds only one second's worth of data in memory. It instantly logs incoming data.</p>
+<p>24/7(365)</p>
+<p>kdb+ has built-in daily rollover mechanisms to eliminate downtime. All processes can run forever.</p>
+<p>Scalability and Resilience</p>
+<p>Real Time subscribers can subscribe at any time during the day without overloading or delaying the plant. This is because the rdb loads the day's tick data from disk and then continues to receive updates via tcp/ip.</p>
+<p>Efficient Subscription</p>
+<p>kdb+ plants allow table subscription by symbol - i.e. the plant sends only symbol data that the client has requested. This allows slower (desktop java/.net/excel) processes to be connected without the client thrashing to filter unwanted data.</p>
+<p>Increased Memory Space</p>
+<p>Processes can hold more data in memory - allows process types (depth/stock/option) for a region to be combined into a single kdb+ process, reducing duplication of data across databases, simplifies query writing, and eases configuration management/support.</p>
+<p>Simpler Query Language</p>
+<p>The new unified query language, Q, is much simpler and more flexible to write queries.</p>
+<p>Competitive Advantage</p>
+<p>The old kdb is no longer the best product for processing tick data. Kdb+ is.</p>
+
+</body></html>

@@ -1,0 +1,37 @@
+tpcd was a decision support benchmark with 17 sql2 queries.
+kdb+ is 10-100 times faster and scales better than other DBMS's.
+
+there are 8 tables. we've changed the names to reduce code mass.
+ (c.. various comment fields)
+
+ l - lineitem(o,p,s,v(flag),u(status),mode(h),shipdate(ds),commitdate(dc),
+      receiptdate(dr),q(quantity),x(price),xd(discount),xt(tax))
+ o - order([o]c,d,j(priority),k(clerk),i(shippriority))
+ c - customer([c]name,n,x(acctbal),m(market),c...)
+ p - part([p]name,b(brand),t(type),z(size),e(container),x(price),c...)
+ s - supply([s]name,n,x(acctbal),c...)
+ n - nation([n]name,r)
+ r - region([r]name)
+ ps - partsupply([p,s]x(cost)) 
+  
+tpcd queries can also be written in q.(execute at the same speed)
+
+q is simpler/more expressive than sql, e.g., query 8 (8-way join)
+
+revenue share of suppliers(s) in BRAZIL by order(o) year to customers(c) in region AMERICA
+in 1995 and 1996 for parts(p) of type(t) 'ECONOMY ANODIZED STEEL'.
+
+q:
+
+select rev wavg s.n=`BRAZIL by o.d.year from l where 
+ o.c.n.r=`AMERICA, o.d.year in 1995 1996, p.t=`$"ECONOMY ANODIZED STEEL"
+
+sql:
+
+select year,sum(case when name='BRAZIL' then rev else 0 end)/sum(rev) from(
+  select extract(year from o.d)as year,l.x*(1-l.xd) as rev,n2.name
+  from p,s,l,o,c,n n1,n n2,r
+  where p.p=l.p and s.s=l.s and l.o=o.o and o.c=c.c and c.n=n1.n and n1.r=r.r and r.name='AMERICA'
+   and s.n=n2.n and o.d between date'1995-01-01' and date'1996-12-31' and
+  p.t='ECONOMY ANODIZED STEEL')t
+ group by year order by year

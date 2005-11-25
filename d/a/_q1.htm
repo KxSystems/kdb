@@ -1,0 +1,116 @@
+<html><head><style>a{text-decoration:none}a:link{color:024C7E}a:visited{color:024C7E}a:active{color:958600}body{font:10pt verdana;text-align:justify}</style></head><body>2005.02.15<h5>Contents</h5><nobr><a target=v href='q1.htm#Introduction'>1 Introduction</a><br>
+<br>
+<a target=v href='q1.htm#Datatypes Summary'>2 Datatypes Summary</a><br>
+<br>
+<a target=v href='q1.htm#Primitive Function Summary'>3 Primitive Function Summary</a><br>
+<br>
+<a target=v href='q1.htm#One-Item Lists and Enlist'>4 One-Item Lists and Enlist</a><br>
+<br>
+<a target=v href='q1.htm#Index, Index Assignment, and Amend'>5 Index, Index Assignment, and Amend</a><br>
+<a target=v href='q1.htm#Amend'>5.1 Amend</a><br>
+<a target=v href='q1.htm#Indexing and Function Evaluation'>5.2 Indexing and Function Evaluation</a><br>
+<a target=v href='q1.htm#Indexing at Depth'>5.3 Indexing at Depth</a><br>
+<a target=v href='q1.htm#Elided Indices'>5.3.1 Elided Indices</a><br>
+<a target=v href='q1.htm#Elided Function Arguments'>5.3.2 Elided Function Arguments</a><br>
+<a target=v href='q1.htm#Juxtaposition'>5.4 Juxtaposition</a><br>
+<a target=v href='q1.htm#Verb Forms for x[...]'>5.5 Verb Forms for x[...]</a><br>
+<a target=v href='q1.htm#Functional Forms of Amend'>5.5.1 Functional Forms of Amend</a><br>
+<br>
+<a target=v href='q1.htm#Uniform Functions'>6 Uniform Functions</a><br>
+<a target=v href='q1.htm#Primitive Uniform Function Summary'>6.1 Primitive Uniform Function Summary</a><br>
+<br>
+<a target=v href='q1.htm#Aggregation in Update Expressions'>7 Aggregation in Update Expressions</a><br>
+<br>
+<a target=v href='q1.htm#More about Nulls'>8 More about Nulls</a><br>
+<a target=v href='q1.htm#Nulls and Out-of-Range Indexing'>8.1 Nulls and Out-of-Range Indexing</a><br>
+<a target=v href='q1.htm#Processing Nulls'>8.2 Processing Nulls</a><br>
+<br>
+<a target=v href='q1.htm#Type and Cast'>9 Type and Cast</a><br>
+<a target=v href='q1.htm#Creating Varchars'>9.1 Creating Varchars</a><br>
+<a target=v href='q1.htm#Casting with Computed Types'>9.2 Casting with Computed Types</a><br>
+<a target=v href='q1.htm#String and More Casting'>9.3 String and More Casting</a><br>
+<a target=v href='q1.htm#Extracting Data from Text'>9.3.1 Extracting Data from Text</a><br>
+<a target=v href='q1.htm#Creating Text from Data'>9.4 Creating Text from Data</a><br>
+<br>
+<a target=v href='q1.htm#Join'>10 Join</a><br>
+<br>
+<a target=v href='q1.htm#Enumeration'>11 Enumeration</a><br>
+<br>
+<a target=v href='q1.htm#Associations, Xkey, Key and Value'>12 Associations, Xkey, Key and Value</a><br>
+<a target=v href='q1.htm#Dictionaries and Tables'>12.1 Dictionaries and Tables</a><br>
+<a target=v href='q1.htm#A Table is a List of Dictionaries'>12.1.1 A Table is a List of Dictionaries</a><br>
+<a target=v href='q1.htm#A Table is the Flip of a Dictionary'>12.1.2 A Table is the Flip of a Dictionary</a><br>
+<a target=v href='q1.htm#Flip'>12.1.2.1 Flip</a><br>
+<a target=v href='q1.htm#Creating Tables'>12.1.3 Creating Tables</a><br>
+<a target=v href='q1.htm#A Key Table is a Dictionary'>12.2 A Key Table is a Dictionary</a><br>
+<a target=v href='q1.htm#How Dot Notation Works'>12.3 How Dot Notation Works</a><br>
+<br>
+<a target=v href='q1.htm#Associative Arithmetic'>13 Associative Arithmetic</a><br>
+<br>
+<a target=v href='q1.htm#Generating Test Data with Rand'>14 Generating Test Data with Rand</a><br>
+<br>
+<a target=v href='q1.htm#Find'>15 Find</a><br>
+<br>
+<a target=v href='q1.htm#Reverse'>16 Reverse</a><br>
+<br>
+<a target=v href='q1.htm#Where and Distinct'>17 Where and Distinct</a><br>
+<br>
+<a target=v href='q1.htm#Take, Drop and Cut'>18 Take, Drop and Cut</a><br>
+<a target=v href='q1.htm#Initializing Database Tables'>18.1 Initializing Database Tables</a><br>
+<br>
+<a target=v href='q1.htm#Verbs and Adverbs'>19 Verbs and Adverbs</a><br>
+<a target=v href='q1.htm#Each, Each-Left, Each-Right'>19.1 Each, Each-Left, Each-Right</a><br>
+<br>
+<a target=v href='q1.htm#Grouping Without Aggregating'>20 Grouping Without Aggregating</a><br>
+<br>
+<a target=v href='q1.htm#The Organization of the Workspace'>21 The Organization of the Workspace</a><br>
+<br>
+<a target=v href='q1.htm#Defined Functions'>22 Defined Functions</a><br>
+<a target=v href='q1.htm#The General Form'>22.1 The General Form</a><br>
+<a target=v href='q1.htm#Default Arguments'>22.2 Default Arguments</a><br>
+<a target=v href='q1.htm#Default Result'>22.3 Default Result</a><br>
+<a target=v href='q1.htm#Localization'>22.4 Localization</a><br>
+<a target=v href='q1.htm#Projections'>22.5 Projections</a><br>
+<a target=v href='q1.htm#Verbs'>22.5.1 Verbs</a><br>
+<a target=v href='q1.htm#Projections in Practice'>22.5.2 Projections in Practice</a><br>
+<a target=v href='q1.htm#Parameterized Queries'>22.6 Parameterized Queries</a><br>
+<a target=v href='q1.htm#Debugging'>22.7 Debugging</a><br>
+<br>
+<a target=v href='q1.htm#Script Files'>23 Script Files</a><br>
+<br>
+<a target=v href='q1.htm#Execution Control'>24 Execution Control</a><br>
+<a target=v href='q1.htm#Conditional Evaluation'>24.1 Conditional Evaluation</a><br>
+<a target=v href='q1.htm#Protected Evaluation'>24.2 Protected Evaluation</a><br>
+<a target=v href='q1.htm#Do Statements'>24.3 Do Statements</a><br>
+<a target=v href='q1.htm#If Statements'>24.4 If Statements</a><br>
+<a target=v href='q1.htm#While Statements'>24.5 While Statements</a><br>
+<a target=v href='q1.htm#Control Primitives'>24.6 Control Primitives</a><br>
+<br>
+<a target=v href='q1.htm#Commands'>25 Commands</a><br>
+<a target=v href='q1.htm#Dictionary: \d [dict]'>25.1 Dictionary: \d [dict]</a><br>
+<a target=v href='q1.htm#Variables: \v [dict]'>25.2 Variables: \v [dict]</a><br>
+<a target=v href='q1.htm#Load: \l file'>25.3 Load: \l file</a><br>
+<a target=v href='q1.htm#Port: \p [digits]'>25.4 Port: \p [digits]</a><br>
+<a target=v href='q1.htm#Timer: \t [milliseconds]'>25.5 Timer: \t [milliseconds]</a><br>
+<a target=v href='q1.htm#Time: \t expression'>25.6 Time: \t expression</a><br>
+<a target=v href='q1.htm#Workspace: \w'>25.7 Workspace: \w</a><br>
+<a target=v href='q1.htm#Exit Kdb+: \\'>25.8 Exit Kdb+: \\</a><br>
+<a target=v href='q1.htm#OS Command: \text'>25.9 OS Command: \text</a><br>
+<a target=v href='q1.htm#Ctrl-C'>25.10 Ctrl-C</a><br>
+<br>
+<a target=v href='q1.htm#Inter-Process Communication'>26 Inter-Process Communication</a><br>
+<a target=v href='q1.htm#Kdb+ Data Client'>26.1 Kdb+ Data Client</a><br>
+<a target=v href='q1.htm#Opening and Closing a Connection'>26.1.1 Opening and Closing a Connection</a><br>
+<a target=v href='q1.htm#Asynchronous and Synchronous'>26.1.2 Asynchronous and Synchronous</a><br>
+<a target=v href='q1.htm#Message Filters'>26.1.3 Message Filters</a><br>
+<a target=v href='q1.htm#Evaluating Messages'>26.1.4 Evaluating Messages</a><br>
+<a target=v href='q1.htm#The Close Handler'>26.1.5 The Close Handler</a><br>
+<a target=v href='q1.htm#Kdb+ HTTP Server'>26.2 Kdb+ HTTP Server</a><br>
+<br>
+<a target=v href='q1.htm#Working with Files'>27 Working with Files</a><br>
+<a target=v href='q1.htm#Kdb+ Data Files'>27.1 Kdb+ Data Files</a><br>
+<a target=v href='q1.htm#Tables'>27.1.1 Tables</a><br>
+<a target=v href='q1.htm#Text Files'>27.2 Text Files</a><br>
+<a target=v href='q1.htm#Binary Files'>27.3 Binary Files</a><br>
+<a target=v href='q1.htm#Specifying Field Types'>27.4 Specifying Field Types</a><br>
+</nobr></body></html>

@@ -1,0 +1,96 @@
+<html><head><style>a{text-decoration:none}a:link{color:024C7E}a:visited{color:024C7E}a:active{color:958600}body{font:10pt verdana;text-align:justify}</style></head><body>Copyright &copy; kx.com
+<h5>Abridged Kdb+taq Manual</h5>
+<p><h5 id='Summary'>1 Summary</h5></p>
+<p>Kdb+taq loads the nyse taq (25 billion+ trades and quotes) data into kdb+. The resulting multi-terabyte kdb+ database can be queried and analyzed at about 1 million ticks per second per cpu. The master, trade and quote data is from daily FTP's and/or monthly DVD's:</p>
+
+<xmp>FTP http://www.nysedata.com/info/productDetail.asp?dpbid=13
+DVD http://www.nysedata.com/info/productDetail.asp?dpbID=36
+</xmp>
+<p>The DVD data goes back to 1993 and (as of late 2003) is growing at 50 million records per day.</p>
+<p><a href='http://www.nyse.com/content/articles/1056810884848.html'>http://www.nyse.com/content/articles/1056810884848.html</a></p>
+
+<xmp>2GB+ per day. 400GB(2003). 1000GB(1993-2002).
+</xmp>
+<p><h5 id='Hardware'>2 Hardware</h5></p>
+
+<xmp>o/s: solaris64, linux64(opteron or nocona)    
+cpu: 2+     (2 sets of disk arrays per cpu)   
+ram: 16GB+  (8GB+ per cpu)                    
+dsk: 2TB+   (U320SCSI 10000rpm+ drives)       
+</xmp>
+<p>The kdb+ storage factor is about 1. Get 2 times as much disk for raid5, staging and scratch space, e.g.(2004):</p>
+
+<xmp>HP DL585/AMD/2CPU/16GBRAM/64bitLinux                                                      
+($20K)2*MSA500 G2 arrays with (7+7)*146GB 10k RPM drives(3.5TB useable) in 2 raid5 arrays.
+</xmp>
+<p><h5 id='Install'>3 Install</h5></p>
+<p>Install kdb+. Put taq.k in q/</p>
+<p><h5 id='Load'>4 Load</h5></p>
+<p>Put FTP(taqtrade.. taqquote.. taqmaster..) or DVD(*.tab *.bin *.idx) in SRC.</p>
+
+<xmp>>q taq.k SRC DST / load from SRC to DST/taq
+</xmp>
+<p>See <a href='http://www.nyse.com/pdfs/userguid.pdf'>http://www.nyse.com/pdfs/userguid.pdf</a></p>
+<p>Kdb+ loads, indexes and stores about 1GB per minute per cpu. taq.k will load all files it finds in the SRC directory. If you want kdb+ to run in parallel:</p>
+
+<xmp>1. put a list of directories(different drive arrays) in DST/taq/par.txt
+2. >q DST/taq -s N    where N is equal to number of drive arrays       
+</xmp>
+<p>There will be N slaves each reading their own drive array -- no contention. 2 disk arrays per cpu is about right(e.g. 2 cpu's and 4 array's above). Days are round-robin allocated. Multi-day queries run in parallel.</p>
+<p><h5 id='Run'>5 Run</h5></p>
+
+<xmp>>q DST/taq -p 5001 / start and view at http://localhost:5001                  
+>q DST/taq -p 5002 / start another one for adhoc queries(same underlying data)
+</xmp>
+<p>These databases can run forever. The loads (taq.k) can send reset messages.</p>
+<p><h5 id='Options'>6 Options</h5></p>
+
+<xmp>>q taq.k SRC DST [-corr] [-host host:port [host:port ..]]    
+-corr  load the rearranged incorrect records (default delete)
+-host  send reset message to server(s)                       
+</xmp>
+<p><h5 id='Schema'>7 Schema</h5></p>
+
+<xmp>trade:([]date;sym;time;price;size;..)                        
+quote:([]date;sym;time;bid;ask;bsize;asize;..)               
+mas:([sym;date]cusip;..)                       / master table
+</xmp>
+<p><h5 id='Query'>8 Query</h5></p>
+<p>The data is indexed by symbol for one disk seek per day*sym*field. This yields about one million prices per second per cpu (at 10,000 ticks per sym per day). In general,</p>
+
+<xmp>10ms(6seek+4read) * (days/drives) * syms * fields, e.g. 10*1day*2sym*3fields=60ms for
+select size wavg price by sym from trade where date=2000.10.02,sym in`A`IBM          
+</xmp>
+<p>Data cached in memory is much faster. Restrict dates, syms and fields as much as possible -- read as little as possible, e.g.  </p>
+
+<xmp>select time,price from trade where date=2000.10.02,sym=`IBM
+</xmp>
+<p>is faster than</p>
+
+<xmp>select from trade where date=2000.10.02,sym=`IBM / all fields
+</xmp>
+<p>Move as little data as possible -- calculate in the server, e.g. from java:</p>
+
+<xmp>r=k("select size wavg price from trade where date=2000.10.02,sym=`IBM");
+</xmp>
+<p>is much faster than pulling the data and calculating locally:</p>
+
+<xmp>r=vwap(k("select size,price from trade where date=2000.10.02,sym=`IBM"));
+</xmp>
+<p>To retrieve for sym.exchange, e.g. `AA.N</p>
+
+<xmp>f:{[d;s]x:string s;update sym:s from select from trade where date=d,sym=`$-2_x,ex=last x}
+f[2000.10.02;`AA.N]                                                                      
+</xmp>
+<p><h5 id='Client'>9 Client</h5></p>
+<p>see <a href='http://kx.com/q/c'>http://kx.com/q/c</a> for java, .net and c clients.</p>
+<p><h5 id='Corporate Actions'>10 Corporate Actions</h5></p>
+<p>see <a href='http://kx.com/q/taq/adj.q'>http://kx.com/q/taq/adj.q</a> for symbol, split and dividend adjustments</p>
+<p><h5 id='Maintenance'>11 Maintenance</h5></p>
+<p>load DVD's every month and/or load FTP every night.</p>
+<p><h5 id='Test Data'>12 Test Data</h5></p>
+<p>ftp://test.nysedata.com</p>
+
+<xmp>>q q/taq/tq.q generate test data
+</xmp>
+</body></html>
