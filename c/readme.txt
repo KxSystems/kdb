@@ -1,63 +1,55 @@
-odbc http://kx.com/q/c/odbc.exe
-jdbc http://kx.com/q/c/jdbc.jar
-(for now q expressions only)
+QDBC
 
-vb  r = new adodb.recordset
-    r.Open "q)t", "DRIVER=kdb+;DBQ=localhost:5001"
-excel SQL.REQUEST("DRIVER=kdb+;DBQ=localhost:5001;",,,"q)t")
+easy way to load and query q servers with java and c# clients.
+connect and execute.  (use q/c/c.java or q/c/c.cs)
 
-jdbc and odbc are deprecated. qdbc(c.java and c.cs) is 
-simpler: 1 entry point instead of 1000
-faster: 10 times as fast
-better: arbitrary args,  e.g.  k("{[x]select from t where sym in x}",sp500)
-
-
-matlab:     http://www.skelton.de/slog/?p=25
-excelrtd:   http://www.skelton.de/slog/?p=2
-
-the easiest(and most general) way to call the kdb+servers
-is with c.java and c.cs (memory managed and 1-1 datatypes).
-clients connect and execute, e.g.
-
-java/.net: (c.java/c.cs)
 c c=new c("host",port);	// connect
-r=c.k(["string"[,x[,y[,z]]]]);	// remote call/read
+r=c.k("string"); // execute
+r=c.k("func",x); // function calls
+r=c.k("func",x,y);
+r=c.k("func",x,y,z);
 
-c/c++: (l32/c.o s32/c.o w32/c.dll(c.lib))
-int c=khp("host",port);
-r=k(c[,"string"[,x[,y[,z]]]],(K)0);
-
-q)c:hopen`:host:port
-q)c("string"[;x[;y[;z]]])
-
-in java/.net
-
-c.k("string"); // execute
-c.k("func",x,y); // func[x;y]
-
+parameters(x,y,z) and results(r) are arbitrarily nested arrays.
+(Integer, Double, int[], DateTime etc.)
 to pass more than 3 args put them in list(s), e.g.
 
 // build (time;sym;price;size) record
 Object[]x={new Time(System.currentTimeMillis()%86400000),"xx",new Double(93.5),new Integer(300)};
 c.k("insert","trade",x);	// insert[`trade;x]
 
-clients can also read incoming messages:
-r=c.k();
+BULK INSERT
+Object[]x={new string[n],new double[n],new int[n]};
+for(int i=0;i<n;i++){x[0][i]=..;..}
 
+clients can also read incoming messages: r=c.k();
 for example, kdb+tick clients do:
 String[]syms={"IBM","MSFT",..};
 c.k(".u.sub","trade",syms);	// subscribe
 while(1){Object r=c.k();..	// process incoming
 
-parameters(x,y,z) and results(r) are arbitrarily
-nested arrays of arrays and atoms.
-(Integer, Double, int[], DateTime etc.)
+JDBC http://kx.com/q/c/jdbc.jar
+ODBC http://kx.com/q/c/odbc.exe (kdb+2.3 and later)
 
-java/.net(like q) have memory management
-and self-describing objects so they are very easy to use.
-the java/.net programmer passes and receives java/.net data.
+vb r=new adodb.recordset;r.Open "q)t", "DRIVER=kdb+;DBQ=localhost:5001"
+excel SQL.REQUEST("DRIVER=kdb+;DBQ=localhost:5001;",,,"q)t")
+
+jdbc and odbc are deprecated. qdbc is 
+simpler: 1 entry point instead of 1000
+faster: qdbc is 10 times as fast
+better: arbitrary args,  e.g.  k("{[x]select from t where sym in x}",sp500)
+
+matlab:     http://www.skelton.de/slog/?p=25
+excelrtd:   http://www.skelton.de/slog/?p=2
+q clients:
+q)c:hopen`:host:port
+q)c("string"[;x[;y[;z]]])
 
 
+c clients are similar to java and c# clients.
+
+c/c++: (l32/c.o s32/c.o w32/c.dll(c.lib))
+int c=khp("host",port);
+r=k(c[,"string"[,x[,y[,z]]]],(K)0);
 
 
 C clients, e.g.  http://kx.com/q/c/c.c (requires gcc 3.0 or later)
@@ -125,7 +117,7 @@ x=ktn(0,n); // n columns
 
 e.g. (sym;price;size)
 
-a=kK(x)[0]=ktn(KS,m);  // symbol vector
+a=kK(x)[0]=ktn(KS,m); // symbol vector
 b=kK(x)[1]=ktn(KF,m); // float(64bit) vector
 c=kK(x)[2]=ktn(KI,m); // integer vector
 
