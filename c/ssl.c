@@ -1,8 +1,8 @@
 // 2005.01.10 ssub 2005.01.28(dll)
 // 2004.09.27 EC_DATA(for level2 image)
-// cl /LD ..\c\ssl.c ssl.def q.lib \ssl\ssl4w32.lib
-// /usr/local/gcc-3.3.2/bin/gcc -shared ../c/ssl.c -o ssl.so libssl.a
-// /usr/local/gcc-3.3.2/bin/gcc -G      ../c/ssl.c -o ssl.so libssl.so
+//cl /LD ..\c\ssl.c ssl.def q.lib \ssl\ssl4w32.lib
+//usr/local/gcc-3.3.2/bin/gcc -shared ../c/ssl.c -o ssl.so libssl.a
+//usr/local/gcc-3.3.2/bin/gcc -G      ../c/ssl.c -o ssl.so libssl.so
 #include "k.h"
 #include "ssl.h"
 #define Q(x,s) if((x)<0){O("sslerror: %s\n",s);R s;}
@@ -21,15 +21,35 @@ K2(ssub){I v=y->t==KS;P(xt!=-KS||!v&&y->t!=-KS,krr("type"))P(init(),krr("init"))
  DO(v?y->n:1,P(sslSnkOpen(c,xs,v?kS(y)[i]:y->s,0,0)<0,krr("snkopen")))R r1(y);}
 K sub(K y){K x=ks(ss("IDN_SELECTFEED"));R y=ssub(x,y),r0(x),y;}
 
+//felix: vt100 modifications <esc>[n` - move to n; c<esc>[nb - repeat c
+K2(esc){K r;I i,j,m,n;C c;S e;
+ if(xt!=10||y->t!=10)R krr("type");
+ r=ktn(KC,x->n);memcpy(kG(r),kG(x),x->n);
+ for(i=j=0;i<y->n;++i){
+  if(j>=xn)R r0(r),krr("length");
+  if(kG(y)[i]==0x1B){
+    n=strtol(kG(y)+i+2,(char**)&e,10);
+    switch(*e){
+     case 'b':c=kG(y)[i-1];--n;if(j+n>=xn)R r0(r),krr("length");
+     // case 'b':c=kG(y)[i-1];if(j+n>=xn)R r0(r),krr("length");
+       for(m=0;m<n;++m)kG(r)[j++]=c;break;
+     case '`':j=n;break;}
+    i=e-kG(y);}
+  else kG(r)[j++]=kG(y)[i];}R r;}
+
+
+
 /*
+maintain a cache of each depth fid for each symbol and apply the partial updates to the images. 
+that you have split by fixed widths and convert to the proper type.
+ 
+
 340/state 316/update
 Q(sslRegisterCallBack(c,SSL_ET_ITEM_STATUS_CLOSED,cls,0),"cls") rejected
 Q(sslRegisterCallBack(c,SSL_ET_ITEM_UPDATE SSL_ET_ITEM_IMAGE
 Q(sslErrorLog("/tmp/ssl.log",100000),"errorlog")
 int t=SSL_ON;Q(sslSetProperty(SSL_ALL_CHANNEL,SSL_OPT_LOG_FUNCTION_ERROR,&t),"...")
-
 #include <sys/types.h>#include<sys/socket.h>
 main(I c,S*v){for(init();1;){fd_set readfds;FD_ZERO(&readfds);FD_SET(d,&readfds);select(FD_SETSIZE,&readfds,0,0,0);d0(d);}}
-
 if(e->ItemImage.ItemType.DataFormat!=SSL_DF_MARKETFEED_RECORD)O("page? %s\n",e->ItemImage.ItemName);else 
 */
