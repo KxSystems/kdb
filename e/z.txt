@@ -1,0 +1,47 @@
+5	AG0
+20	AG1
+100	MR LU1  AG2
+1	LU2
+
+intel/amd/g5(1.6/400) is twice sparc
+Linux file/comm is thrice Windows2000(10MB/sec) w2003
+
+Random Sequential
+Cpu(1.6GHZ/256K)Mem(64/400MHZ~1.6GB)Net(1Gb)Dsk(15K/40MB) 
+
+1ns	CB CG
+3	CS CR MS
+10	MI MF F< F%  C(? ?:)  "if"$
+100 MR DS NS exec each <: "sdtz"$ FU($i $f t.[hms] d.[ymd]) sqrt log exp
+1us	parsetok
+3   Wapp  select insert delete update
+10  Lsend Lopen Lapp parsestt 
+30	Lread Wopen Wsend
+100 Lconn Wread Wrecv
+300
+1ms Wconn
+10	DR
+100
+sec
+
+comm:conn/send/recv
+file:open/writ/read
+
+test files and comms(mile per microsecond)
+
+local/remote
+
+file  50MB 10MB?20MB?
+log 2.5u
+
+asynch 10u 10u
+synch 30u 160u
+
+open&close(http) 1m 1m
+
+throughput: 200MB 10MB?
+1GigE 10MB  \t h"til 2500000"
+
+
+msg 100bytes
+

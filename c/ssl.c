@@ -14,29 +14,22 @@ SSL(stt,R0(k(0,"stt",ks(ss(e->ItemStatus.ItemName)),ki(t),0))) //7close 8recover
 SSL(dis,sd0(d);R0(k(0,"dis[]",0)))
 SSL(rec,con();R0(k(0,"rec[]",0)))
 
-ZS init(){P(c!=-1,0)Q(sslInit(SSL_VERSION_NO),"sslinit")Q(c=sslSnkMount("",0),"snkmount")
+ZS ini(S s){P(c!=-1,0)Q(sslInit(SSL_VERSION_NO),"sslinit")Q(c=sslSnkMount(s,0),"snkmount")
  sslRegisterClassCallBack(c,SSL_EC_ITEM_STATUS,stt,0);sslRegisterCallBack(c,SSL_ET_SESSION_DISCONNECTED,dis,0);
  sslRegisterClassCallBack(c,SSL_EC_DATA,upd,0);sslRegisterCallBack(c,SSL_ET_SESSION_RECONNECTED,rec,0);R con();}
-K2(ssub){I v=y->t==KS;P(xt!=-KS||!v&&y->t!=-KS,krr("type"))P(init(),krr("init"))
+K1(init){R xt!=-KS||ini(xs)?krr("init"):ktn(0,0);}
+K2(ssub){I v=y->t==KS;P(xt!=-KS||!v&&y->t!=-KS,krr("type"))P(ini(""),krr("init"))
  DO(v?y->n:1,P(sslSnkOpen(c,xs,v?kS(y)[i]:y->s,0,0)<0,krr("snkopen")))R r1(y);}
 K sub(K y){K x=ks(ss("IDN_SELECTFEED"));R y=ssub(x,y),r0(x),y;}
 
-//felix: vt100 modifications <esc>[n` - move to n; c<esc>[nb - repeat c
-K2(esc){K r;I i,j,m,n;C c;S e;
- if(xt!=10||y->t!=10)R krr("type");
- r=ktn(KC,x->n);memcpy(kG(r),kG(x),x->n);
- for(i=j=0;i<y->n;++i){
-  if(j>=xn)R r0(r),krr("length");
-  if(kG(y)[i]==0x1B){
-    n=strtol(kG(y)+i+2,(char**)&e,10);
-    switch(*e){
-     case 'b':c=kG(y)[i-1];--n;if(j+n>=xn)R r0(r),krr("length");
-     // case 'b':c=kG(y)[i-1];if(j+n>=xn)R r0(r),krr("length");
-       for(m=0;m<n;++m)kG(r)[j++]=c;break;
-     case '`':j=n;break;}
-    i=e-kG(y);}
-  else kG(r)[j++]=kG(y)[i];}R r;}
+// vt100 escape codes for page records updates: <esc>[n` - move to n (counting from 0); c<esc>[nb - repeat c n-times
+K2(esc){K r;I i=0,j=0,n,m;C c;S e;if(10!=xt||10!=y->t)R krr("type");r=ktn(KC,xn);memcpy(kG(r),kG(x),xn);
+ while(i<y->n){if(kG(y)[i]!=0x1B)kG(r)[j++]=c=kG(y)[i++];else{++i;n=0;while(10>(m=kG(y)[++i]-48)&&m>=0)n=m+n*10;
+  SW(kG(y)[i++]){CS('`',j=n)CS('b',DO(n-1,kG(r)[j++]=c))}}}R r;}
 
+// l32: gcc -m32 -shared -fPIC -o esc.so esc.c
+// s32: gcc -m32 -G -fPIC -o esc.so esc.c
+// w32: cl ...
 
 
 /*
