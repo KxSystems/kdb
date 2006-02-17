@@ -20,7 +20,7 @@
 #define isnan _isnan
 #define finite _finite
 typedef long I;typedef __int64 J;extern double log();
-#else  //gcc3.0 or later for anonymous unions and anonymous structs
+#else  
 #define nj 0x8000000000000000LL
 #define wj 0x7FFFFFFFFFFFFFFFLL
 #define nf (0/0.0)
@@ -30,6 +30,7 @@ typedef int I;typedef long long J;
 #endif //KBGHIJEFCSMDZUVT*  basetypes: GHIJEFS (G:BC)(I:MDUVT)(F:Z)
 typedef unsigned char*A,G,*S,C;typedef short H;typedef float E;typedef double F;typedef void V;
 typedef struct k0{I r;H t,u;union{G g;H h;I i;J j;E e;F f;S s;struct k0*k;struct{I n;G G0[1];};};}*K;
+//typedef struct k0{I r;H t,u;I n;G G0[1];}*K; //gcc3.0 or later for anonymous unions and anonymous structs
 
 #ifdef __cplusplus
 extern"C"{
@@ -54,6 +55,7 @@ extern K ka(I),kb(I),kg(I),kh(I),ki(I),kj(J),ke(F),kf(F),kc(I),ks(S),kd(I),kz(F)
 
 // vector accessors, e.g. kF(x)[i] for float&datetime
 #define kG(x)	((x)->G0)
+#define kC(x)	kG(x)
 #define kH(x)	((H*)kG(x))
 #define kI(x)	((I*)kG(x))
 #define kJ(x)	((J*)kG(x))
@@ -111,4 +113,3 @@ extern K ka(I),kb(I),kg(I),kh(I),ki(I),kj(J),ke(F),kf(F),kc(I),ks(S),kd(I),kz(F)
 #define xC ((C*)xG)
 #define xS ((S*)xG)
 #define xK ((K*)xG)
-
