@@ -2,16 +2,16 @@
 // 2005.04.26 s.Close()
 // 2005.03.09 readwrite 0Nd 0Nz
 // 2004.10.12 usr:pwd http://msdn.microsoft.com/library/default.asp?url=/library/en-us/cpguide/html/cpcontemplatefiles.asp
-using System;using System.IO; //csc c.cs  given >q trade.q -p 5001
-class c:System.Net.Sockets.TcpClient{public static void Main(string[]args){
- c c=new c("localhost",5001);
+using System;using System.IO;using System.Net.Sockets; //csc c.cs  given >q trade.q -p 5001
+class c:TcpClient{public static void Main(string[]args){
+ c c=new c("localhost",5001);c.ReceiveTimeout=1000;
  Flip r=td(c.k("select sum price by sym from trade"));O("cols: "+n(r.x));O("rows: "+n(r.y[0]));
 // object[]x=new object[4];x[0]=t();x[1]="xx";x[2]=(double)93.5;x[3]=300;
 // tm();for(int i=0;i<1000;++i)c.ks("insert", "trade", x);tm();
 // c c=new c("localhost",5010);c.k(".u.sub[`trade;`MSFT.O`IBM.N]");while(true){object r=c.k();O(n(at(r,2)));}
  c.Close();}
-byte[]b,B;int j,J;bool a;Stream s;public c(string h,int p):this(h,p,System.Environment.UserName){}
-public new void Close(){s.Close();base.Close();}
+byte[]b,B;int j,J;bool a;Stream s;public new void Close(){s.Close();base.Close();}
+public c(string h,int p):this(h,p,Environment.UserName){}
 public c(string h,int p,string u):base(h,p){s=this.GetStream();B=new byte[1+u.Length];J=0;w(u);s.Write(B,0,J);if(1!=s.Read(B,0,1))throw new Exception("access");}
 static TimeSpan t(){return DateTime.Now.TimeOfDay;}static TimeSpan v;static void tm(){TimeSpan u=v;v=t();O(v-u);}
 static void O(object x){Console.WriteLine(x);}static string i2(int i){return String.Format("{0:00}",i);}
@@ -74,8 +74,8 @@ object r(){int i=0,n,t=(sbyte)b[j++];if(t<0)switch(t){case-1:return rb();case-4:
  case 17:Minute[]U=new Minute[n];for(;i<n;i++)U[i]=ru();return U;case 15:DateTime[]Z=new DateTime[n];for(;i<n;i++)Z[i]=rz();return Z;
  case 18:Second[]V=new Second[n];for(;i<n;i++)V[i]=rv();return V;case 19:TimeSpan[]T=new TimeSpan[n];for(;i<n;i++)T[i]=rt();return T;}return null;}
 void w(int i,object x){int n=nx(x)+8;B=new byte[n];B[0]=1;B[1]=(byte)i;J=4;w(n);w(x);s.Write(B,0,n);}
-public object k(){s.Read(b=new byte[8],0,8);a=b[0]==1;j=4;int i=0,m=ri()-8;b=new byte[m];
- for(;i<m;i+=j)j=s.Read(b,i,m-i);if(b[0]==128){j=1;throw new Exception(rs());}j=0;return r();}
+void read(byte[]b){int i=0,n=b.Length;for(;i<n;)i+=s.Read(b,i,n-i);}
+public object k(){read(b=new byte[8]);a=b[0]==1;j=4;read(b=new byte[ri()-8]);if(b[0]==128){j=1;throw new Exception(rs());}j=0;return r();}
 public object k(object x){w(1,x);return k();}
 public object k(string s){return k(cs(s));}char[]cs(string s){return s.ToCharArray();}
 public object k(string s,object x){object[]a={cs(s),x};return k(a);}
