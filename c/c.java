@@ -1,9 +1,4 @@
-//2005.11.15 read func
-//public socket s; c.s.setSoTimeout(..);
-//2005.10.26 fix Time(util.date) Date(util.date) constructors
-//2005.10.21 public datetime constructors
-//2005.09.07 block funcs
-//2005.07.27 readsynch+writesynch;redo date,time
+// http://kx.com/q/c/readme.txt
 import java.net.*;import java.io.*;import java.text.*;import java.lang.reflect.Array;
 public class c{public static void main(String[]args){ //s.setSoTimeout(ms);
 //java.util.TimeZone.setDefault(java.util.TimeZone.getTimeZone("GMT"));

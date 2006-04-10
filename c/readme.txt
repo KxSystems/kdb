@@ -1,6 +1,6 @@
 QDBC
 
-easy way to load and query q servers with java and c# clients.
+load and query q servers with java and c# clients.
 connect and execute.  (use q/c/c.java or q/c/c.cs)
 
 c c=new c("host",port);	// connect
@@ -28,7 +28,7 @@ c.k(".u.sub","trade",syms);	// subscribe
 while(1){Object r=c.k();..	// process incoming
 
 JDBC http://kx.com/q/c/jdbc.jar
-ODBC http://kx.com/q/c/odbc.exe (kdb+2.3 and later)
+ODBC http://kx.com/q/c/odbc.exe
 
 vb r=new adodb.recordset;r.Open "q)t", "DRIVER=kdb+;DBQ=localhost:5001"
 excel SQL.REQUEST("DRIVER=kdb+;DBQ=localhost:5001;",,,"q)t")
@@ -43,7 +43,6 @@ excelrtd:   http://www.skelton.de/slog/?p=2
 q clients:
 q)c:hopen`:host:port
 q)c("string"[;x[;y[;z]]])
-
 
 c clients are similar to java and c# clients.
 

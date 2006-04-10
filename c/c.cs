@@ -1,7 +1,4 @@
-// 2005.06.23 fix DT
-// 2005.04.26 s.Close()
-// 2005.03.09 readwrite 0Nd 0Nz
-// 2004.10.12 usr:pwd http://msdn.microsoft.com/library/default.asp?url=/library/en-us/cpguide/html/cpcontemplatefiles.asp
+// http://kx.com/q/c/readme.txt
 using System;using System.IO;using System.Net.Sockets; //csc c.cs  given >q trade.q -p 5001
 class c:TcpClient{public static void Main(string[]args){
  c c=new c("localhost",5001);c.ReceiveTimeout=1000;
