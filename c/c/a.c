@@ -6,7 +6,6 @@
 K f(K x){return ki(x->i+1);}  // q calls c
 K g(K x){return k(0,"1+",r1(x),0);} // c calls q
 
-
 /*
 f:`a 2:(`f;1)
 g:`a 2:(`g;1)

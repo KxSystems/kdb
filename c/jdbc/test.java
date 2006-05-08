@@ -14,5 +14,5 @@ public class test{public static void main(String args[]){
   ResultSet r = e.executeQuery("q)t"); // select * from t
   ResultSetMetaData m= r.getMetaData();int n=m.getColumnCount();
   for(int i=0;i<n;)System.out.println(m.getColumnName(++i));
- // while(r.next())for(int i=0;i<n;)System.out.println(r.getObject(++i));
+  while(r.next())for(int i=0;i<n;)System.out.println(r.getObject(++i));
   c.close();}catch(Exception e){System.out.println(e.getMessage());}}}

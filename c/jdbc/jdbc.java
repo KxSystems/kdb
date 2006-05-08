@@ -393,7 +393,10 @@ public class dm implements DatabaseMetaData{private co co;public dm(co x){co=x;}
  public ResultSet getTables(String a,String b,String t,String x[])throws SQLException{return co.ex(
   "raze{([]TABLE_CAT:`;TABLE_SCHEM:`;TABLE_NAME:system string`a`b x=`VIEW;TABLE_TYPE:x)}each",x);}
  public ResultSet getTypeInfo()throws SQLException{return co.ex(
-  "`DATA_TYPE xasc([]TYPE_NAME:`boolean`byte`short`int`long`real`float`symbol`date`time`timestamp;DATA_TYPE:16 -2 5 4 -5 7 8 12 91 92 93;PRECISION:11;LITERAL_PREFIX:`;LITERAL_SUFFIX:`;CREATE_PARAMS:`;NULLABLE:1h;CASE_SENSITIVE:1b;SEARCHABLE:1h;UNSIGNED_ATTRIBUTE:0b;FIXED_PREC_SCALE:0b;AUTO_INCREMENT:0b;LOCAL_TYPE_NAME:`;MINIMUM_SCALE:0h;MAXIMUM_SCALE:0h;SQL_DATA_TYPE:0;SQL_DATETIME_SUB:0;NUM_PREC_RADIX:10)");}
+  "`DATA_TYPE xasc([]TYPE_NAME:`boolean`byte`short`int`long`real`float`symbol`date`time`timestamp;
+  DATA_TYPE:16 -2 5 4 -5 7 8 12 91 92 93;PRECISION:11;LITERAL_PREFIX:`;LITERAL_SUFFIX:`;CREATE_PARAMS:`;
+  NULLABLE:1h;CASE_SENSITIVE:1b;SEARCHABLE:1h;UNSIGNED_ATTRIBUTE:0b;FIXED_PREC_SCALE:0b;AUTO_INCREMENT:0b;
+  LOCAL_TYPE_NAME:`;MINIMUM_SCALE:0h;MAXIMUM_SCALE:0h;SQL_DATA_TYPE:0;SQL_DATETIME_SUB:0;NUM_PREC_RADIX:10)");}
  public ResultSet getColumns(String a,String b,String t,String c)throws SQLException{if(t.startsWith("%"))t="";return co.ex(
   "select TABLE_CAT:`,TABLE_SCHEM:`,TABLE_NAME:n,COLUMN_NAME:c,DATA_TYPE:0,TYPE_NAME:t,COLUMN_SIZE:2000000000,BUFFER_LENGTH:0,DECIMAL_DIGITS:16,NUM_PREC_RADIX:10,NULLABLE:1,REMARKS:`,COLUMN_DEF:`,SQL_DATA_TYPE:0,SQL_DATETIME_SUB:0,CHAR_OCTET_LENGTH:2000000000,ORDINAL_POSITION:1+til count n,NULLABLE:`YES from .Q.nct`"+t);}
  public ResultSet getPrimaryKeys(String a,String b,String t)throws SQLException{q("pk");return co.ex(
@@ -576,7 +579,7 @@ class ar implements Array{
  public ResultSet getResultSet()throws SQLException{q();return null;}
  public ResultSet getResultSet(Map map)throws SQLException{q();return null;}
  public ResultSet getResultSet(long index,int count)throws SQLException{q();return null;}
- public ResultSet getResultSet(long index,int count, Map map)throws SQLException{q();return null;}}
+ public ResultSet getResultSet(long index,int count,Map map)throws SQLException{q();return null;}}
 class bl implements Blob{
  public long length()throws SQLException{q();return 0L;}
  public byte[]getBytes(long pos,int length)throws SQLException{q();return null;}

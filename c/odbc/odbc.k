@@ -14,7 +14,7 @@ fkeys:{$[#y:fkeys1[x]y;y[;&~x in t@&=':t:x@<x:y 1];y]}	/ singleton fkeys
 fkey:{[f;p;t](f;p)[;&(~t=p)&f in g@&~(_g:!+0!. t)in`id`name]}
 xfkey:{.Q.ft[{@[y;*x;{@[y$;x;x]};x 1]}[x]]y}
 skey:{$[@k:keys[x]y;k*(#+t)>k:#k;0+(x~?x:*+t)&0<#t]!t:.Q.id eval[x]"select * from ",q,t,q:(" "in t:$y)#"\""}
-load:{$[#*f:fkeys[x]'t;f;fkey[k[i;0];u i:&1=#:'k:.q.keys'u]'u]xfkey'(u:.Q.id't).[;();:;]'skey[x]'t:tables x:open x;close x}
+load:{$[#*f:fkeys[x]'t;f;fkey[k[i;0];u i:&1=#:'k:.q.keys'u]'u]xfkey'(u:.Q.id't).[;();:;]'skey[x]'t:tables x:open x;close x;}
 
 \
 \d .
@@ -29,6 +29,7 @@ e:.odbc.eval
 \
 
 unixODBC ftp://kalamazoolinux.org/pub/pdf/dbaccess.pdf
+need to be superuser
 
 you will need at least version 2.2.10 but even this one doesn't support 
 unnamed datasource (kdb+ file DSN)
