@@ -1920,10 +1920,10 @@ exit       \\
 <xmp>  `:f.txt 0:("abc";"defg")
 `:f.txt                   
 </xmp>
-<p>As in the Amend cases, the result is the file handle. New rows can be appended to an open text file in the same way as binary files.</p>
+<p>As in the Amend cases, the result is the file handle. New rows can be appended to an open text file by using the negative handle.</p>
 
 <xmp>  h:hopen `:f.txt
-  h "hijkl";     
+  (neg h)"hijkl";
   hclose h       
 </xmp>
 <p>The monadic primitive function read0 is used to read a text file.</p>
@@ -1932,7 +1932,7 @@ exit       \\
 ("abc";"defg";"hijkl")
 </xmp>
 <p><h5 id='Binary Files'>27.3 Binary Files</h5></p>
-<p>Binary files are managed in the same way as text files, using the verb 1: instead of 0:. From the Kdb+ point or view, binary files are lists of byte items. For example,</p>
+<p>Binary files are managed in the same way as text files, using the verb 1: instead of 0:. From the Kdb+ point of view, binary files are lists of byte items. For example,</p>
 
 <xmp>  `:f.bin 1: 0xabcdef
 `:f.bin              
@@ -1943,7 +1943,7 @@ exit       \\
   h 0x01020304; 
   close h       
 </xmp>
-<p>THe following reads the file.</p>
+<p>The following reads the file.</p>
 
 <xmp>  read1`:f.bin  
 0xabcdef01020304
