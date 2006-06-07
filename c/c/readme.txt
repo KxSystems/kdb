@@ -55,6 +55,11 @@ e.g. http://kx.com/q/c/c/c.c (requires gcc 3.0 or later)
  k(-c,"func|exp",..,(K)0); //asynch
  r=k(c,"func|exp",..,(K)0); //synch
  r=k(c,(K)0); // read incoming asynch
+e.g. tickerplant c client does:
+
+K x;
+ r0(k(c,".u.sub",ks("table"),ks(""),(K)0));
+ for(;x=k(c,(K)0);r0(x))process(x);
 
 must call khp before generating k data.
 args(up to 8) are decremented. must eventually do r0(r).
