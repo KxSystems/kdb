@@ -1,16 +1,16 @@
 <html><head><style>a{text-decoration:none}a:link{color:024C7E}a:visited{color:024C7E}a:active{color:958600}body{font:10pt verdana;text-align:justify}</style></head><body>Copyright &copy; <font color=024C7E><b>kx</b></font><font color=958600><b>.com</b></font>
 <h5>Abridged Q Language Manual</h5>
 <p>Arthur Whitney</p>
-<p><h5 id='Summary'>1 Summary</h5></p>
-<p>q is a general purpose programming language and an RDBMS: <a href='http://kx.com/q/d/kdb+.htm'>http://kx.com/q/d/kdb+.htm</a></p>
+<p><h5 id="Summary">1 Summary</h5></p>
+<p>q is a general purpose programming language and an RDBMS: <a href="http://kx.com/q/d/kdb+.htm">http://kx.com/q/d/kdb+.htm</a></p>
 <p>q has atoms, lists, dicts, tables and functions. It includes file, socket and webserver subsystems as well as a superset of sql with timeseries extensions. It is fast and expressive.</p>
 <p>[kdb+ is actually a platform for several languages. The bootstrap language is a compact form of q called k.]</p>
-<p><h5 id='Install and Run'>2 Install and Run</h5></p>
+<p><h5 id="Install and Run">2 Install and Run</h5></p>
 <p>Kdb+ installs in <code><nobr>$HOME/q (or $QHOME)</nobr></code> . The executable is <code><nobr>q</nobr></code> . Scripts are <code><nobr>*.q</nobr></code> .</p>
 
 <xmp>>q [script.q] [-p port]
 </xmp>
-<p><h5 id='System Options'>3 System Options</h5></p>
+<p><h5 id="System Options">3 System Options</h5></p>
 
 <xmp>>q [f] [-p p] [-s s] [-t t] [-T T] [-o o] [-u u] [-w w] [-r r] [-l]
  f load script (*.q), file or directory                            
@@ -31,14 +31,14 @@
 -c [23 79]   console x and y                   
 -C [36 2000] webbrowser x and y                
 </xmp>
-<p><h5 id='Atom and List'>4 Atom and List</h5></p>
+<p><h5 id="Atom and List">4 Atom and List</h5></p>
 
 <xmp>(boolean byte short int long real float char symbol month date datetime minute second time enum*)
 atom:(0b;0x00;0h;0;0j;0e;0.0;" ";`;2000.01m;2000.01.01;..T..;00:00;00:00:00;00:00:00.000;*)      
 list:(01b;0x00ff;2 3h;2 3;2 3j;2 3e;2 3.0;"ab";`a`b;..)  null:(0Nh;0N;0Nj;0Ne;0n;.0Nm..0Nt)      
 </xmp>
 <p>NB: there is no notation for singleton lists -- they must be built, e.g. <code><nobr>enlist"a"</nobr></code></p>
-<p><h5 id='Dict and Table'>5 Dict and Table</h5></p>
+<p><h5 id="Dict and Table">5 Dict and Table</h5></p>
 <p>Dictionaries are maps of lists to lists. A table is a list of similar dicts(records).</p>
 
 <xmp>d:`x`y!(`a;2)     / a dict is a map from a list to a list
@@ -46,7 +46,7 @@ f:(d;`x`y!(`b;3)) / a table is a list of dictionaries
 ([]x:`a`b;y:2 3)  / a column notation for the same table 
 </xmp>
 <p>A keyed table is a dict whose key and value are both tables.</p>
-<p><h5 id='Insert and Upsert'>6 Insert and Upsert</h5></p>
+<p><h5 id="Insert and Upsert">6 Insert and Upsert</h5></p>
 <p>To add records to a table:</p>
 
 <xmp>t,:u / u is a record(dict) or a table
@@ -64,7 +64,7 @@ K R!R(keyed table)
 upsert: K,:K (also K,:r K,:l K,:L K,:R)
 </xmp>
 <p>Column names have to line up. Amend and append promote to enum but otherwise types have to match.</p>
-<p><h5 id='Join'>7 Join</h5></p>
+<p><h5 id="Join">7 Join</h5></p>
 <p>In q we fully normalize - store least amount of data. i.e. joins are generally faster than reading denormalized data. Joins are functional (many-to-one) or dysfunctional. We can ignore the dysfunctional -- which leaves:</p>
 
 <xmp>joins: (left+inner)*(fkey+adhoc)*(equi+asof)
@@ -78,7 +78,7 @@ upsert: K,:K (also K,:r K,:l K,:L K,:R)
 <xmp>x lj y
 </xmp>
 <p>Fkey joins are 10 to 100 million per second (ram/cache). Adhoc joins are 4 to 40 million per second (ram/cache).</p>
-<p><h5 id='Adhoc Join'>8 Adhoc Join</h5></p>
+<p><h5 id="Adhoc Join">8 Adhoc Join</h5></p>
 
 <xmp>given: x:(..a..b..) y:([a;b]..)   
 </xmp>
@@ -94,7 +94,7 @@ upsert: K,:K (also K,:r K,:l K,:L K,:R)
 
 <xmp>select .. from x lj y
 </xmp>
-<p><h5 id='Asof Join'>9 Asof Join</h5></p>
+<p><h5 id="Asof Join">9 Asof Join</h5></p>
 <p>Given a table of changes</p>
 
 <xmp>map:`s#([cusip;date]sym)  / sorted by [cusip,date]
@@ -112,7 +112,7 @@ upsert: K,:K (also K,:r K,:l K,:L K,:R)
 
 <xmp>x lj map / leftjoin
 </xmp>
-<p>See <a href='http://kx.com/q/taq/adj.q'>http://kx.com/q/taq/adj.q</a> for applying corporate actions using asof joins. If the map isn't keyed, e.g.</p>
+<p>See <a href="http://kx.com/q/taq/adj.q">http://kx.com/q/taq/adj.q</a> for applying corporate actions using asof joins. If the map isn't keyed, e.g.</p>
 
 <xmp>quote:([]sym,time,..)
 </xmp>
@@ -124,8 +124,8 @@ upsert: K,:K (also K,:r K,:l K,:L K,:R)
 
 <xmp>aj[`sym`time;update time:time-1500 from trade;quote]
 </xmp>
-<p>brings in quotes as of 1500 milliseconds before the trade. See <a href='http://kx.com/q/taq/taq.q'>http://kx.com/q/taq/taq.q</a> for examples. In the two column case the first column should be either `p# or `g#. Realtime data is grouped(`g#) by sym and sorted by time. Historical data is `p# by sym for better disk access.</p>
-<p><h5 id='Union Join'>10 Union Join</h5></p>
+<p>brings in quotes as of 1500 milliseconds before the trade. See <a href="http://kx.com/q/taq/taq.q">http://kx.com/q/taq/taq.q</a> for examples. In the two column case the first column should be either `p# or `g#. Realtime data is grouped(`g#) by sym and sorted by time. Historical data is `p# by sym for better disk access.</p>
+<p><h5 id="Union Join">10 Union Join</h5></p>
 
 <xmp>x uj y
 </xmp>
@@ -134,7 +134,7 @@ upsert: K,:K (also K,:r K,:l K,:L K,:R)
 <xmp>x,y
 </xmp>
 <p>the result has the union of the columns filled with nulls where necessary.</p>
-<p><h5 id='Date and Time'>11 Date and Time</h5></p>
+<p><h5 id="Date and Time">11 Date and Time</h5></p>
 
 <xmp>z:.z.z / UTC (localtime is .z.Z)                          
 z.(year mm dd hh uu ss month date week minute second time)
@@ -146,14 +146,14 @@ second.(hh mm ss minute)
 </xmp>
 <p>Month, date, datetime, minute, second and time are types. Datetime, date and week units are days. </p>
 <p>Week is rolled to mondays, i.e. <code><nobr>2+7 xbar date-2</nobr></code> . Day of week is <code><nobr>date mod 7</nobr></code> . 0 is saturday. The rest are int fragments, e.g. <code><nobr>12=`hh$12:34:56</nobr></code> . Quarters can be handled as <code><nobr>3 xbar month</nobr></code> .</p>
-<p><h5 id='Type'>12 Type</h5></p>
+<p><h5 id="Type">12 Type</h5></p>
 
 <xmp>bghi..                / letters        
 1 4 5 6h..            / shorts         
 `boolean`byte`short.. / names          
 `sym`s`sp..           / user enum types
 </xmp>
-<p><h5 id='Cast'>13 Cast</h5></p>
+<p><h5 id="Cast">13 Cast</h5></p>
 
 <xmp>"I"$"23"  / use capital letter for data from string     
 "i"$23.4  / use small letter for data from data         
@@ -163,7 +163,7 @@ second.(hh mm ss minute)
 <xmp>`sym$`a / check referential integrity
 `sym?`a / append if necessary        
 </xmp>
-<p><h5 id='Functions'>14 Functions</h5></p>
+<p><h5 id="Functions">14 Functions</h5></p>
 <p>Functions are atomic (atom from atom), aggregate (atom from list), uniform (list from list) or other. </p>
 
 <xmp>atomic    not neg null string floor signum exp log sqrt abs                      
@@ -198,21 +198,22 @@ I cut L           / e.g. 0 2 cut 2 3 4
  cols`t  / fields                   
 </xmp>
 
-<xmp>S xkey`t / set keys          
-S xcol`t / set cols(preamble)
+<xmp>S xkey`t  / set keys                
+S xcol t  / rename cols(preamble)   
+S xcols t / rearrange cols(preamble)
 </xmp>
 
 <xmp>`f`g{xasc|xdesc}{t|`t|`:t}         
     {save|load}`[:../]t[.{csv|txt}]
 </xmp>
 <p>Functions execute left OF right, e.g. write <code><nobr>x*1+rate</nobr></code> instead of <code><nobr>x*(1+rate)</nobr></code> . Uniform functions preserve length. They include the atomic functions, integrals <code><nobr>(sums prds ..)</nobr></code> and derivatives <code><nobr>(deltas ratios ..)</nobr></code> . Q has no ambivalence so we must use <code><nobr>neg x (not -x)</nobr></code> .</p>
-<p><h5 id='Lambdas'>15 Lambdas</h5></p>
+<p><h5 id="Lambdas">15 Lambdas</h5></p>
 <p>Lambdas are compiled</p>
 
 <xmp>/ (bytecode;params(8);locals(24);globals(32)),Constants(96)
 value {[a;b]c:d:e+f+2+3}                                   
 </xmp>
-<p><h5 id='Rollups'>16 Rollups</h5></p>
+<p><h5 id="Rollups">16 Rollups</h5></p>
 
 <xmp>select last price by        time.minute from trade / 1 minute bars
 select last price by 5 xbar time.minute from trade / 5 minute bars
@@ -221,7 +222,7 @@ select last price by 5 xbar time.minute from trade / 5 minute bars
 <xmp>t:([]date:2000.01.01+til 9;size:til 9) / 2000.01.01 is saturday
 select last size by date.week from t   / monday week bars      
 </xmp>
-<p><h5 id='Programming'>17 Programming</h5></p>
+<p><h5 id="Programming">17 Programming</h5></p>
 
 <xmp>/ define                
 f:{[a;b] / parameters   
@@ -246,7 +247,7 @@ if[cond;'..]         / signal
 @[f;x;r]             / trap: f @ x  (return r on error)
 .[f;x;r]             / trap: f . x  (return r on error)
 </xmp>
-<p><h5 id='Parameters'>18 Parameters</h5></p>
+<p><h5 id="Parameters">18 Parameters</h5></p>
 <p>Functions can have queries and queries can have functions, e.g. given</p>
 
 <xmp>mid:{[t;s]exec .5*(bid+ask)time bin t from quote where sym=s}
@@ -256,7 +257,7 @@ if[cond;'..]         / signal
 <xmp>f:{[s]select sum price>mid[time;s]by date from trade where sym=s}
 </xmp>
 <p>will calculate how many times per day the trade price was higher than the midpoint for sym s.</p>
-<p><h5 id='Scripts'>19 Scripts</h5></p>
+<p><h5 id="Scripts">19 Scripts</h5></p>
 <p>Statements in scripts must be outdented, e.g.</p>
 
 <xmp>select ..
@@ -270,7 +271,7 @@ if[cond;'..]         / signal
  }      
 </xmp>
 <p>/ will comment out the rest of the line. \ will exit the script. Sections of script can be commented out with matching singleton / and \.</p>
-<p><h5 id='Debug'>20 Debug</h5></p>
+<p><h5 id="Debug">20 Debug</h5></p>
 <p>Develop code in an editor and run databases from a console with \l(load), cut and paste. When there is an error the following are displayed:</p>
 
 <xmp>[function]
@@ -284,12 +285,12 @@ arguments
 q)) '   / signal
 q)) :.. / return
 </xmp>
-<p><h5 id='Handles'>21 Handles</h5></p>
+<p><h5 id="Handles">21 Handles</h5></p>
 
 <xmp>`v set 2 / indirect assignment
    get`v                      
 </xmp>
-<p><h5 id='Files'>22 Files</h5></p>
+<p><h5 id="Files">22 Files</h5></p>
 <p>File handles are of the form `:PATH. Kdb+ files can be read and written just like any other variable, e.g.</p>
 
 <xmp>`:f set 2 
@@ -306,7 +307,7 @@ hclose h
 h ` sv("asdf";"qwer")
 hclose h             
 </xmp>
-<p><h5 id='Sockets'>23 Sockets</h5></p>
+<p><h5 id="Sockets">23 Sockets</h5></p>
 
 <xmp>h:hopen`:host:port                               
 h"f[2;3]"          / execute                     
@@ -319,28 +320,28 @@ hclose h           / close
 </xmp>
 <p>default system timeout is local(0) lan(.5ms solaris/5ms linux)</p>
 <p>NB: hclose and exit flush pending messages. to chase use: h"" </p>
-<p><h5 id='Adhoc Database'>24 Adhoc Database</h5></p>
+<p><h5 id="Adhoc Database">24 Adhoc Database</h5></p>
 
 <xmp>>q sp.q / loads script sp.q
 </xmp>
-<p><h5 id='Logging Database'>25 Logging Database</h5></p>
+<p><h5 id="Logging Database">25 Logging Database</h5></p>
 
 <xmp>>q d -l / loads [d.q and] [d.qdb and] [d.log]
 q)\l    / saves d.qdb and truncates d.log    
 </xmp>
-<p><h5 id='Nested Database'>26 Nested Database</h5></p>
+<p><h5 id="Nested Database">26 Nested Database</h5></p>
 
 <xmp>>q dir / loads [nested] directories.
 dir/{scripts|tables|{tables/fields}}
 </xmp>
 <p>Databases can be spread across a directory. A directory can have a number of tables and scripts (*.?). The scripts are loaded after all the tables are loaded. Functions should be put in <code><nobr>.util</nobr></code> etc.. Tables can be single files or spread across a directory. Keyed indicative tables must be single files. Big fact tables can be splayed across a directory.</p>
-<p><h5 id='Parallel Database'>27 Parallel Database</h5></p>
+<p><h5 id="Parallel Database">27 Parallel Database</h5></p>
 
 <xmp>>q dir / loads parallel database and sets partition variable. 
 dir/{..|{date|month|year|int}/{tables}/{fields}}              
 </xmp>
 <p>There is one partition variable <code><nobr>date|month|year|int</nobr></code>  and it is a virtual column in all the partition tables. There can be other <code><nobr>date</nobr></code> columns with different names. New partitions can be added -- then send reset"\\l ."</p>
-<p><h5 id='Loading Tables'>28 Loading Tables</h5></p>
+<p><h5 id="Loading Tables">28 Loading Tables</h5></p>
 
 <xmp>\cd SRC                        
 x is `file[,offset,length] or G
@@ -367,7 +368,7 @@ dd/mm/[yy]yy  with \z 1
 line: f 0:L:read0:f[,i,n] L:d 0:L:("*BXHIJEFCSMDZUVT ";[,]delim)0:{L|f[,i,n]}
 byte: f 1:G:read1:f[,i,n] G:w 1:L:("*bxhijefcsmdzuvt ";   width)1:{G|f[,i,n]}
 </xmp>
-<p><h5 id='Saving Tables'>29 Saving Tables</h5></p>
+<p><h5 id="Saving Tables">29 Saving Tables</h5></p>
 <p>Tables can be written as a single file or spread across a directory, e.g.</p>
 
 <xmp>`:trade  set x    / write as single file    
@@ -376,19 +377,19 @@ trade:get`:trade  / read
 trade:get`:trade/ / map columns on demand   
 </xmp>
 <p>Tables splayed across a directory must be fully enumerated(no varchar) and not keyed.</p>
-<p><h5 id='Load and Save'>30 Load and Save</h5></p>
+<p><h5 id="Load and Save">30 Load and Save</h5></p>
 
 <xmp>save`[:../]trade           / `:trade set trade
 load`[:../]trade           / trade:get `:trade
 save`[:../]trade.{txt|csv} / delimited text   
 </xmp>
 <p>Datetime txt and csv are written as: <code><nobr>yyyy-mm-dd hh:mm:ss.ddd</nobr></code></p>
-<p><h5 id='Exec'>31 Exec</h5></p>
+<p><h5 id="Exec">31 Exec</h5></p>
 
 <xmp>?[t;i;x]           / i(indices) x(parse tree expression)
 ?[sp;::;(last;`s)]                                      
 </xmp>
-<p><h5 id='Select and Update'>32 Select and Update</h5></p>
+<p><h5 id="Select and Update">32 Select and Update</h5></p>
 
 <xmp>?[t;c;b;a] /select
 ![t;c;b;a] /update
@@ -407,7 +408,7 @@ c list of constraints
 ."select a by b from t where c" is slower than ."?[t;c;b;a]"                    
 ?[t;c;b;a] allows you to manufacture the c, b and a.                            
 </xmp>
-<p><h5 id='Parse tree'>33 Parse tree</h5></p>
+<p><h5 id="Parse tree">33 Parse tree</h5></p>
 
 <xmp>(f;x;y) / ,`s for sym constant
 </xmp>
@@ -416,7 +417,7 @@ c list of constraints
 <xmp>x,3 parses to (,;`x;3)   
 x,`y parses to (,;`x;,`y)
 </xmp>
-<p><h5 id='Apply and Amend'>34 Apply and Amend</h5></p>
+<p><h5 id="Apply and Amend">34 Apply and Amend</h5></p>
 
 <xmp>@[x;y]
 .[x;y]
@@ -428,14 +429,14 @@ x,`y parses to (,;`x;,`y)
 
 <xmp>set is .[;();:;]
 </xmp>
-<p><h5 id='Operators'>35 Operators</h5></p>
+<p><h5 id="Operators">35 Operators</h5></p>
 <p>Operators take functions and produce derived functions.</p>
 
 <xmp>x f'y  / eachboth 
 x f/:y / eachright
 x f\:y / eachleft 
 </xmp>
-<p><h5 id='System Commands'>36 System Commands</h5></p>
+<p><h5 id="System Commands">36 System Commands</h5></p>
 
 <xmp>\w          workspace(used allocated max mapped)         
 \l [f]      load file (or dir:files splays parts scripts)
@@ -447,13 +448,13 @@ x f\:y / eachleft
 \oscommands                                              
 \\          exit                                         
 </xmp>
-<p><h5 id='System Variables'>37 System Variables</h5></p>
+<p><h5 id="System Variables">37 System Variables</h5></p>
 
 <xmp>.z. f(file) x(args) a(addr) h(host) u(user) w(who) zZ(gmt/local) k(releasedate)
 .z. pg[x](get) ps[x](set) po[h](open) pc[h](close) ph[x](http) ts[z](timer)    
 </xmp>
 <p>We can watch open/close with <code><nobr>.z.po:{0N!x} .z.pc:{0N!neg x}</nobr></code></p>
-<p><h5 id='Clients'>38 Clients</h5></p>
+<p><h5 id="Clients">38 Clients</h5></p>
 <p>Connect and make remote function calls, e.g.   (OS is s32|l32|w32)</p>
 
 <xmp>http://kx.com/q/c/c.java c c=new c("host",port);c.k(string|{func,args..});  
@@ -465,7 +466,7 @@ QHOME/OS>cl  ..\c\c.c c.lib
 </xmp>
 <p>No arguments is a blocking read, e.g. <code><nobr>Object r=c.k(); (or K r=k(c,0);)</nobr></code></p>
 <p>The language is q and location is `. no matter what the server console is doing.</p>
-<p><h5 id='Dynamic Load'>39 Dynamic Load</h5></p>
+<p><h5 id="Dynamic Load">39 Dynamic Load</h5></p>
 <p>q calls c, e.g. in QHOME/OS (see c/k.h for generators and accessors)</p>
 
 <xmp>>gcc -G ../c/a.c -o a.so    
@@ -482,7 +483,7 @@ QHOME/OS>cl  ..\c\c.c c.lib
 <xmp>sd1(d,f); / set callback f on socket d 
 sd0(d);   / remove callback and close d
 </xmp>
-<p><h5 id='Performance'>40 Performance</h5></p>
+<p><h5 id="Performance">40 Performance</h5></p>
 <p>Bottom line: vector operations are up to 100 times faster per element than scalar operations. Q scalars are similar to java Objects(Integer etc.) and .net boxed elements. Given 400MHZ 64bit bus and 1.6GHZ cpu - about .5 of fastest 2004 cpus - q operation overhead(incl. fn call,each, object create) is about 50 ns. Vector operations are between .5ns(boolean in cache) and 500ns(exp,random access) per element. So a time dominating iterative inner loop may be a candidate for writing in c.</p>
 <p>One technique for maintaining constant(or log) time insert and select is to store nested data, e.g.</p>
 
@@ -491,7 +492,7 @@ t,:select by sym from x
 last t[`IBM;`price]        
 </xmp>
 <p>We look for 10,000 to 100,000 inserts and selects per second.</p>
-<p><h5 id='Links'>41 Links</h5></p>
+<p><h5 id="Links">41 Links</h5></p>
 <p>Suppose f[s;t] calculates a link from table s to table t, e.g. previous quote, next quote, .. Then we can do:</p>
 
 <xmp>select t[f[s;t];`a],t[f[s;t];`b] from s
@@ -502,7 +503,7 @@ last t[`IBM;`price]
 select t.a,t.b from s       
 </xmp>
 <p>So having the link is generally better if it will be used more than once. A link can give us the performance(or better) of denormalization with minimal extra storage.</p>
-<p><h5 id='Attributes'>42 Attributes</h5></p>
+<p><h5 id="Attributes">42 Attributes</h5></p>
 
 <xmp>`s#2 2 3 sorted      0     bin 
 `u#2 4 5 unique      12*n  hash
