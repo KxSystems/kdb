@@ -505,12 +505,20 @@ select t.a,t.b from s
 <p>So having the link is generally better if it will be used more than once. A link can give us the performance(or better) of denormalization with minimal extra storage.</p>
 <p><h5 id="Attributes">42 Attributes</h5></p>
 
-<xmp>`s#2 2 3 sorted      0     bin 
-`u#2 4 5 unique      12*n  hash
-`p#2 2 1 partitioned u     hash
-`g#2 1 2 grouped     u+6*n hash
+<xmp>example          overhead            
+`s#2 2 3 sorted  0                   
+`u#2 4 5 unique  16*u                
+`p#2 2 1 parted  (4*u;16*u;4*u+1)    
+`g#2 1 2 grouped (4*u;16*u;4*u+1;4*n)
 </xmp>
-<p>The attribute flags are descriptive -- not prescriptive. Amends and appends preserve flags iff the attribute is preserved, e.g.</p>
+<p>The byte overheads use n(number of elements) and u(number of uniques). These are used by lookups, e.g.</p>
+
+<xmp>x?v                    
+.. where x = v, ..     
+.. where x in v, ..    
+.. where x within v, ..
+</xmp>
+<p>`u is for unique lists. `p and `g are for lists with a lot of repetition. `s#table marks the table to use binary search and marks first column sorted. `s#dict(incl. keyed tables) marks the dict to behave as step function. Vector and single-column table lookups run at about 200ns per lookup. 2 column lookups when the first column has an attribute are about 2us per lookup. Put the most distinguishing column first. The attribute flags are descriptive -- not prescriptive. Amends and appends preserve flags iff the attribute is preserved, e.g.</p>
 
 <xmp>t:([]a:`s#2 3;b:4 1)   
 t,:3 4 / `s#a preserved
