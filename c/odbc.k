@@ -1,4 +1,3 @@
-/ w32/l32/s32  2005.03.30 for kdb+ 2.2
 \d .odbc / h:open{`userdsn[`usr`pwd]|`*.{dsn|mdb|mdf|syb}|""|"DRIVER=...;DBQ=..."}
 h:();`open1`close1`eval1`fkeys1`keys`tables`views{.odbc[x]:`odbc 2:(`$(-"1"=*|$x)_$x;y)}'1 1 2 2 2 1 1;
 

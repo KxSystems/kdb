@@ -14,7 +14,12 @@ amd:([]sym:`HWP`CUZ`HWP;date:1996.06.30 2000.10.03 2000.10.30;adj:2 1.5 2)
 
 amd:update prds adj by mas from delete sym from update mas:sym^mas from amd lj msd
 amd:update adj%last adj by mas from([]date:0Nd;adj:1.0;distinct amd.mas),amd
-amd:`s#select by mas,date from amd;AMD:{1^dxy[amd;x;y]}  / adj from mas
+amd:`s#select by mas,date from amd;AMD:{1^dxy[amd;x;y]}  / adjustment
+
+s:100#`$read0`:tick/sp500.txt
+\t a:select sum size by sym,date,6 xbar time.minute from trade
+ where sym in s,time within 09:00 10:00
+\t b:select sum size%AMD[mas;date]by mas,minute from update mas:MSD[sym;date]from a
 
 \t mdaily:select mas,date,adj*high,adj*low,adj*price,size%adj from
  update adj:AMD[mas;date]from`mas xasc
@@ -24,7 +29,7 @@ amd:`s#select by mas,date from amd;AMD:{1^dxy[amd;x;y]}  / adj from mas
 ret:{[d;s]
  update AMD[mas;date]*price,size%AMD[mas;date]from
   select date,time,mas:MSD[sym;date],price,size from 
-   trade where date within d,sym in SMD[s;date]}
+   trade where date within d,sym in SMD[s;first date]}
 
 / examples
 .Q.view 2000.10.02 2003.09.10

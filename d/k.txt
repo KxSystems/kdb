@@ -17,8 +17,8 @@ you can watch open/close with .z.po:{0N!x} .z.pc:{0N!-x}
 Noun bxhijefcsmdzuvt*   null:(0N;0n)
 (bool byte short int long real float char sym month date datetime minute second time enum*)
 atom:(0b;0x00;0h;0;0j;0e;0.0;" ";`;2000.01m;2000.01.01;..T..;00:00;00:00:00;00:00:00.000;*)
-list:(01b;0x00ff;2 3h;2 3;2 3j;2 3e;2 3.0;"ab";`a`b;..)       date.(year month week mm dd) 
-dict:([`a`b]..) or `a`b!.. table:([]x:..;y:..) or +`x`y!..    time.(minute second hh mm ss)
+list:(01b;0x00ff;2 3h;2 3;2 3j;2 3e;2 3.0;"ab";`a`b;..)     date.(year month week mm dd) 
+dict:`a`b!.. table:([]x:..;y:..) or +`x`y!..                time.(minute second hh mm ss)
 
 Verb Infix       Prefix
 s:x  gets     :x idem
@@ -86,8 +86,8 @@ types
 98 table
 99 dict
 100 lambda
-101 unary prim
-102 binary prim
+101 unary primitive
+102 binary primitive
 103 ternary(operator)
 104 projection
 105 composition
