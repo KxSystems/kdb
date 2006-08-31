@@ -1,7 +1,9 @@
 / guess a reasonable loadstring for a csv file (kdb+ 2.3 or greater)
+/ 2006.08.30 add comment on how to save in generated script, allow short MM/DD/YY form rule 16 
+/ 2006.08.01 fix saveinfo 
 / 2006.01.28 put back maybe flag 
 / 2006.01.26 add load stats if -bl is used
-"kdb+csvguess 0.17 2006.01.28"
+"kdb+csvguess 0.19 2006.08.30"
 o:.Q.opt .z.x;if[1>count .Q.x;-2">q ",(string .z.f)," CSVFILE [-noheader|nh] [-discardempty|de] [-semicolon|sc] [-zaphdrs|zh] [-savescript|ss] [-saveinfo|si] [-exit]";exit 1]
 / -noheader|nh - the csv file doesn't have headers, so create some (c00..)
 / -discardempty|de - if a column is empty don't bother to load it 
@@ -27,7 +29,7 @@ SAVEINFO:any`saveinfo`si in key o
 EXIT:`exit in key o
 SYMMAXWIDTH:30 / max symbol width before we just give up and keep as * string
 SYMMAXGR:10 / max symbol granularity% before we give up and keep as a * string
-WIDTHHDR:5000 / initial width read to look for header record
+WIDTHHDR:25000 / initial width read to look for header record
 READLINES:2000 / approximate number of records to check
 FORCECHARWIDTH:30 / width beyond which we just set a column to be text and finished 
 @[.:;"\\l csvguess.custom.q";::]; / save your custom settings in csvguess.custom.q to override those set above
@@ -42,9 +44,9 @@ cancast:{nl:x$"";$[not nl in x$(11&count y)#y;$[11<count y;not nl in x$y;1b];0b]
 
 info:([]c:key flip as;v:value flip as);as:()
 if[NOHEADER;info:update c:{`$"c",string 1000+x}each i from info]
-zh0:{$[(count distinct r)=count r:`$"}"vs 1_x[where(x:raze"}",'string x)in"}",.Q.an];r;'`hdrs.not.distinct]} / remove junk chars and spaces, preserve case and underscore 
+zh0:{$[(count distinct r)=count r:`$"}"vs 1_x[where(x:raze"}",'{("_"=first x)_x}each string x)in"}",.Q.an];r;'`hdrs.not.distinct]} / remove junk chars, leading underscores and spaces, preserve case 
 info:update c:zh0 c from info
-zh1:{$[(count distinct r)=count r:`$"}"vs 1_x[where(x:raze"}",'string lower x)in"}",.Q.an except"_"];r;'`zaphdrs.not.distinct]} / lowercase and remove underscore
+zh1:{$[(count distinct r)=count r:`$"}"vs 1_x[where(x:raze"}",'string lower x)in"}",.Q.an except"_"];r;'`zaphdrs.not.distinct]} / lowercase and remove underscores
 if[ZAPHDRS;info:update c:zh1 c from info]
 info:update ci:i,t:"?",ipa:0b,mdot:0,mw:0,rule:0,gr:0,ndv:0,maybe:0b from info
 info:update ci:`s#ci from info
@@ -68,7 +70,7 @@ info:update t:"F",rule:12,maybe:0b from info where t="n",mdot<2,mw>1,{all x in".
 info:update t:"E",rule:13,maybe:0b from info where t="F",mw<8,cancast["E"]peach sdv / need to check for "1e40" etc
 info:update t:"M",rule:14,maybe:1b from info where t="E",mw=7,cancast["M"]peach sdv / 2005.06 
 info:update t:"M",rule:15,maybe:0b from info where t="n",mw=7,mdot=0,cancast["M"]peach sdv / 2005/06 2005-06
-info:update t:"D",rule:16,maybe:0b from info where t="n",mw=10,mdot in 0 2,cancast["D"]peach sdv / 2005.06.07 2005/06/07 2005-06-07
+info:update t:"D",rule:16,maybe:0b from info where t="n",mw in 8 10,mdot in 0 2,cancast["D"]peach sdv / 2005.06.07 2005/06/07 2005-06-07
 info:update t:"D",rule:17,maybe:1b from info where t="I",mw=8,cancast["D"]peach sdv / 20050607
 info:update t:"D",rule:18,maybe:0b from info where t="?",mw in 7 9 11,mdot in 0 2,cancast["D"]peach sdv / 29oct2005 29oct05 etc
 info:update t:"U",rule:19,maybe:0b from info where t="n",mw in 4 5,mdot=0,{all x like"*[0-9]:[0-5][0-9]"}peach sdv
@@ -126,6 +128,7 @@ savescript:{f:`$":",(string LOADNAME),".load.q";f 1:"";hs:neg hopen f;
 	hs"/ DATA:(); BULKLOAD LOADFILE / incremental load all to DATA";
 	hs"/ DATA:LOAD10 LOADFILE / only load the first 10 rows";
 	hs"/ DATA:LOAD LOADFILE / load all in one go";
+	hs"/ (` sv`:csvdb,LOADNAME,`)set .Q.en[`:csvdb] DATA / save as splayed database";
 	hclose neg hs;
 	f}
 if[SAVESCRIPT;savescript[]]
@@ -137,13 +140,13 @@ if[SAVESCRIPT;savescript[]]
 / gr - granularity% of unique values; dchar - distinct characters
 / info:getinfo[]; update multi:c in exec c from(select count i by c from info)where x>1 from `info
 INFOFILE:`$":",(lower first"."vs last"/"vs string .z.f),".info.csv"
-INFOFMTS:"SSICBIBBBI*"
+INFOFMTS:"SSICBIBBBIS"
 readinfo:{(INFOFMTS;enlist",")0:INFOFILE}
-saveinfo:{info:$[@[hcount;INFOFILE;0j];(INFOFMTS;enlist",")0:INFOFILE;()];
-	if[count info;info:delete from info where tbl=LOADNAME];
-	info,:select tbl:LOADNAME,c,ci,t,maybe,mw,j10,j12,ipa,gr,dchar from info;
+saveinfo:{savedinfo:$[@[hcount;INFOFILE;0j];(INFOFMTS;enlist",")0:INFOFILE;()];
+	if[count savedinfo;savedinfo:delete from savedinfo where tbl=LOADNAME];
+	savedinfo,:select tbl:LOADNAME,c,ci,t,maybe,mw,j10,j12,ipa,gr,`$dchar from info;
 	(`$(string INFOFILE),".load.q")1:"info:(",(-3!INFOFMTS),";enlist\",\")0:`$\"",(string INFOFILE),"\"\n";
-	INFOFILE 0:.h.cd`tbl`ci xasc info;}
+	INFOFILE 0:.h.cd`tbl`c xasc savedinfo}
 if[SAVEINFO;saveinfo[]]
 if[EXIT;exit 0]
 

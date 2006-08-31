@@ -13,6 +13,7 @@
 / .csv.data[file;info] - use the info from .csv.info to read the data
 / .csv.data10[file;info] - like .csv.data but only returns the first 10 rows
 / bulkload[file;info] - bulk loads file into table DATA (which must be already defined :: DATA:() )
+/ .csv.read[file]/read10[file] - for when you don't care about checking/tweaking the <info> before reading 
 
 \d .csv
 DELIM:","
@@ -25,6 +26,9 @@ DISCARDEMPTY:0b / completely ignore empty columns if true else set them to "C"
 
 cleanhdrs:{{$[ZAPHDRS;lower x except"_";x]}x where x in DELIM,.Q.an}
 cancast:{nl:x$"";$[not nl in x$(11&count y)#y;$[11<count y;not nl in x$y;1b];0b]}
+
+read:{[file]data[file;info[file]]}  
+read10:{[file]data10[file;info[file]]}  
 
 colhdrs:{[file]
 	`$DELIM vs cleanhdrs first read0(file;0;1+first where"\n"=read1(file;0;WIDTHHDR))}
@@ -59,7 +63,7 @@ info0:{[file;onlycols]
 	info:update t:"E",rule:13,maybe:0b from info where t="F",mw<8,.csv.cancast["E"]peach sdv; / need to check for "1e40" etc
 	info:update t:"M",rule:14,maybe:1b from info where t="E",mw=7,.csv.cancast["M"]peach sdv; / 2005.06 
 	info:update t:"M",rule:15,maybe:0b from info where t="n",mw=7,mdot=0,.csv.cancast["M"]peach sdv; / 2005/06 2005-06
-	info:update t:"D",rule:16,maybe:0b from info where t="n",mw=10,mdot in 0 2,.csv.cancast["D"]peach sdv; / 2005.06.07 2005/06/07 2005-06-07
+	info:update t:"D",rule:16,maybe:0b from info where t="n",mw in 8 10,mdot in 0 2,.csv.cancast["D"]peach sdv; / 2005.06.07 2005/06/07 2005-06-07
 	info:update t:"D",rule:17,maybe:1b from info where t="I",mw=8,.csv.cancast["D"]peach sdv; / 20050607  
 	info:update t:"D",rule:18,maybe:0b from info where t="?",mw in 7 9 11,mdot in 0 2,.csv.cancast["D"]peach sdv; / 29oct2005 29oct05 etc
 	info:update t:"U",rule:19,maybe:0b from info where t="n",mw in 4 5,mdot=0,{all x like"*[0-9]:[0-5][0-9]"}peach sdv;
