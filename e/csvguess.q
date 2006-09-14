@@ -4,7 +4,7 @@
 / 2006.08.01 fix saveinfo 
 / 2006.01.28 put back maybe flag 
 / 2006.01.26 add load stats if -bl is used
-"kdb+csvguess 0.23 2006.09.14"
+"kdb+csvguess 0.25 2006.09.14"
 o:.Q.opt .z.x;if[1>count .Q.x;-2">q ",(string .z.f)," CSVFILE [-noheader|nh] [-discardempty|de] [-semicolon|sc] [-zaphdrs|zh] [-savescript|ss] [-saveinfo|si] [-exit]";exit 1]
 / -noheader|nh - the csv file doesn't have headers, so create some (c00..)
 / -discardempty|de - if a column is empty don't bother to load it 
@@ -61,7 +61,7 @@ info:update t:"*",rule:2 from info where t="?",mw>FORCECHARWIDTH / long values
 info:update t:"C "[DISCARDEMPTY],rule:3 from info where t="?",mw=0 / empty columns
 info:update dchar:{asc distinct raze x}peach sdv from info where t="?"
 info:update mdot:{max sum each"."=x}peach sdv from info where t="?",{"."in x}each dchar
-info:update t:"n",rule:4 from info where t="?",{$[any x in"0123456789";all x in".:/-+eTE0123456789";0b]}each dchar / vaguely numeric..
+info:update t:"n",rule:4 from info where t="?",{$[any x in"0123456789";all x in".:/-+eTE0123456789 ";0b]}each dchar / vaguely numeric..
 info:update t:"I",rule:5,ipa:1b from info where t="n",mw within 7 15,mdot=3,{all x in".0123456789"}each dchar / ip-address
 info:update t:"J",rule:6 from info where t="n",mdot=0,{all x in"+-0123456789"}each dchar,cancast["J"]peach sdv
 info:update t:"I",rule:7 from info where t="J",mw<10
@@ -79,7 +79,7 @@ info:update t:"D",rule:18,maybe:0b from info where t="?",mw in 7 9 11,mdot in 0 
 info:update t:"U",rule:19,maybe:0b from info where t="n",mw in 4 5,mdot=0,{all x like"*[0-9]:[0-5][0-9]"}peach sdv
 info:update t:"T",rule:20,maybe:0b from info where t="n",mw within 7 12,mdot<2,{all x like"*[0-9]:[0-5][0-9]:[0-5][0-9]*"}peach sdv
 info:update t:"V",rule:21,maybe:0b from info where t="T",mw in 7 8,mdot=0
-info:update t:"Z",rule:22,maybe:0b from info where t="n",mw=23,mdot=3,{$[all x in"0123456789.:T";all".:T"in x;0b]}each dchar,cancast["Z"]peach sdv
+info:update t:"Z",rule:22,maybe:0b from info where t="n",mw within 19 23,mdot<4,{$[all x in"0123456789.:T- ";2<sum".:T -"in x;0b]}each dchar,cancast["Z"]peach sdv
 info:update t:"?",rule:23,maybe:0b from info where t="n" / reset remaining maybe numeric
 info:update t:"C",rule:24,maybe:0b from info where t="?",mw=1 / char
 info:update t:"B",rule:25,maybe:0b from info where t in"?IHC",mw=1,mdot=0,{$[all x in" 01tTfFyYnN";(any" 0fFnN"in x)and any"1tTyY"in x;0b]}each dchar / boolean

@@ -51,16 +51,14 @@ info0:{[file;onlycols]
 	info:update t:"C "[.csv.DISCARDEMPTY],rule:3 from info where t="?",mw=0; / empty columns
 	info:update dchar:{asc distinct raze x}peach sdv from info where t="?";
 	info:update mdot:{max sum each"."=x}peach sdv from info where t="?",{"."in x}each dchar;
-	info:update t:"n",rule:4 from info where t="?",{$[any x in"0123456789";all x in".:/-+eTE0123456789";0b]}each dchar; / vaguely numeric..
+	info:update t:"n",rule:4 from info where t="?",{$[any x in"0123456789";all x in".:/-+eTE0123456789 ";0b]}each dchar; / vaguely numeric..
 	info:update t:"I",rule:5,ipa:1b from info where t="n",mw within 7 15,mdot=3,{all x in".0123456789"}each dchar; / ip-address
 	info:update t:"J",rule:6 from info where t="n",mdot=0,{all x in"+-0123456789"}each dchar,.csv.cancast["J"]peach sdv;
 	info:update t:"I",rule:7 from info where t="J",mw<10;
     info:update t:"H",rule:8 from info where t="I",mw<5;
 	info:update t:"M",rule:9,maybe:1b from info where t="I",mw=6,.csv.cancast["M"]peach sdv; / 200506, YYYYMM is less likely than [H]HMMSS so do that first 
-	/info:update t:"V",rule:10,maybe:1b from info where t="I",mw in 5 6,.csv.cancast["V"]peach sdv; / 235959 12345        
-	info:update t:"V",rule:10,maybe:1b from info where t="I",mw in 5 6,7<count each dchar,{all x like"*[0-9][0-5][0-9][0-5][0-9]"}peach sdv / 235959 12345 
-	/info:update t:"U",rule:11,maybe:1b from info where t="H",mw in 3 4,.csv.cancast["U"]peach sdv; /2359
-	info:update t:"U",rule:11,maybe:1b from info where t="H",mw in 3 4,7<count each dchar,{all x like"*[0-9][0-5][0-9]"}peach sdv /2359                
+	info:update t:"V",rule:10,maybe:1b from info where t="I",mw in 5 6,7<count each dchar,{all x like"*[0-9][0-5][0-9][0-5][0-9]"}peach sdv; / 235959 12345 
+	info:update t:"U",rule:11,maybe:1b from info where t="H",mw in 3 4,7<count each dchar,{all x like"*[0-9][0-5][0-9]"}peach sdv; /2359                
 	info:update t:"F",rule:12,maybe:0b from info where t="n",mdot<2,mw>1,{all x in".+-eE0123456789"}each dchar,.csv.cancast["F"]peach sdv;
 	info:update t:"E",rule:13,maybe:0b from info where t="F",mw<8,.csv.cancast["E"]peach sdv; / need to check for "1e40" etc
 	info:update t:"M",rule:14,maybe:1b from info where t="E",mw=7,.csv.cancast["M"]peach sdv; / 2005.06 
@@ -71,7 +69,7 @@ info0:{[file;onlycols]
 	info:update t:"U",rule:19,maybe:0b from info where t="n",mw in 4 5,mdot=0,{all x like"*[0-9]:[0-5][0-9]"}peach sdv;
 	info:update t:"T",rule:20,maybe:0b from info where t="n",mw within 7 12,mdot<2,{all x like"*[0-9]:[0-5][0-9]:[0-5][0-9]*"}peach sdv;
 	info:update t:"V",rule:21,maybe:0b from info where t="T",mw in 7 8,mdot=0;
-	info:update t:"Z",rule:22,maybe:0b from info where t="n",mw=23,mdot=3,{$[all x in"0123456789.:T";all".:T"in x;0b]}each dchar,.csv.cancast["Z"]peach sdv;
+	info:update t:"Z",rule:22,maybe:0b from info where t="n",mw within 19 23,mdot<4,{$[all x in"0123456789.:T- ";2<sum".:T -"in x;0b]}each dchar,.csv.cancast["Z"]peach sdv;
 	info:update t:"?",rule:23,maybe:0b from info where t="n"; / reset remaining maybe numeric
 	info:update t:"C",rule:24,maybe:0b from info where t="?",mw=1; / char
 	info:update t:"B",rule:25,maybe:0b from info where t in"?IHC",mw=1,mdot=0,{$[all x in" 01tTfFyYnN";(any" 0fFnN"in x)and any"1tTyY"in x;0b]}each dchar; / boolean
