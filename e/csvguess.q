@@ -67,10 +67,8 @@ info:update t:"J",rule:6 from info where t="n",mdot=0,{all x in"+-0123456789"}ea
 info:update t:"I",rule:7 from info where t="J",mw<10
 info:update t:"H",rule:8 from info where t="I",mw<5
 info:update t:"M",rule:9,maybe:1b from info where t="I",mw=6,cancast["M"]peach sdv / 200506, YYYYMM is less likely than [H]HMMSS so do that first 
-/info:update t:"V",rule:10,maybe:1b from info where t="I",mw in 5 6,cancast["V"]peach sdv / 235959 12345        
-info:update t:"V",rule:10,maybe:1b from info where t="I",mw in 5 6,7<count dchar,{all x like"*[0-9][0-5][0-9][0-5][0-9]"}peach sdv / 235959 12345        
-/info:update t:"U",rule:11,maybe:1b from info where t="H",mw in 3 4,cancast["U"]peach sdv /2359
-info:update t:"U",rule:11,maybe:1b from info where t="H",mw in 3 4,7<count dchar,{all x like"*[0-9][0-5][0-9]"}peach sdv /2359
+info:update t:"V",rule:10,maybe:1b from info where t="I",mw in 5 6,7<count each dchar,{all x like"*[0-9][0-5][0-9][0-5][0-9]"}peach sdv / 235959 12345        
+info:update t:"U",rule:11,maybe:1b from info where t="H",mw in 3 4,7<count each dchar,{all x like"*[0-9][0-5][0-9]"}peach sdv /2359
 info:update t:"F",rule:12,maybe:0b from info where t="n",mdot<2,mw>1,{all x in".+-eE0123456789"}each dchar,cancast["F"]peach sdv
 info:update t:"E",rule:13,maybe:0b from info where t="F",mw<8,cancast["E"]peach sdv / need to check for "1e40" etc
 info:update t:"M",rule:14,maybe:1b from info where t="E",mw=7,cancast["M"]peach sdv / 2005.06 
