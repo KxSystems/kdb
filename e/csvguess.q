@@ -1,9 +1,10 @@
 / guess a reasonable loadstring for a csv file (kdb+ 2.3 or greater)
+/ 2006.09.14 add incremental save option
 / 2006.08.30 add comment on how to save in generated script, allow short MM/DD/YY form rule 16 
 / 2006.08.01 fix saveinfo 
 / 2006.01.28 put back maybe flag 
 / 2006.01.26 add load stats if -bl is used
-"kdb+csvguess 0.19 2006.08.30"
+"kdb+csvguess 0.23 2006.09.14"
 o:.Q.opt .z.x;if[1>count .Q.x;-2">q ",(string .z.f)," CSVFILE [-noheader|nh] [-discardempty|de] [-semicolon|sc] [-zaphdrs|zh] [-savescript|ss] [-saveinfo|si] [-exit]";exit 1]
 / -noheader|nh - the csv file doesn't have headers, so create some (c00..)
 / -discardempty|de - if a column is empty don't bother to load it 
@@ -32,6 +33,8 @@ SYMMAXGR:10 / max symbol granularity% before we give up and keep as a * string
 WIDTHHDR:25000 / initial width read to look for header record
 READLINES:2000 / approximate number of records to check
 FORCECHARWIDTH:30 / width beyond which we just set a column to be text and finished 
+CHUNKSIZE:25000000 / chunksize read when bulk load/save
+SAVEDB:`:csvdb
 @[.:;"\\l csvguess.custom.q";::]; / save your custom settings in csvguess.custom.q to override those set above
 
 if[0=hcount LOADFILE;-2"empty file: ",first .Q.x;exit 1]
@@ -64,13 +67,15 @@ info:update t:"J",rule:6 from info where t="n",mdot=0,{all x in"+-0123456789"}ea
 info:update t:"I",rule:7 from info where t="J",mw<10
 info:update t:"H",rule:8 from info where t="I",mw<5
 info:update t:"M",rule:9,maybe:1b from info where t="I",mw=6,cancast["M"]peach sdv / 200506, YYYYMM is less likely than [H]HMMSS so do that first 
-info:update t:"V",rule:10,maybe:1b from info where t="I",mw in 5 6,cancast["V"]peach sdv / 235959 12345        
-info:update t:"U",rule:11,maybe:1b from info where t="H",mw in 3 4,cancast["U"]peach sdv /2359
+/info:update t:"V",rule:10,maybe:1b from info where t="I",mw in 5 6,cancast["V"]peach sdv / 235959 12345        
+info:update t:"V",rule:10,maybe:1b from info where t="I",mw in 5 6,7<count dchar,{all x like"*[0-9][0-5][0-9][0-5][0-9]"}peach sdv / 235959 12345        
+/info:update t:"U",rule:11,maybe:1b from info where t="H",mw in 3 4,cancast["U"]peach sdv /2359
+info:update t:"U",rule:11,maybe:1b from info where t="H",mw in 3 4,7<count dchar,{all x like"*[0-9][0-5][0-9]"}peach sdv /2359
 info:update t:"F",rule:12,maybe:0b from info where t="n",mdot<2,mw>1,{all x in".+-eE0123456789"}each dchar,cancast["F"]peach sdv
 info:update t:"E",rule:13,maybe:0b from info where t="F",mw<8,cancast["E"]peach sdv / need to check for "1e40" etc
 info:update t:"M",rule:14,maybe:1b from info where t="E",mw=7,cancast["M"]peach sdv / 2005.06 
 info:update t:"M",rule:15,maybe:0b from info where t="n",mw=7,mdot=0,cancast["M"]peach sdv / 2005/06 2005-06
-info:update t:"D",rule:16,maybe:0b from info where t="n",mw in 8 10,mdot in 0 2,cancast["D"]peach sdv / 2005.06.07 2005/06/07 2005-06-07
+info:update t:"D",rule:16,maybe:0b from info where t="n",mw in 6 7 8 10,mdot in 0 2,cancast["D"]peach sdv / 2005.06.07 2005/06/07 2005-06-07
 info:update t:"D",rule:17,maybe:1b from info where t="I",mw=8,cancast["D"]peach sdv / 20050607
 info:update t:"D",rule:18,maybe:0b from info where t="?",mw in 7 9 11,mdot in 0 2,cancast["D"]peach sdv / 29oct2005 29oct05 etc
 info:update t:"U",rule:19,maybe:0b from info where t="n",mw in 4 5,mdot=0,{all x like"*[0-9]:[0-5][0-9]"}peach sdv
@@ -95,7 +100,7 @@ info:select c,ci,t,maybe,j10,j12,ipa,mw,mdot,rule,gr,ndv,dchar from info
 / update t:"*" from `st where t="S" / load all char as strings, no need to enumerate before save
 / run savescript[] when results are correct
 
-LOADNAME:`${x[where x in .Q.an]}lower first"."vs last"/"vs 1_string LOADFILE
+LOADNAME:`${x where((first x)in .Q.a),1_ x in .Q.an}lower first"."vs last"/"vs 1_string LOADFILE
 LOADFMTS::raze exec t from `ci xasc select ci,t from info
 LOADHDRS::exec c from `ci xasc select ci,c from info where not t=" "
 LOADDEFN:{(LOADFMTS;$[NOHEADER;DELIM;enlist DELIM])}
@@ -104,7 +109,9 @@ LOAD:{[file] $[NOHEADER;flip LOADHDRS!LOADDEFN[]0:;LOADHDRS xcol LOADDEFN[]0:]fi
 /(10#DATA):LOAD10 LOADFILE / load just the first 10 rows, convenient when debugging column types
 LOAD10:{[file] LOAD(file;0;1+last(11-NOHEADER)#where"\n"=read1(file;0;20000))}
 DATA:() / delete from `DATA
-BULKLOAD:{[file] .Q.fs[{`DATA insert $[NOHEADER or count DATA;flip LOADHDRS!(LOADFMTS;DELIM)0:x;LOADHDRS xcol LOADDEFN[]0: x]}file];count DATA}
+k)fs2:{[f;s]((-7!s)>){[f;s;x]i:1+last@&"\n"=r:1:(s;x;CHUNKSIZE);f@`\:i#r;x+i}[f;s]/0j} / .Q.fs with bigger chunks
+BULKLOAD:{[file] fs2[{`DATA insert $[NOHEADER or count DATA;flip LOADHDRS!(LOADFMTS;DELIM)0:x;LOADHDRS xcol LOADDEFN[]0: x]}file];count DATA}
+BULKSAVE:{[file] .tmp.bsc:0;fs2[{.[` sv SAVEDB,LOADNAME,`;();,;]t:.Q.en[SAVEDB]$[NOHEADER or .tmp.bsc;flip LOADHDRS!(LOADFMTS;DELIM)0:x;LOADHDRS xcol LOADDEFN[]0: x];.tmp.bsc+:count t}]file;.tmp.bsc}
 
 / create a standalone load script - savescript[]
 / call it with:
@@ -112,23 +119,35 @@ BULKLOAD:{[file] .Q.fs[{`DATA insert $[NOHEADER or count DATA;flip LOADHDRS!(LOA
 /	q xxx.q FILENAME  / to define the global FILE as <FILENAME>
 /	q xxx.q FILENAME -bl / to bulkload FILENAME to DATA
 /	q xxx.q -bl / to bulkload original filename (LOADFILE) to DATA
+/   q xxx.q -bs / to bulksave original filename to directory SAVEDB
+/   q xxx.q -bs -savedb foo / to bulksave original filename to directory foo
+/   q xxx.q FILENAME -bs -savedb foo / to bulksave FILENAME to directory foo
+/   q xxx.q ... -exit / exit on completion of commands (only makes sense with -bs)
 savescript:{f:`$":",(string LOADNAME),".load.q";f 1:"";hs:neg hopen f;
 	hs"/ ",(string .z.z)," ",(string .z.h)," ",(string .z.u);
-	hs"/ q ",(string LOADNAME),".load.q FILE [-bl|bulkload]";
+	hs"/ q ",(string LOADNAME),".load.q FILE [-bl|bulkload] [-bs|bulksave] [-exit] [-savedb SAVEDB]";
 	hs"/ q ",(string LOADNAME),".load.q FILE";
 	hs"/ q ",(string LOADNAME),".load.q";
 	hs"FILE:LOADFILE:`$\"",(string LOADFILE),"\"";
 	hs"o:.Q.opt .z.x;if[count .Q.x;FILE:hsym`${x[where\"\\\\\"=x]:\"/\";x}first .Q.x]";
+	hs"SAVEDB:",-3!SAVEDB;
+	hs"if[`savedb in key o;if[count first o[`savedb];SAVEDB:hsym`$first o[`savedb]]]";
 	hs"NOHEADER:",-3!NOHEADER;hs"DELIM:",-3!DELIM;
 	hs"\\z ",(string system"z")," / D date format 0 => mm/dd/yyyy or 1 => dd/mm/yyyy (yyyy.mm.dd is always ok)";
 	hs"LOADNAME:",-3!LOADNAME;hs"LOADFMTS:\"",LOADFMTS,"\"";hs"LOADHDRS:",raze"`",'string LOADHDRS;
 	hs"LOADDEFN:",-3!LOADDEFN;hs"LOAD:",-3!LOAD;hs"LOAD10:",(-3!LOAD10)," / just load first 10 records";
-	hs"BULKLOAD:",-3!BULKLOAD;hs"DATA:()";
-	hs"if[any`bl`bulkload in key o;-1(string`second$.z.z),\" loading \",1_string FILE;.tmp.st:`time$.z.z;BULKLOAD FILE;.tmp.et:`time$.z.z;.tmp.rc:count DATA;.tmp.fs:hcount FILE;-1(string`second$.z.z),\" done (\",(string .tmp.rc),\" records; \",(string floor .tmp.rc%1e-3*.tmp.et-.tmp.st),\" records/sec; \",(string floor 0.5+.tmp.fs%1e3*.tmp.et-.tmp.st),\" MB/sec)\"]";
+	hs"CHUNKSIZE:",string CHUNKSIZE;hs"DATA:()";
+	hs"k)fs2:",2_ last value fs2;
+	hs"BULKLOAD:",-3!BULKLOAD;
+	hs"BULKSAVE:",-3!BULKSAVE;
+	hs"if[any`bs`bulksave in key o;-1(string`second$.z.z),\" saving \",(1_string FILE),\" to directory \",1_string` sv SAVEDB,LOADNAME;.tmp.st:`time$.z.z;.tmp.rc:BULKSAVE FILE;.tmp.et:`time$.z.z;.tmp.fs:hcount FILE;-1(string`second$.z.z),\" done (\",(string .tmp.rc),\" records; \",(string floor .tmp.rc%1e-3*.tmp.et-.tmp.st),\" records/sec; \",(string floor 0.5+.tmp.fs%1e3*.tmp.et-.tmp.st),\" MB/sec)\"]";
+	hs"if[any`bl`bulkload in key o;-1(string`second$.z.z),\" loading \",(1_string FILE),\" to variable DATA\";.tmp.st:`time$.z.z;BULKLOAD FILE;.tmp.et:`time$.z.z;.tmp.rc:count DATA;.tmp.fs:hcount FILE;-1(string`second$.z.z),\" done (\",(string .tmp.rc),\" records; \",(string floor .tmp.rc%1e-3*.tmp.et-.tmp.st),\" records/sec; \",(string floor 0.5+.tmp.fs%1e3*.tmp.et-.tmp.st),\" MB/sec)\"]";
+	hs"if[`exit in key o;exit 0]";
 	hs"/ DATA:(); BULKLOAD LOADFILE / incremental load all to DATA";
+	hs"/ BULKSAVE LOADFILE / incremental save all to SAVEDB";
 	hs"/ DATA:LOAD10 LOADFILE / only load the first 10 rows";
 	hs"/ DATA:LOAD LOADFILE / load all in one go";
-	hs"/ (` sv`:csvdb,LOADNAME,`)set .Q.en[`:csvdb] DATA / save as splayed database";
+	hs"/ (` sv SAVEDB,LOADNAME,`)set .Q.en[SAVEDB] DATA / save as splayed database";
 	hclose neg hs;
 	f}
 if[SAVESCRIPT;savescript[]]
