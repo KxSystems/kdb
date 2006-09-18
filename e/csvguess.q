@@ -1,10 +1,11 @@
 / guess a reasonable loadstring for a csv file (kdb+ 2.3 or greater)
+/ 2006.09.17 PRESAVE,POSTLOAD, add saveptn  
 / 2006.09.14 add incremental save option
 / 2006.08.30 add comment on how to save in generated script, allow short MM/DD/YY form rule 16 
 / 2006.08.01 fix saveinfo 
 / 2006.01.28 put back maybe flag 
 / 2006.01.26 add load stats if -bl is used
-"kdb+csvguess 0.25 2006.09.14"
+"kdb+csvguess 0.26 2006.09.17"
 o:.Q.opt .z.x;if[1>count .Q.x;-2">q ",(string .z.f)," CSVFILE [-noheader|nh] [-discardempty|de] [-semicolon|sc] [-zaphdrs|zh] [-savescript|ss] [-saveinfo|si] [-exit]";exit 1]
 / -noheader|nh - the csv file doesn't have headers, so create some (c00..)
 / -discardempty|de - if a column is empty don't bother to load it 
@@ -34,7 +35,10 @@ WIDTHHDR:25000 / initial width read to look for header record
 READLINES:2000 / approximate number of records to check
 FORCECHARWIDTH:30 / width beyond which we just set a column to be text and finished 
 CHUNKSIZE:25000000 / chunksize read when bulk load/save
-SAVEDB:`:csvdb
+SAVEDB:`:csvdb / database top level, where things like `:sym live
+SAVEPTN:() / individual partition, 2006.12.25 frinstance; () => none
+PRESAVE:{x} / function to be run before each incremental save (delete date field?) 
+POSTLOAD:{x} / function to be run after each incremental load from file
 @[.:;"\\l csvguess.custom.q";::]; / save your custom settings in csvguess.custom.q to override those set above
 
 if[0=hcount LOADFILE;-2"empty file: ",first .Q.x;exit 1]
@@ -87,6 +91,8 @@ info:update t:"X",rule:26,maybe:0b from info where t="?",mw=2,{$[all x in"012345
 info:update t:"S",rule:27,maybe:1b from info where t="?",mw<SYMMAXWIDTH,mw>1,gr<SYMMAXGR / symbols (max width permitting)
 info:update t:"*",rule:28,maybe:0b from info where t="?" / the rest as strings
 / flag those S/* columns which could be encoded to integers (.Q.j10/x10/j12/x12) to avoid symbols
+info:update maybe:1b from info where mw>4,not t="D",(lower c)like"*date*"
+info:update maybe:1b from info where mw>1,not t in"TUV",(lower c)like"*time*"
 info:update j10:0b,j12:0b from info
 info:update j12:1b from info where t in"S*",mw<13,{all x in .Q.nA}each dchar
 info:update j10:1b from info where t in"S*",mw<11,{all x in .Q.b6}each dchar 
@@ -103,13 +109,14 @@ LOADFMTS::raze exec t from `ci xasc select ci,t from info
 LOADHDRS::exec c from `ci xasc select ci,c from info where not t=" "
 LOADDEFN:{(LOADFMTS;$[NOHEADER;DELIM;enlist DELIM])}
 /DATA:LOAD LOADFILE / for files loadable in one go
-LOAD:{[file] $[NOHEADER;flip LOADHDRS!LOADDEFN[]0:;LOADHDRS xcol LOADDEFN[]0:]file}
+LOAD:{[file] POSTLOAD$[NOHEADER;flip LOADHDRS!LOADDEFN[]0:;LOADHDRS xcol LOADDEFN[]0:]file}
 /(10#DATA):LOAD10 LOADFILE / load just the first 10 rows, convenient when debugging column types
 LOAD10:{[file] LOAD(file;0;1+last(11-NOHEADER)#where"\n"=read1(file;0;20000))}
+SAVE:{(` sv SAVEDB,SAVEPTN,LOADNAME,`)set PRESAVE .Q.en[SAVEDB] x}
 DATA:() / delete from `DATA
 k)fs2:{[f;s]((-7!s)>){[f;s;x]i:1+last@&"\n"=r:1:(s;x;CHUNKSIZE);f@`\:i#r;x+i}[f;s]/0j} / .Q.fs with bigger chunks
-BULKLOAD:{[file] fs2[{`DATA insert $[NOHEADER or count DATA;flip LOADHDRS!(LOADFMTS;DELIM)0:x;LOADHDRS xcol LOADDEFN[]0: x]}file];count DATA}
-BULKSAVE:{[file] .tmp.bsc:0;fs2[{.[` sv SAVEDB,LOADNAME,`;();,;]t:.Q.en[SAVEDB]$[NOHEADER or .tmp.bsc;flip LOADHDRS!(LOADFMTS;DELIM)0:x;LOADHDRS xcol LOADDEFN[]0: x];.tmp.bsc+:count t}]file;.tmp.bsc}
+BULKLOAD:{[file] fs2[{`DATA insert POSTLOAD$[NOHEADER or count DATA;flip LOADHDRS!(LOADFMTS;DELIM)0:x;LOADHDRS xcol LOADDEFN[]0: x]}file];count DATA}
+BULKSAVE:{[file] .tmp.bsc:0;fs2[{.[` sv SAVEDB,SAVEPTN,LOADNAME,`;();,;]PRESAVE t:.Q.en[SAVEDB]POSTLOAD$[NOHEADER or .tmp.bsc;flip LOADHDRS!(LOADFMTS;DELIM)0:x;LOADHDRS xcol LOADDEFN[]0: x];.tmp.bsc+:count t}]file;.tmp.bsc}
 
 / create a standalone load script - savescript[]
 / call it with:
@@ -120,35 +127,35 @@ BULKSAVE:{[file] .tmp.bsc:0;fs2[{.[` sv SAVEDB,LOADNAME,`;();,;]t:.Q.en[SAVEDB]$
 /   q xxx.q -bs / to bulksave original filename to directory SAVEDB
 /   q xxx.q -bs -savedb foo / to bulksave original filename to directory foo
 /   q xxx.q FILENAME -bs -savedb foo / to bulksave FILENAME to directory foo
+/   q xxx.q FILENAME -bs -savedb foo -saveptn 2006.12.25 / to bulksave FILENAME to directory foo in the 2006.12.25 date partition
 /   q xxx.q ... -exit / exit on completion of commands (only makes sense with -bs)
 savescript:{f:`$":",(string LOADNAME),".load.q";f 1:"";hs:neg hopen f;
 	hs"/ ",(string .z.z)," ",(string .z.h)," ",(string .z.u);
-	hs"/ q ",(string LOADNAME),".load.q FILE [-bl|bulkload] [-bs|bulksave] [-exit] [-savedb SAVEDB]";
+	hs"/ q ",(string LOADNAME),".load.q FILE [-bl|bulkload] [-bs|bulksave] [-exit] [-savedb SAVEDB] [-saveptn SAVEPTN] ";
 	hs"/ q ",(string LOADNAME),".load.q FILE";
 	hs"/ q ",(string LOADNAME),".load.q";
 	hs"FILE:LOADFILE:`$\"",(string LOADFILE),"\"";
 	hs"o:.Q.opt .z.x;if[count .Q.x;FILE:hsym`${x[where\"\\\\\"=x]:\"/\";x}first .Q.x]";
-	hs"SAVEDB:",-3!SAVEDB;
+	hs"SAVEDB:",-3!SAVEDB;hs"SAVEPTN:",-3!SAVEPTN;
 	hs"if[`savedb in key o;if[count first o[`savedb];SAVEDB:hsym`$first o[`savedb]]]";
+	hs"if[`saveptn in key o;if[count first o[`saveptn];SAVEPTN:`$first o[`saveptn]]]";
 	hs"NOHEADER:",-3!NOHEADER;hs"DELIM:",-3!DELIM;
 	hs"\\z ",(string system"z")," / D date format 0 => mm/dd/yyyy or 1 => dd/mm/yyyy (yyyy.mm.dd is always ok)";
 	hs"LOADNAME:",-3!LOADNAME;hs"LOADFMTS:\"",LOADFMTS,"\"";hs"LOADHDRS:",raze"`",'string LOADHDRS;
-	hs"LOADDEFN:",-3!LOADDEFN;hs"LOAD:",-3!LOAD;hs"LOAD10:",(-3!LOAD10)," / just load first 10 records";
+	hs"LOADDEFN:",-3!LOADDEFN;hs"POSTLOAD:",-3!POSTLOAD;hs"LOAD:",-3!LOAD;hs"LOAD10:",(-3!LOAD10)," / just load first 10 records";
 	hs"CHUNKSIZE:",string CHUNKSIZE;hs"DATA:()";
 	hs"k)fs2:",2_ last value fs2;
-	hs"BULKLOAD:",-3!BULKLOAD;
-	hs"BULKSAVE:",-3!BULKSAVE;
-	hs"if[any`bs`bulksave in key o;-1(string`second$.z.z),\" saving \",(1_string FILE),\" to directory \",1_string` sv SAVEDB,LOADNAME;.tmp.st:`time$.z.z;.tmp.rc:BULKSAVE FILE;.tmp.et:`time$.z.z;.tmp.fs:hcount FILE;-1(string`second$.z.z),\" done (\",(string .tmp.rc),\" records; \",(string floor .tmp.rc%1e-3*.tmp.et-.tmp.st),\" records/sec; \",(string floor 0.5+.tmp.fs%1e3*.tmp.et-.tmp.st),\" MB/sec)\"]";
+	hs"BULKLOAD:",-3!BULKLOAD;hs"PRESAVE:",-3!PRESAVE;hs"SAVE:",-3!SAVE;hs"BULKSAVE:",-3!BULKSAVE;
+	hs"if[any`bs`bulksave in key o;-1(string`second$.z.z),\" saving \",(1_string FILE),\" to directory \",1_string` sv SAVEDB,SAVEPTN,LOADNAME;.tmp.st:`time$.z.z;.tmp.rc:BULKSAVE FILE;.tmp.et:`time$.z.z;.tmp.fs:hcount FILE;-1(string`second$.z.z),\" done (\",(string .tmp.rc),\" records; \",(string floor .tmp.rc%1e-3*.tmp.et-.tmp.st),\" records/sec; \",(string floor 0.5+.tmp.fs%1e3*.tmp.et-.tmp.st),\" MB/sec)\"]";
 	hs"if[any`bl`bulkload in key o;-1(string`second$.z.z),\" loading \",(1_string FILE),\" to variable DATA\";.tmp.st:`time$.z.z;BULKLOAD FILE;.tmp.et:`time$.z.z;.tmp.rc:count DATA;.tmp.fs:hcount FILE;-1(string`second$.z.z),\" done (\",(string .tmp.rc),\" records; \",(string floor .tmp.rc%1e-3*.tmp.et-.tmp.st),\" records/sec; \",(string floor 0.5+.tmp.fs%1e3*.tmp.et-.tmp.st),\" MB/sec)\"]";
 	hs"if[`exit in key o;exit 0]";
 	hs"/ DATA:(); BULKLOAD LOADFILE / incremental load all to DATA";
-	hs"/ BULKSAVE LOADFILE / incremental save all to SAVEDB";
+	hs"/ BULKSAVE LOADFILE / incremental save all to SAVEDB[/SAVEPTN]";
 	hs"/ DATA:LOAD10 LOADFILE / only load the first 10 rows";
 	hs"/ DATA:LOAD LOADFILE / load all in one go";
-	hs"/ (` sv SAVEDB,LOADNAME,`)set .Q.en[SAVEDB] DATA / save as splayed database";
-	hclose neg hs;
-	f}
-if[SAVESCRIPT;savescript[]]
+	hs"/ SAVE LOAD LOADFILE / save all in one go to SAVEDB[/SAVEPTN]";
+	hclose neg hs;f}
+if[SAVESCRIPT;-1"* savescript file ",(1_string savescript[])," written"]
 
 / save (append) info about the csv columns to INFOFILE - saveinfo[]
 / tbl -tablename; c - column name; ci - column index in csv; t - load type
@@ -163,8 +170,8 @@ saveinfo:{savedinfo:$[@[hcount;INFOFILE;0j];(INFOFMTS;enlist",")0:INFOFILE;()];
 	if[count savedinfo;savedinfo:delete from savedinfo where tbl=LOADNAME];
 	savedinfo,:select tbl:LOADNAME,c,ci,t,maybe,mw,j10,j12,ipa,gr,`$dchar from info;
 	(`$(string INFOFILE),".load.q")1:"info:(",(-3!INFOFMTS),";enlist\",\")0:`$\"",(string INFOFILE),"\"\n";
-	INFOFILE 0:.h.cd`tbl`c xasc savedinfo}
-if[SAVEINFO;saveinfo[]]
+	INFOFILE 0:.h.cd`tbl`c xasc savedinfo;INFOFILE}
+if[SAVEINFO;-1"* saveinfo file ",(1_string saveinfo[])," updated"]
 if[EXIT;exit 0]
 
 sba:{show update before:(({x[where not x=" "]:"*";x}LOADFMTS;DELIM)0:sample),after:(LOADFMTS;DELIM)0:sample from select c,t from info} / show before+after

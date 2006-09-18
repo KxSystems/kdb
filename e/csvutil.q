@@ -76,6 +76,8 @@ info0:{[file;onlycols]
 	info:update t:"X",rule:26,maybe:0b from info where t="?",mw=2,{$[all x in"0123456789ABCDEF";(any .Q.n in x)and any"ABCDEF"in x;0b]}each dchar; /hex
 	info:update t:"S",rule:27,maybe:1b from info where t="?",mw<.csv.SYMMAXWIDTH,mw>1; / symbols (max width permitting)
 	info:update t:"*",rule:28,maybe:0b from info where t="?"; / the rest as strings
+	info:update maybe:1b from info where mw>4,not t="D",(lower c)like"*date*";
+	info:update maybe:1b from info where mw>1,not t in"TUV",(lower c)like"*time*";
 	select c,ci,t,maybe,ipa,mw,rule,dchar from info}
 info:info0[;()] / by default don't restrict columns
 infolike:{[file;pattern] info0[file;{x where x like y}[colhdrs[file];pattern]]} / .csv.infolike[file;"*time"]
