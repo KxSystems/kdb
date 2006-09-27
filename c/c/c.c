@@ -1,9 +1,8 @@
 // q trade.q -p 5001
-// l32: gcc ../c/c.c c.o
-// s32: /usr/local/gcc-3.3.2/bin/gcc ../c/c.c c.o -lsocket -lnsl	
-// w32: cl  ../c/c.c c.lib ws2_32.lib
+// l32: gcc ../c/c/c.c c.o -lpthread
+// s32: /usr/local/gcc-3.3.2/bin/gcc ../c/c/c.c c.o -lsocket -lnsl -lpthread
+// w32: cl  ../c/c/c.c c.lib ws2_32.lib
 #include"k.h"
-#define Q(e,s) {if(e)return printf("%s\n",s),-1;}      //error
 
 int main(){
   int c=khp("localhost",5001);                         //connect
@@ -12,6 +11,8 @@ int main(){
   return 0;}
 
 /*
+#define Q(e,s) {if(e)return printf("%s\n",s),-1;}      //error
+
 int main(){K x,y;int c=khpu("localhost",5001,"usr:pwd");
  Q(c<0,"connect")Q(!c,"access")
  Q(!k(-c,"`trade insert(12:34:56.789;`xx;93.5;300)",(K)0),"err") // statement insert
