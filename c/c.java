@@ -1,9 +1,9 @@
-// 2006.04.22 NULL, e.g. Object[]x={NULL('i'),NULL('z')};
-// http://kx.com/q/c/readme.txt 
-//jar cf c.jar *.class  (version: http://www.rgagnon.com/javadetails/java-0388.html)
+//2006.09.29 Date.Date(); sync with c.cs
+//2006.04.22 NULL, e.g. Object[]x={NULL('i'),NULL('z')};
+//jar cf c.jar *.class
 import java.net.*;import java.io.*;import java.text.*;import java.lang.reflect.Array;
 public class c{public static void main(String[]args){
-try { //s.setSoTimeout(ms);//java.util.TimeZone.setDefault(java.util.TimeZone.getTimeZone("GMT"));
+try { //s.setSoTimeout(ms);java.util.TimeZone.setDefault(java.util.TimeZone.getTimeZone("GMT"));
 //c c=new c(new ServerSocket(5010));while(true)c.w(2,c.k());
 //c c=new c("",5010);Object[]x={"GE",new Double(2.5),new Integer(23)};c.k(".u.upd","trade",x);
 c c=new c("localhost",5001);
@@ -21,15 +21,15 @@ public c(ServerSocket s)throws IOException{io(s.accept());i.read(b=new byte[99])
 public c(String h,int p,String u)throws KException,IOException{io(new Socket(h,p));B=new byte[1+ns(u)];J=0;w(u);o.write(B);if(1!=i.read(B,0,1))throw new KException("access");}
 public c(String h,int p)throws KException,IOException{this(h,p,System.getProperty("user.name"));}
 
+public static class Date{public int i;public Date(int x){i=x;}
+ public java.util.Date Date(){return new java.util.Date(i==ni?nj:86400000L*(i+10957));}
+ public Date(long x){i=x==nj?ni:(int)(x/86400000)-10957;}
+ public Date(java.util.Date d){this(d.getTime());}public String toString(){return i==ni?"":f.format(this.Date());}}
+public static class Time{public int i;public Time(int x){i=x;}public Time(long x){i=(int)(x%86400000);}
+ public Time(java.util.Date d){this(d.getTime());}public String toString(){return i==ni?"":new Second(i/1000).toString()+'.'+new DecimalFormat("000").format(i%1000);}}
 public static class Month{public int i;public Month(int x){i=x;}public String toString(){int m=i+24000,y=m/12;return i==ni?"":i2(y/100)+i2(y%100)+"-"+i2(1+m%12);}}
 public static class Minute{public int i;public Minute(int x){i=x;}public String toString(){return i==ni?"":i2(i/60)+":"+i2(i%60);}}
 public static class Second{public int i;public Second(int x){i=x;}public String toString(){return i==ni?"":new Minute(i/60).toString()+':'+i2(i%60);}}
-public static class Time{public int i;public Time(int x){i=x;}public Time(long x){i=(int)(x%86400000);}
- public Time(java.util.Date d){this(d.getTime());}public String toString(){return i==ni?"":new Second(i/1000).toString()+'.'+new DecimalFormat("000").format(i%1000);}}
-public static class Date{public int i;public Date(int x){i=x;}public Date(long x){i=x==nj?ni:(int)(x/86400000)-10957;}
- public Date(java.util.Date d){this(d.getTime());}
- public String toString(){return i==ni?"":f.format(new java.util.Date(86400000L*(i+10957)));}}
-
 public static class Dict{public Object x;public Object y;public Dict(Object X,Object Y){x=X;y=Y;}}
 public static class Flip{public String[]x;public Object[]y;public Flip(Dict X){x=(String[])X.x;y=(Object[])X.y;}public Object at(String s){return y[find(x,s)];}}
 public static Flip td(Object X){if(t(X)==98)return(Flip)X;Dict d=(Dict)X;Flip a=(Flip)d.x,b=(Flip)d.y;int m=n(a.x),n=n(b.x);
@@ -45,12 +45,12 @@ static int t(Object x){return x instanceof Boolean?-1:x instanceof Byte?-4:x ins
  x instanceof Flip?98:x instanceof Dict?99:0;}
 static int ni=Integer.MIN_VALUE;static long nj=Long.MIN_VALUE;static double nf=Double.NaN;
 static int[]nt={0,1,0,0,1,2,4,8,4,8,1,0,0,4,4,8,0,4,4,4};static int ns(String s){return s==null?0:s.length();}
-public static Object[]NU={null,new Boolean(false),null,null,new Byte((byte)0),new Short(Short.MIN_VALUE),new Integer(ni),new Long(nj),new Float(nf),new Double(nf),
+public static Object[]NULL={null,new Boolean(false),null,null,new Byte((byte)0),new Short(Short.MIN_VALUE),new Integer(ni),new Long(nj),new Float(nf),new Double(nf),
  new Character(' '),"",null,new Month(ni),new Date(ni),new java.util.Date(nj),null,new Minute(ni),new Second(ni),new Time(ni)};
-public static Object NULL(char c){return NU[" b  xhijefcs mdz uvt".indexOf(c)];}
-public static boolean qn(Object x){int t=-t(x);return t>4&&x.equals(NU[t]);}
+public static Object NULL(char c){return NULL[" b  xhijefcs mdz uvt".indexOf(c)];}
+public static boolean qn(Object x){int t=-t(x);return t>4&&x.equals(NULL[t]);}
 public static Object at(Object x,int i){return qn(x=Array.get(x,i))?null:x;}
-public static void set(Object x,int i,Object y){Array.set(x,i,null==y?NU[t(x)]:y);}
+public static void set(Object x,int i,Object y){Array.set(x,i,null==y?NULL[t(x)]:y);}
 static int n(Object x){return x instanceof Dict?n(((Dict)x).x):x instanceof Flip?n(((Flip)x).y[0]):Array.getLength(x);}
 static int nx(Object x){int i=0,n,t=t(x),j;if(t==99)return 1+nx(((Dict)x).x)+nx(((Dict)x).y);if(t==98)return 3+nx(((Flip)x).x)+nx(((Flip)x).y);
  if(t<0)return t==-11?2+ns((String)x):1+nt[-t];j=6;n=n(x);if(t==0||t==11)for(;i<n;++i)j+=t==0?nx(((Object[])x)[i]):1+ns(((String[])x)[i]);else j+=n*nt[t];return j;}
@@ -58,7 +58,7 @@ void w(byte x){B[J++]=x;}void w(boolean x){w((byte)(x?1:0));}void w(short h){w((
 void w(int i){w((short)(i>>16));w((short)i);}void w(long j){w((int)(j>>32));w((int)j);}
 void w(float e){w(Float.floatToIntBits(e));}void w(double f){w(Double.doubleToLongBits(f));}
 void w(char c){w((byte)c);}void w(String s){int i=0,n=ns(s);for(;i<n;)w(s.charAt(i++));B[J++]=0;}
-void w(java.util.Date z){long l=z==null?nj:z.getTime();w(nj==l?nf:l/8.64e7-10957);}
+void w(java.util.Date z){long l=z.getTime();w(nj==l?nf:l/8.64e7-10957);}
 void w(Month m){w(m.i);}void w(Date d){w(d.i);}void w(Minute u){w(u.i);}void w(Second v){w(v.i);}void w(Time t){w(t.i);}
 void w(Object x){int i=0,n,t=t(x);w((byte)t);if(t<0)switch(t){case-1:w(((Boolean)x).booleanValue());return;
   case-4:w(((Byte)x).byteValue());return;      case-5:w(((Short)x).shortValue());return;

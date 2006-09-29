@@ -1,3 +1,4 @@
+// 2006.09.29 NULL  c.Date class(sync with c.java)
 // \winnt\microsoft.net\framework\v2.0.50727\csc c.cs
 using System;using System.IO;using System.Net.Sockets; //csc c.cs  given >q trade.q -p 5001
 class c:TcpClient{public static void Main(string[]args){
@@ -18,9 +19,10 @@ static object[]NU={null,false,null,null,(byte)0,Int16.MinValue,ni,nj,(Single)nf,
  new Month(ni),new Date(ni),new DateTime(0),null,new Minute(ni),new Second(ni),new TimeSpan(nj)};
 static object NULL(char c){return NU[" b  xhijefcs mdz uvt".IndexOf(c)];}
 public static bool qn(object x){int t=-c.t(x);return t>4&&x.Equals(NU[t]);}
-
-public class Date{public int i;public Date(int x){i=x;}public Date(long x){i=x==0?ni:(int)(x/(long)8.64e11)-730119;}
- public Date(DateTime z):this(z.Ticks){}public override string ToString(){return i==ni?"":(new DateTime((long)8.64e11*i+o)).ToString("d");}}
+public class Date{public int i;public Date(int x){i=x;}
+ public DateTime DateTime(){return new DateTime(i==ni?0L:(long)8.64e11*i+o);}
+ public Date(long x){i=x==0L?ni:(int)(x/(long)8.64e11)-730119;}
+ public Date(DateTime z):this(z.Ticks){}public override string ToString(){return i==ni?"":this.DateTime().ToString("d");}}
 public class Month{public int i;public Month(int x){i=x;}public override string ToString(){int m=24000+i,y=m/12;return i==ni?"":i2(y/100)+i2(y%100)+"-"+i2(1+m%12);}}
 public class Minute{public int i;public Minute(int x){i=x;}public override string ToString(){return i==ni?"":i2(i/60)+":"+i2(i%60);}}
 public class Second{public int i;public Second(int x){i=x;}public override string ToString(){return i==ni?"":new Minute(i/60).ToString()+':'+i2(i%60);}}
