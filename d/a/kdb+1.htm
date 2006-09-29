@@ -1,15 +1,15 @@
-<html><head><style>a{text-decoration:none}a:link{color:024C7E}a:visited{color:024C7E}a:active{color:958600}body{font:10pt verdana;text-align:justify}</style></head><body>Copyright &copy; kx.com
+<html><head><style>a{text-decoration:none}a:link{color:024C7E}a:visited{color:024C7E}a:active{color:958600}body{font:10pt verdana;text-align:justify}</style></head><body>Copyright &copy; <font color=024C7E><b>kx</b></font><font color=958600><b>.com</b></font>
 <h5>Kdb+ Database Reference Manual</h5>
 <p>Don Orth</p>
-<p><h5 id='Introduction'>1 Introduction</h5></p>
+<p><h5 id="Introduction">1 Introduction</h5></p>
 <p>Kdb+ comes with a comprehensive programming language: q (.q scripts). [We will also implement SQL.] q is similar to SQL but is simpler and more expressive. q implements all relational capabilities as well as timeseries analysis. This manual is concerned with the q versions of the standard SQL operations on tables. </p>
 
-<xmp>s:([s]name;status;city)          / create a table with primary key s
+<xmp>s:([s]name:();status:();city:()) / create a table with primary key s
 `s insert(`s1;`smith;20;`london) / insert a record                  
 select from s where name=`smith  / select a record                  
 </xmp>
 <p>Additional features are defined in <u>Q Programming</u>.</p>
-<p><h5 id='The Interactive Environment'>2 The Interactive Environment</h5></p>
+<p><h5 id="The Interactive Environment">2 The Interactive Environment</h5></p>
 <p>q is a programming and runtime environment that starts from and runs in a shell, which is either a Unix/Linux shell or a Windows Command Prompt. After kdb+ is started, the shell becomes a q shell, or q console, in which expressions are entered and evaluated. The activity of entering and evaluating expressions in a q shell is called a q session; the entered expressions and their results are maintained in a q session log. Data created and assigned a name remains available during the current session. The data created during a session are collectively referred to as the workspace.</p>
 <p>The simplest q startup command is simply <code><nobr>q</nobr></code> . That is, type</p>
 
@@ -22,7 +22,7 @@ select from s where name=`smith  / select a record
   _   / a blinking cursor is waiting for the next input expression
 </xmp>
 <p>The annotations on the right are q language comments. A q comment starts with a slash ( <code><nobr>/</nobr></code> ). There must be whitespace to the left of the slash. This entry-result format is used throughout this manual to display examples. You can repeat these examples in your shell, or you can make up some of your own.</p>
-<p><h5 id='Assignment (Specification)'>2.1 Assignment (Specification)</h5></p>
+<p><h5 id="Assignment (Specification)">2.1 Assignment (Specification)</h5></p>
 <p>Assignment in q is denoted by colon. For example,</p>
 
 <xmp>  w:3.141
@@ -33,14 +33,14 @@ select from s where name=`smith  / select a record
 3.141
 </xmp>
 <p>Note that there is no result display following the specification of w, even though specification has a result (the value given to the name). This is simply the way the q console is designed.</p>
-<p><h5 id='Errors'>2.2 Errors</h5></p>
+<p><h5 id="Errors">2.2 Errors</h5></p>
 <p>Errors are reported in the console by displaying the error type, generally type or length, the failed primitive function, and its argument(s). If you see the default prompt, you can simply continue with your work. If you see a leading ")" on the prompt, type "\" and press [Enter]. You should then see the default prompt. Debugging is discussed in the <u>Q Programming</u> manual.</p>
-<p><h5 id='End a Session'>2.3 End a Session</h5></p>
+<p><h5 id="End a Session">2.3 End a Session</h5></p>
 <p>Exit from the q console with</p>
 
 <xmp>  \\
 </xmp>
-<p><h5 id='Atomic Datatypes'>3 Atomic Datatypes</h5></p>
+<p><h5 id="Atomic Datatypes">3 Atomic Datatypes</h5></p>
 <p>The atomic datatypes are the same as those in SQL3. Here is a list.</p>
 
 <xmp>q        sql3      null example                 
@@ -66,7 +66,7 @@ datetime timestamp 0Nz  2003.03.23T09:10:35.021
 09:10:35.021                               
 </xmp>
 <p>q also has month (yyyy.mm), minute (hh:mm) and second (hh:mm:ss) types.</p>
-<p><h5 id='Temporal Fields'>3.1 Temporal Fields</h5></p>
+<p><h5 id="Temporal Fields">3.1 Temporal Fields</h5></p>
 <p>The following table defines the fields of the temporal datatypes. Field values can be extracted from temporal data using field names and dot notation (<a href="#Extracting Temporal Field Values">Extracting Temporal Field Values</a>). Given:</p>
 
 <xmp>date:2003.11.23
@@ -89,7 +89,7 @@ time.ss 52
 time.second 09:10:52 
 time.minute 09:10    
 </xmp>
-<p><h5 id='Atom Functions'>4 Atom Functions</h5></p>
+<p><h5 id="Atom Functions">4 Atom Functions</h5></p>
 <p>Atom functions are those that apply to atomic arguments and produce atomic results. The following is a list of the primitive q atomic functions.</p>
 
 <xmp>a+b     Plus          
@@ -107,7 +107,7 @@ abs b   Absolute Value
 floor b (integer part)
 </xmp>
 <p>Binary operations in mathematics are called dyadic functions in q, and unary operations are called monadic functions. For example, <code><nobr>+</nobr></code>  is a dyadic function and <code><nobr>floor</nobr></code> is a monadic function.</p>
-<p><h5 id='Arithmetic Functions'>4.1 Arithmetic Functions</h5></p>
+<p><h5 id="Arithmetic Functions">4.1 Arithmetic Functions</h5></p>
 <p>The dyadic arithmetic functions are +, - , * and % for Divide. Note that Divide is denoted by %, not /. Numeric datatypes can be mixed in arithmetic expressions and required conversions from one to another are automatic. The result of any arithmetic expression that contains % is of type float. The arguments of % are converted to float before the operation is performed. For example,</p>
 
 <xmp>  4%2
@@ -132,7 +132,7 @@ floor b (integer part)
 <xmp>  1b+1b
 2      
 </xmp>
-<p><h5 id='Relational Functions'>4.2 Relational Functions</h5></p>
+<p><h5 id="Relational Functions">4.2 Relational Functions</h5></p>
 <p>The dyadic relational functions are =, < and >. These functions produce boolean values, where 1b means that the relation holds, or is true. For example,</p>
 
 <xmp>  3<5      / 3 is less than 5                                            
@@ -161,7 +161,7 @@ floor b (integer part)
  2=(x+x+x+x+x+x) / should be 2              
 1b               / it is  (try that in java)
 </xmp>
-<p><h5 id='Comparison Functions'>4.3 Comparison Functions</h5></p>
+<p><h5 id="Comparison Functions">4.3 Comparison Functions</h5></p>
 <p>The comparison functions are | for Max and & for Min.</p>
 
 <xmp>  9|5 / Max
@@ -183,7 +183,7 @@ floor b (integer part)
 <xmp>  "z"|"a"
 "z"      
 </xmp>
-<p><h5 id='Logical Functions'>4.4 Logical Functions</h5></p>
+<p><h5 id="Logical Functions">4.4 Logical Functions</h5></p>
 <p>The logical functions (And, Or and Logical Negation) do not have separate symbols; they are, respectively, the restrictions of Min, Max and Not to boolean arguments. For example, </p>
 
 <xmp>  1b&1b  / And (Max)           
@@ -193,7 +193,7 @@ floor b (integer part)
   not 1b / Logical Negate (Not)
 0b                             
 </xmp>
-<p><h5 id='Floor and Absolute Value'>4.5 Floor and Absolute Value</h5></p>
+<p><h5 id="Floor and Absolute Value">4.5 Floor and Absolute Value</h5></p>
 <p>The Floor and Absolute Value functions are useful companions to the arithmetic functions. Floor applies to floats and reals and produces their integer parts as ints. For example,</p>
 
 <xmp>  floor 2.7 
@@ -214,7 +214,7 @@ floor b (integer part)
 <xmp>  abs -4.7
 4.7       
 </xmp>
-<p><h5 id='Match'>5 Match</h5></p>
+<p><h5 id="Match">5 Match</h5></p>
 <p>Match is not an atom function, but is related to Equal and is so useful when experimenting with the language that we'll define it here.</p>
 <p>It often happens that you want to compare two results to determine whether or not they are identical. This is often done in this manual simply by looking at them, but that doesn't always work, e.g. when the console display doesn't contain all the details. Sometimes Equal can be used, but not always. The primitive function called Match is the function to use. For example,   </p>
 
@@ -233,7 +233,7 @@ floor b (integer part)
  3~3.0
 0b    
 </xmp>
-<p><h5 id='Order of Evaluation'>6 Order of Evaluation</h5></p>
+<p><h5 id="Order of Evaluation">6 Order of Evaluation</h5></p>
 <p>q is a rich orthogonal language and therefore has no precedence among functions. Expressions are written and read from left to right. Expressions are evaluated left OF right -- unlike SQL and conventional mathematical notation. For example,</p>
 
 <xmp>qty*1+rate
@@ -254,8 +254,8 @@ floor b (integer part)
 
 <xmp>not(x<low)|x>high
 </xmp>
-<p><h5 id='Arithmetic'>7 Arithmetic</h5></p>
-<p><h5 id='Temporal Arithmetic'>7.1 Temporal Arithmetic</h5></p>
+<p><h5 id="Arithmetic">7 Arithmetic</h5></p>
+<p><h5 id="Temporal Arithmetic">7.1 Temporal Arithmetic</h5></p>
 <p>Ints representing day counts can be added to and subtracted from dates. As a result, dates can be added to and subtracted from dates to give day counts. For example,</p>
 
 <xmp>  2001.11.21+3           / date +/- day count equals date
@@ -284,7 +284,7 @@ floor b (integer part)
   09:10:35.005<09:11:03.000         
 1b                                  
 </xmp>
-<p><h5 id='IEEE NaNs and Infinities'>7.2 IEEE NaNs and Infinities</h5></p>
+<p><h5 id="IEEE NaNs and Infinities">7.2 IEEE NaNs and Infinities</h5></p>
 <p>The IEEE arithmetic NaN (not-a-number) for floats is a float denoted by <code><nobr>0n</nobr></code> . Plus-infinity and Minus-infinity for floats are denoted by <code><nobr>0w</nobr></code> and <code><nobr>-0w</nobr></code> . For example:</p>
 
 <xmp>  0%0 
@@ -294,7 +294,7 @@ floor b (integer part)
   -1%0
 -0w   
 </xmp>
-<p><h5 id='Integer Arithmetic'>7.3 Integer Arithmetic</h5></p>
+<p><h5 id="Integer Arithmetic">7.3 Integer Arithmetic</h5></p>
 <p>The sum, difference and product of two ints is always an int, the modulo 2<sup>32</sup> value of the mathematical result. For example,</p>
 
 <xmp>  a:256                                                                           
@@ -310,7 +310,7 @@ floor b (integer part)
 4294967296j    / 2<sup>32</sup>, as a float                                       
 </xmp>
 <p>Analogously, the sum, difference and product of two longs or a long and an int is always a long, the modulo 2<sup>64</sup> value of the mathematical result.</p>
-<p><h5 id='Relational Tables and Insert'>8 Relational Tables and Insert</h5></p>
+<p><h5 id="Relational Tables and Insert">8 Relational Tables and Insert</h5></p>
 <p>Kdb+ has two distinct primitive datatypes to which q applies: tables and keyed tables. With regard to traditional RDBMS's treat both datatypes as tables except for the key check on inserts. Tables can be created functionally with q primitive functions or with the syntactic form <code><nobr>([...]...)</nobr></code> . The syntactic form is used here. </p>
 <p>Tables are collections of data whose items, or "columns", have names. Following the SQL convention, tables are created by naming the items and initializing the items as empty lists. For example, the following expression creates a table named t.</p>
 
@@ -334,7 +334,7 @@ floor b (integer part)
 <xmp>  `t insert(`b;103;275)
 </xmp>
 <p>The alternative <code><nobr>insert[`t](`b;103;275)</nobr></code> , is explained in <u>Q Programming</u>.</p>
-<p><h5 id='Table Displays'>8.1 Table Displays</h5></p>
+<p><h5 id="Table Displays">8.1 Table Displays</h5></p>
 <p>If you type the name of the table t you will see its value, but what you see in the console requires an explanation that is beyond this manual. Consequently we will use a more intuitive display format for tables in this manual. For example, the table t will be displayed as follows. </p>
 
 <xmp>  t
@@ -346,7 +346,7 @@ a  1   4.56
 b  103 275.00
 </xmp>
 <p>The display shows an input line with the name of the table followed by a display of the table, as if this is done in a console. The name and the table display are separated by a blank line to make the name stand out. The table display has a header line with the column names, which is separated from the data by a horizontal rule. A vertical line separates the primary key columns from the data columns. There will be no vertical line if there are no primary key columns.</p>
-<p><h5 id='The Kdb+ Web Viewer'>8.2 The Kdb+ Web Viewer</h5></p>
+<p><h5 id="The Kdb+ Web Viewer">8.2 The Kdb+ Web Viewer</h5></p>
 <p>You can see a similar table display in the q web viewer. To do this you must first start kdb+ as a web server. For example, the following startup command creates a q shell listening on the web port 5001.</p>
 
 <xmp>>q -p 5001
@@ -356,7 +356,7 @@ b  103 275.00
 <xmp>http://localhost:5001
 </xmp>
 <p>You will then see a browser display of table t like the one above. You should also see a list of tables to the left of the display of t, although at this point t is the only table name in the list. When there is more than one table, simply click on any table name to view its contents.</p>
-<p><h5 id='Example Tables'>9 Example Tables</h5></p>
+<p><h5 id="Example Tables">9 Example Tables</h5></p>
 <p>The tables used in this manual for q examples are defined in the q distribution script sp.q. There are 3 tables, s (suppliers), p (parts) and sp (shipments). They are based on the supplier-parts sample database in <u>A Guide to THE SQL STANDARD, Fourth Edition</u> by C.J. Date with Hugh Darwen. You can load these tables into a q session (and create a web server as well) with the startup command</p>
 
 <xmp>>q sp.q -p 5001
@@ -408,24 +408,24 @@ s1 p5 400
 </xmp>
 <p>Note that the supplier table <code><nobr>s</nobr></code> and the parts table <code><nobr>p</nobr></code> have primary keys. The shipments table <code><nobr>sp</nobr></code> has two foreign keys, although the display doesn't show it. These tables were initialized by the following expressions and filled in with the insert function; the insert expressions are not shown here.</p>
 
-<xmp>s:([s]name;status;city)       
-p:([p]name;color;weight;city) 
-sp:([]s:`s$();p:`p$();qty:()) 
+<xmp>s:([s:()]name:();status:();city:())          
+p:([p:()]name:();color:();weight:();city:()) 
+sp:([]s:`s$();p:`p$();qty:())                
 </xmp>
 <p>The last expression contains something new. Columns <code><nobr>s</nobr></code> and <code><nobr>p</nobr></code> of <code><nobr>sp</nobr></code> are foreign keys; see <a href="#Foreign Keys">Foreign Keys</a> below.</p>
 <p>Another table that is useful in examples is the following security trade table. This table is not defined in the sp.q script. You can cut-and-paste the following expressions into a q console to create and populate the table.</p>
 
-<xmp>trade:([]time;sym;price;size)               
-`trade insert(09:30:01.000;`xx;59.25;1900)  
-`trade insert(09:30:01.000;`aaa;53.75;1200) 
-`trade insert(09:30:02.000;`dd;81.00;1600)  
-`trade insert(09:30:02.000;`aaa;96.25;2200) 
-`trade insert(09:30:02.000;`ccc;93.25;2100) 
-`trade insert(09:30:03.000;`xx;84.00;2200)  
-`trade insert(10:00:03.000;`aaa;58.25;1000) 
-`trade insert(10:00:04.000;`yyyy;73.25;2300)
-`trade insert(10:00:04.000;`aaa;89.50;1400) 
-`trade insert(10:00:05.000;`ccc;84.25;1500) 
+<xmp>trade:([]time:`time$();sym:`symbol$();price:`float$();size:`int$())
+`trade insert(09:30:01.000;`xx;59.25;1900)                         
+`trade insert(09:30:01.000;`aaa;53.75;1200)                        
+`trade insert(09:30:02.000;`dd;81.00;1600)                         
+`trade insert(09:30:02.000;`aaa;96.25;2200)                        
+`trade insert(09:30:02.000;`ccc;93.25;2100)                        
+`trade insert(09:30:03.000;`xx;84.00;2200)                         
+`trade insert(10:00:03.000;`aaa;58.25;1000)                        
+`trade insert(10:00:04.000;`yyyy;73.25;2300)                       
+`trade insert(10:00:04.000;`aaa;89.50;1400)                        
+`trade insert(10:00:05.000;`ccc;84.25;1500)                        
 </xmp>
 <p>You can also cut and paste these lines into a text file to be saved as the script trade.q. The file can then be loaded into a q console with</p>
 
@@ -436,14 +436,14 @@ sp:([]s:`s$();p:`p$();qty:())
 <xmp>(09:30:02.000;`aaa;96.25;2200)  
 </xmp>
 <p>The data indicates that a trade was made at 2 seconds after 9:30AM for 2200 shares of the stock with ticker symbol aaa at the price of $96.25 per share.</p>
-<p><h5 id='Foreign Keys'>10 Foreign Keys</h5></p>
+<p><h5 id="Foreign Keys">10 Foreign Keys</h5></p>
 <p>A foreign key defines a mapping from the rows of the table in which it is defined to the rows of the table with the corresponding primary key. Foreign keys in SQL provide referential integrity. Namely, an attempt to insert a foreign key value that is not in the primary key will fail. This is also true in q. For example, the following insert into the shipments table will fail because s0 is not a defined supplier.</p>
 
 <xmp>`sp insert(`s0;`p1;450)
 </xmp>
 <p>An entry for s0 must first be inserted in the suppliers table. In SQL one says that a foreign key represents a reference from its host table to the primary key table; hence the term referential integrity. In q the reference is actually a mapping from one table to the other; it may be more accurate to use the term domain integrity here.</p>
 <p>The foreign key expression <code><nobr>`s$()</nobr></code> in the definition of sp, which denotes the mapping of sp to s, is called an enumeration. The symbol `s in the expression refers to the suppiers table. You can rename column <code><nobr>s</nobr></code> in the suppliers table or column <code><nobr>s</nobr></code> in the <code><nobr>sp</nobr></code> table and the expression <code><nobr>`s$()</nobr></code> remains the same. However, if you change the name of the suppliers table to, say suppliers, then the foreign key expression must be changed to <code><nobr>`suppliers$()</nobr></code> .</p>
-<p><h5 id='Virtual Columns'>10.1 Virtual Columns</h5></p>
+<p><h5 id="Virtual Columns">10.1 Virtual Columns</h5></p>
 <p>The mapping represented by a foreign key defines each column of the corresponding primary key table as a so-called virtual column in the foreign key table. For example, the color column of the parts table <code><nobr>p</nobr></code>  is a virtual column of shipments table <code><nobr>sp</nobr></code> , as the following display indicates.</p>
 
 <xmp>s   p  qty color
@@ -462,7 +462,7 @@ s4 p4 300  red
 s1 p5 400  blue 
 </xmp>
 <p>The first 3 columns are identical to the shipments table. You can see that wherever two items of the parts column are identical, the corresponding items of the colors column are identical. For example, according to the suppliers table the part p1 is red, and red appears in the above color column wherever p1 is in the <code><nobr>p</nobr></code> column. q has a simple mechanism for specifying virtual columns in queries; see <A href="#Dot Notation">Dot Notation</A>.</p>
-<p><h5 id='Select Expressions'>11 Select Expressions</h5></p>
+<p><h5 id="Select Expressions">11 Select Expressions</h5></p>
 <p>Select expressions are q expressions that create new tables from existing ones. In their simplest form, select expressions extract subtables. However, it is also possible for them to create new columns. Select expressions have the following general form.</p>
 
 <xmp>select columns by columns from table where conditions
@@ -471,7 +471,7 @@ s1 p5 400  blue
 <p>The <code><nobr>where</nobr></code> phrase is a list of conditional expressions that applies to <code><nobr>table</nobr></code> and defines the rows that contribute to the result. If there is no <code><nobr>where</nobr></code> phrase then all rows of <code><nobr>table</nobr></code> are used. The <code><nobr>select</nobr></code> phrase defines the data columns of the result. If there is no <code><nobr>select</nobr></code> phrase then the result has the same column names as <code><nobr>table</nobr></code> .</p>
 <p>The <code><nobr>by</nobr></code> phrase defines how the <code><nobr>select</nobr></code> phrase columns are aggregated; see <a href="#Aggregation">Aggregation</a>. The columns named in the <code><nobr>by</nobr></code> phrase are the primary key columns of the result. If there is no <code><nobr>by</nobr></code> phrase then there are no aggregations and no primary key columns in the result. Note that unlike SQL, the columns named in the <code><nobr>by</nobr></code> phrase must not be repeated in the <code><nobr>select</nobr></code> phrase.</p>
 <p>Foreign keys in the <code><nobr>select</nobr></code> phrase become foreign keys in the result unless their values are modified. </p>
-<p><h5 id='Select Examples'>11.1 Select Examples</h5></p>
+<p><h5 id="Select Examples">11.1 Select Examples</h5></p>
 <p>1. Sub-tables of specific columns can be selected.</p>
 
 <xmp>  select name,city from s
@@ -528,7 +528,7 @@ aaa 2200 96.25 211750.00
 xx  2200 84.00 184800.00
 aaa 1400 89.50 125300.00
 </xmp>
-<p><h5 id='Browser Queries'>12 Browser Queries</h5></p>
+<p><h5 id="Browser Queries">12 Browser Queries</h5></p>
 <p>You can evaluate a query in a browser by entering the expression in the address area after the host:port designation. For example, enter</p>
 
 <xmp>http://localhost:5001/?select name,city from s where status=30
@@ -540,7 +540,7 @@ aaa 1400 89.50 125300.00
 blake paris 
 adams athens
 </xmp>
-<p><h5 id='Dot Notation'>13 Dot Notation</h5></p>
+<p><h5 id="Dot Notation">13 Dot Notation</h5></p>
 <p>If you are familiar with SQL then you have seen dot notation in that context, where for example, <code><nobr>sp.s</nobr></code> denotes column <code><nobr>s</nobr></code> of the shipments table <code><nobr>sp</nobr></code> . This notation allows references to multiple tables in a single query. It has a similar meaning in q, but there is also another use of the dot notation in q. Namely, if b is a foreign key in table t and c is any column in the corresponding primary key table w, then <code><nobr>b.c</nobr></code> is the virtual column of c in t defined by the foreign key mapping from t to w. The example in <a href="#Virtual Columns">Virtual Columns</a> shows the color column of table <code><nobr>s</nobr></code> as a virtual column of table <code><nobr>sp</nobr></code> . The table in that example can be produced using dot notation as follows.</p>
 
 <xmp>  select s,p,qty,p.color from sp
@@ -579,7 +579,7 @@ p2 s3 30
 p2 s4 20    
 </xmp>
 <p>As before, equal values in the result column s correspond to equal values in the status column.</p>
-<p><h5 id='Extracting Temporal Field Values'>13.1 Extracting Temporal Field Values</h5></p>
+<p><h5 id="Extracting Temporal Field Values">13.1 Extracting Temporal Field Values</h5></p>
 <p>Temporal field values are extracted from temporal values by using dot notation, as in<code> data.field</code>. For example,</p>
 
 <xmp>  d:2001.11.21 2001.11.22 2001.11.25 2002.11.26
@@ -597,7 +597,7 @@ p2 s4 20
   t.ss                                         
 47                                             
 </xmp>
-<p><h5 id='Dot Notation and Temporal Columns'>13.2 Dot Notation and Temporal Columns</h5></p>
+<p><h5 id="Dot Notation and Temporal Columns">13.2 Dot Notation and Temporal Columns</h5></p>
 <p>The underlying concept of temporal dot notation and foreign key dot notation are the same. Foreign key dot notation gives access to every column in the corresponding primary key table as a virtual column. Likewise, temporal dot notation gives access to every field of a temporal column as a virtual column. For example, the following query accesses the seconds virtual column of the trade table time column.</p>
 
 <xmp>  select sym,time,time.ss from trade where size<2000
@@ -612,10 +612,10 @@ aaa 10:00:03.000 3
 aaa 10:00:04.000 4 
 ccc 10:00:05.000 5 
 </xmp>
-<p><h5 id='More Boolean-Valued Functions'>14 More Boolean-Valued Functions</h5></p>
+<p><h5 id="More Boolean-Valued Functions">14 More Boolean-Valued Functions</h5></p>
 <p>The boolean primitive functions discussed in this section broaden the range of "where" phrases. All three functions are dyadic and produce boolean results.</p>
 <p>All three are list functions, not atom functions, and therefore we begin this section with more about lists.</p>
-<p><h5 id='Simple Lists and List Notation'>14.1 Simple Lists and List Notation</h5></p>
+<p><h5 id="Simple Lists and List Notation">14.1 Simple Lists and List Notation</h5></p>
 <p>We have already seen lists and list notation in the formation of row data to be inserted in a table with the insert function (<a href="#Relational Tables and the Insert Function">Relational Tables and the Insert Function</a>). For example, a list of an int atom, boolean atom and symbol atom is expressed as follows.</p>
 
 <xmp>(-234;1b;`abc)
@@ -664,7 +664,7 @@ date     2003.03.23              2003.03.23 2003.04.12
 time     09:10:35.021            09:10:35.021 11:05:08.010  
 datetime 2003.03.23T09:10:35.021 2003.03.23T09:10:35.021 .. 
 </xmp>
-<p><h5 id='Atom Functions Apply to Lists'>14.2 Atom Functions Apply to Lists</h5></p>
+<p><h5 id="Atom Functions Apply to Lists">14.2 Atom Functions Apply to Lists</h5></p>
 <p>Atom functions apply to lists in an item-by-item manner. For example,</p>
 
 <xmp>  1 2 3+10 20 30
@@ -680,7 +680,7 @@ datetime 2003.03.23T09:10:35.021 2003.03.23T09:10:35.021 ..
 </xmp>
 <p>each item of the size column is compared to 2000.</p>
 <p>Table columns are lists; in this manual they are simple lists, but this is not a requirement, as you will see in <u>Q Programming</u>. For the remainder of this manual, we'll assume that lists are simple lists unless stated otherwise. For example, we will say that <code><nobr>1 -3 4</nobr></code> in an int list, meaning a simple int list. </p>
-<p><h5 id='In'>14.3 In</h5></p>
+<p><h5 id="In">14.3 In</h5></p>
 <p>The function named <code><nobr>in</nobr></code> determines whether or not each item of the left argument list is among the items of the right argument list. For example,</p>
 
 <xmp>  1 3 10 6 4 in 15 4 1 5
@@ -700,7 +700,7 @@ xx  2200 84.00 184800.00
 aaa 1400 89.50 125300.00
 </xmp>
 <p>The function  <code><nobr>in</nobr></code> is strict about the datatypes of its arguments; the datatypes of simple list arguments must be the same.</p>
-<p><h5 id='Within'>14.4 Within</h5></p>
+<p><h5 id="Within">14.4 Within</h5></p>
 <p>The right argument of this primitive function is always a two-item list. The result is a boolean list with the same number of items as the left argument. The result indicates whether or not each item of the left argument is within the bounds defined by the right argument. That is, if the right argument is <code><nobr>(a;b)</nobr></code> and c is the ith item of the left argument, then the ith item of the result is 1b if both a is less or equal c and c is less or equal b.  For example,</p>
 
 <xmp>  1 3 10 6 4 within 2 6
@@ -727,7 +727,7 @@ dd
 ccc
 ccc
 </xmp>
-<p><h5 id='Like'>14.5 Like</h5></p>
+<p><h5 id="Like">14.5 Like</h5></p>
 <p>The primitive function <code><nobr>like</nobr></code>  is the q pattern-matching primitive. Patterns in text are expressed by using certain reserved characters that have special meanings. The right argument of <code><nobr>like</nobr></code> is a char list holding the pattern. The left argument can be a symbol atom, a char list, or any list of these two. The result is a boolean list with 1b for every item in the left argument that matches the pattern, and 0b otherwise. The following examples use a list of char lists because we have not yet discussed how to create complex syms. The left argument in the following example is a list of a few telephone book entries.</p>
 
 <xmp>tb:("Smith John 101 N Broadway Elmsville 123-4567"   
@@ -772,7 +772,7 @@ ccc
 <xmp>  tb like "*[^0-9]"
 0001b              
 </xmp>
-<p><h5 id='Bin (Binary Search)'>14.6 Bin (Binary Search)</h5></p>
+<p><h5 id="Bin (Binary Search)">14.6 Bin (Binary Search)</h5></p>
 <p>Bin is a verb that can be used in place of In for left arguments that are simple lists of items in increasing order. Bin uses a binary search algorithm, which is generally more efficient than the linear search algorithm used by In. The result is also more useful when an item of the right argument is not among the items of the left argument. </p>
 <p>The items of the left argument must be unique. The right argument can be either an atom or simple list of the same type as the left argument. Otherwise, a type error is reported. In the case</p>
 
@@ -789,7 +789,7 @@ ccc
 </xmp>
 <p>Bin is a atom function of its right argument. That is, if the right argument is a simple list then so is the result r, and <code><nobr>r[j]</nobr></code> equals <code><nobr>x bin y[j]</nobr></code> for every index j of y.</p>
 <p>Note that Bin expects the left argument to be in sort order, but does not enforce it.</p>
-<p><h5 id='Nested where Phrases'>15 Nested where Phrases</h5></p>
+<p><h5 id="Nested where Phrases">15 Nested where Phrases</h5></p>
 <p>Consider the following two queries.</p>
 
 <xmp>select from trade where (size>2000)&sym in`aaa`xx
@@ -818,7 +818,7 @@ select from trade where size>2000,sym in`aaa`xx
 <p>If possible, you should choose an order for the expressions in a nested <code><nobr>where</nobr></code> phrase that produces the smallest temporary tables at each step. This can't always be done, but perhaps in this case it can. In a realistic trade table the trading activity on indivdual securities is generally known, as is the average size of trades. For example, if the securities aaa and xx are lightly traded it would most likely be best to put the phrase <code><nobr>sym in`aaa`xx</nobr></code> on the left because the temporary table will be relatively small.</p>
 <p>The arrangement of expressions in a nested <code><nobr>where</nobr></code> phrase for optimal performance is not always so obvious. There is more on this topic in <u>Q Programming</u>.</p>
 <p>There is an important example where the order of the expressions in nested <code><nobr>where</nobr></code> phrases makes a truly significant difference. The kdb+tick product from Kx Systems, Inc. creates historical databases of trades and quotes from various security exchanges. Each database is a parallel database stored in separate segments, with one segment for each trading date. Queries are applied separately to the segments and the results are combined to give final results. A typical query applies to some date range, not the entire history. All such queries can use nested where phrases in which the first expression defines the date range. In that way, the remaining evaluations are applied only to the segments for those dates instead of the entire history.</p>
-<p><h5 id='Aggregation'>16 Aggregation</h5></p>
+<p><h5 id="Aggregation">16 Aggregation</h5></p>
 <p>Aggregation functions, also called summarization functions, apply to lists of atoms and produce atoms. For example,</p>
 
 <xmp>  sum 1 2 3 4                      
@@ -871,7 +871,7 @@ ccc  10  1500.00
 </xmp>
 <p>Note that the result has a dual primary key, columns sym and hh. Even though the items in these columns are not unique, pairs of the items in the same rows of the two columns are unique.</p>
 <p>The columns in a <code><nobr>by</nobr></code> phrase are not necessarily the ones in the table. In the preceding example the by column <code><nobr>time.hh</nobr></code> is a virtual column. By columns can also be computed columns; see <a xref="#The xbar Function">The xbar Function</a>.</p>
-<p><h5 id='Basic Aggregation Functions'>16.1 Basic Aggregation Functions</h5></p>
+<p><h5 id="Basic Aggregation Functions">16.1 Basic Aggregation Functions</h5></p>
 <p>The basic aggregation functions are the ones that have been part of SQL from the beginning (or nearly so). Here is a list.</p>
 
 <xmp>Name/Syntax Example                              Result Column (*)         
@@ -901,7 +901,7 @@ yyyy 10 73.25 73.25
 ccc  10 84.25 84.25
 </xmp>
 <p>There are two companion functions in finance that give the open and close prices. q has aggregation functions for those calculations but SQL does not, which brings up a fundamental difference between kdb+ tables and standard SQL tables.</p>
-<p><h5 id='Kdb+ tables are Ordered'>16.1.1 Kdb+ tables are Ordered</h5></p>
+<p><h5 id="Kdb+ tables are Ordered">16.1.1 Kdb+ tables are Ordered</h5></p>
 <p>Tables in standard SQL are not ordered. That is, there is no concept of one table row coming before another. It is possible to define a cursor on a result set and then manipulate the cursor rows in order, but that can't be done in the SQL query language. kdb+ tables are ordered. In particular there is the concept of the first row and last row of kdb+ table. The aggregation functions named first and last give open and close prices in financial calculations. For example,</p>
 
 <xmp>Name/Syntax Example                              Result Column             
@@ -938,7 +938,7 @@ s1 5
 s1 11
 </xmp>
 <p>Note that <code><nobr>count i</nobr></code> plays the role of <code><nobr>count(*)</nobr></code> in SQL. The count function is special because it gives the same result when applied to any column of a table. This function does not depend on the values of the items in a column, only on the number of items. Consequently, SQL has a special construct <code><nobr>count(*)</nobr></code> that is used in queries whenever a row count is needed. The comparable thing in q is <code><nobr>count i</nobr></code> , although it only a convention here, not a requirement.</p>
-<p><h5 id='More Aggregation Functions'>16.1.2 More Aggregation Functions</h5></p>
+<p><h5 id="More Aggregation Functions">16.1.2 More Aggregation Functions</h5></p>
 
 <xmp>Name/Syntax Description                   
 ------------------------------------------
@@ -972,7 +972,7 @@ dd   81.00
 ccc  89.50
 yyyy 73.25
 </xmp>
-<p><h5 id='The Xbar Function'>16.1.3 The Xbar Function</h5></p>
+<p><h5 id="The Xbar Function">16.1.3 The Xbar Function</h5></p>
 <p>Interval bars are prominent in aggregation queries. For example, to roll-up prices and sizes in 10 minute bars:</p>
 
 <xmp>select last price, sum size by 10 xbar time.minute from trade
@@ -999,7 +999,7 @@ yyyy 73.25
 85.00  1
 </xmp>
 <p>Note that q permits expressions in "by phrases". Xbar applies to all numeric and temporal datatypes and produces a result of the same type.</p>
-<p><h5 id='More on Insert'>17 More on Insert</h5></p>
+<p><h5 id="More on Insert">17 More on Insert</h5></p>
 <p>It is possible to insert more than one row at a time.  This is called a bulk insert. To do this, list d is replaced with a table having the same column names as t. For example,</p>
 
 <xmp>  t:([]a:();b:())                  
@@ -1013,7 +1013,7 @@ yyyy 73.25
 20 25.00 
 31 -26.20
 </xmp>
-<p><h5 id='Select and Update'>18 Select and Update</h5></p>
+<p><h5 id="Select and Update">18 Select and Update</h5></p>
 <p>The keywords select and update define q expressions which execute in a certain order. The general form is:</p>
 
 <xmp>select .. by .. from x where ..  
@@ -1025,7 +1025,7 @@ update .. by .. from x where ..
 </xmp>
 <p>The <code><nobr>from</nobr></code> expression is always evaluated first, followed by the <code><nobr>where</nobr></code> phrase. Next comes the <code><nobr>by</nobr></code> phrase, and finally the <code><nobr>select</nobr></code> phrase.</p>
 <p>A <code><nobr>select</nobr></code> , <code><nobr>by</nobr></code> or <code><nobr>where</nobr></code> phrase is a list of expressions separated by commas, as in <code><nobr>price,size,cost:price*size</nobr></code> or <code><nobr>time>10:30:00,sym=`aa</nobr></code> . As the examples show, the sub-phrases do not require surrounding parentheses. The sub-phrases are evaluated left to right. For example, if the <code><nobr>where</nobr></code> phrase is <code><nobr>time>10:30:00,sym=`aa</nobr></code> then <code><nobr>time>10:30:00</nobr></code> is evaluated first and applied to the "from table", and then <code><nobr>sym=`aa</nobr></code> is evaluated and applied. Phrases and sub-phrases are evaluated by the rules described in <a HREF="#Order of Evaluation">Order of Evaluation</a>.</p>
-<p><h5 id='Union, Inter(sect), Except and Distinct'>19 Union, Inter(sect), Except and Distinct</h5></p>
+<p><h5 id="Union, Inter(sect), Except and Distinct">19 Union, Inter(sect), Except and Distinct</h5></p>
 <p>The primitives in this section are the standard SQL set operation primitives. The following tables t1 and and t2 are used in examples. </p>
 <p>The Distinct function can be used in aggregations in the same way as in SQL. The following example compares a <code><nobr>count qty</nobr></code> aggregation with a <code><nobr>count distinct qty</nobr></code> aggregation of the sp table.</p>
 
