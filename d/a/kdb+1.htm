@@ -4,9 +4,9 @@
 <p><h5 id="Introduction">1 Introduction</h5></p>
 <p>Kdb+ comes with a comprehensive programming language: q (.q scripts). [We will also implement SQL.] q is similar to SQL but is simpler and more expressive. q implements all relational capabilities as well as timeseries analysis. This manual is concerned with the q versions of the standard SQL operations on tables. </p>
 
-<xmp>s:([s]name:();status:();city:()) / create a table with primary key s
-`s insert(`s1;`smith;20;`london) / insert a record                  
-select from s where name=`smith  / select a record                  
+<xmp>s:([s:()]name:();status:();city:()) / create a table with primary key s
+`s insert(`s1;`smith;20;`london)    / insert a record                  
+select from s where name=`smith     / select a record                  
 </xmp>
 <p>Additional features are defined in <u>Q Programming</u>.</p>
 <p><h5 id="The Interactive Environment">2 The Interactive Environment</h5></p>
