@@ -1,4 +1,5 @@
-// 2006.09.29 NULL  c.Date class(sync with c.java)
+//2006.10.05 truncate string at null
+//2006.09.29 NULL  c.Date class(sync with c.java)
 // \winnt\microsoft.net\framework\v2.0.50727\csc c.cs
 using System;using System.IO;using System.Net.Sockets; //csc c.cs  given >q trade.q -p 5001
 class c:TcpClient{public static void Main(string[]args){
@@ -12,6 +13,7 @@ class c:TcpClient{public static void Main(string[]args){
 byte[]b,B;int j,J;bool a;Stream s;public new void Close(){s.Close();base.Close();}
 public c(string h,int p):this(h,p,Environment.UserName){}
 public c(string h,int p,string u):base(h,p){s=this.GetStream();B=new byte[1+u.Length];J=0;w(u);s.Write(B,0,J);if(1!=s.Read(B,0,1))throw new Exception("access");}
+static int ns(string s){int i=s.IndexOf('\0');return -1<i?i:s.Length;}
 static TimeSpan t(){return DateTime.Now.TimeOfDay;}static TimeSpan v;static void tm(){TimeSpan u=v;v=t();O(v-u);}
 static void O(object x){Console.WriteLine(x);}static string i2(int i){return String.Format("{0:00}",i);}
 static int ni=Int32.MinValue;static long nj=Int64.MinValue,o=(long)8.64e11*730119;static double nf=Double.NaN;
@@ -39,7 +41,7 @@ static int t(object x){return x is bool?-1:x is byte?-4:x is short?-5:x is int?-
 static int[]nt={0,1,0,0,1,2,4,8,4,8,1,0,0,4,4,8,4,4,4,4}; // x.GetType().IsArray
 static int n(object x){return x is Dict?n(((Dict)x).x):x is Flip?n(((Flip)x).y[0]):((Array)x).Length;}
 static int nx(object x){int i=0,n,t=c.t(x),j;if(t==99)return 1+nx(((Dict)x).x)+nx(((Dict)x).y);if(t==98)return 3+nx(((Flip)x).x)+nx(((Flip)x).y);
- if(t<0)return t==-11?2+((string)x).Length:1+nt[-t];j=6;n=c.n(x);if(t==0)for(;i<n;++i)j+=nx(((object[])x)[i]);else j+=n*nt[t];return j;}
+ if(t<0)return t==-11?2+ns((string)x):1+nt[-t];j=6;n=c.n(x);if(t==0)for(;i<n;++i)j+=nx(((object[])x)[i]);else j+=n*nt[t];return j;}
 
 public static object at(object x,int i){object r=((Array)x).GetValue(i);return qn(r)?null:r;} 
 //public static void set(object x,int i,object y){Array.set(x,i,null==y?NU[t(x)]:y);}

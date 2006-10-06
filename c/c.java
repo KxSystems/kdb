@@ -1,3 +1,4 @@
+//2006.10.06 truncate string at null
 //2006.09.29 Date.Date(); sync with c.cs
 //2006.04.22 NULL, e.g. Object[]x={NULL('i'),NULL('z')};
 //jar cf c.jar *.class
@@ -7,8 +8,6 @@ try { //s.setSoTimeout(ms);java.util.TimeZone.setDefault(java.util.TimeZone.getT
 //c c=new c(new ServerSocket(5010));while(true)c.w(2,c.k());
 //c c=new c("",5010);Object[]x={"GE",new Double(2.5),new Integer(23)};c.k(".u.upd","trade",x);
 c c=new c("localhost",5001);
-c.k("(0N!.z.w)(2;3.4)"); //,NULL('f'),new Float(Float.NaN));
-for(int i=0;i<100;)c.k("(0N!.z.w)(2;3.4)"); 
 // Object[]x={new Time(lt()),"xx",new Double(93.5),new Integer(300)};for(int i=0;i<1000;++i)c.ks("upsert","trade",x);c.k("");
 // Flip t=td(c.k("select sum size by sym from trade"));
 // O(n(t.x));O(n(t.y[0]));O(at(t.y[0],0)); //cols rows data
@@ -44,7 +43,8 @@ static int t(Object x){return x instanceof Boolean?-1:x instanceof Byte?-4:x ins
  x instanceof java.util.Date[]?15:x instanceof Time[]?19:x instanceof Date[]?14:x instanceof Minute[]?17:x instanceof Second[]?18:
  x instanceof Flip?98:x instanceof Dict?99:0;}
 static int ni=Integer.MIN_VALUE;static long nj=Long.MIN_VALUE;static double nf=Double.NaN;
-static int[]nt={0,1,0,0,1,2,4,8,4,8,1,0,0,4,4,8,0,4,4,4};static int ns(String s){return s==null?0:s.length();}
+static int[]nt={0,1,0,0,1,2,4,8,4,8,1,0,0,4,4,8,0,4,4,4};
+static int ns(String s){int i;return s==null?0:-1<(i=s.indexOf('\000'))?i:s.length();}
 public static Object[]NULL={null,new Boolean(false),null,null,new Byte((byte)0),new Short(Short.MIN_VALUE),new Integer(ni),new Long(nj),new Float(nf),new Double(nf),
  new Character(' '),"",null,new Month(ni),new Date(ni),new java.util.Date(nj),null,new Minute(ni),new Second(ni),new Time(ni)};
 public static Object NULL(char c){return NULL[" b  xhijefcs mdz uvt".indexOf(c)];}
