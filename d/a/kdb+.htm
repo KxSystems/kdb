@@ -28,11 +28,16 @@ WIN32> w32.exe            (WINDIR/q.exe)
 -s slaves for parallel execution                                   
 -t timer milliseconds                                              
 -T timeout seconds                                                 
--o offset hours(from GMT: affects .z.z)                            
--u usr:pwd file                                                    
+-o offset hours(from GMT: affects .z.Z)                            
+-u usr:pwd file (-U allows file operations)                        
 -w workspace MB limit                                              
 -r replicate from :host:port (-R sync)                             
 -l log updates to filesystem (-L sync)                             
+</xmp>
+
+<xmp>-z [0] "D"$ uses mm/dd/yyyy or dd/mm/yyyy
+-P [7] printdigits(0:all)                
+-W [2] week offset(0:sat)                
 </xmp>
 <p>The simplest database is just a process which may be initialized with a script. Each process handles any number of concurrent http and kdbc (jdbc/odbc) clients. For example, start a trade.q database listening on port 5001.</p>
 
@@ -153,7 +158,7 @@ update t set [a] [where c]
 </xmp>
 <p>In sql the <code><nobr>where</nobr></code> and <code><nobr>group</nobr></code> clauses are atomic and the <code><nobr>select</nobr></code> and <code><nobr>update</nobr></code> clauses are atomic or aggregate if grouping. In q the <code><nobr>where</nobr></code> and <code><nobr>by</nobr></code> clauses are uniform and the <code><nobr>select</nobr></code> and <code><nobr>update</nobr></code> clauses are uniform or aggregate if grouping ( <code><nobr>by</nobr></code> ). All clauses execute on the columns and therefore q can take advantage of order. Sql can't tell the difference. Sql repeats the <code><nobr>group by</nobr></code> expressions in the <code><nobr>select</nobr></code> and the <code><nobr>where</nobr></code> clause is one boolean expression. The q <code><nobr>where</nobr></code> clause is a cascading list of constraints which nicely obviates some complex sql correlated subqueries and also gets rid of some parentheses. q relational queries are generally half the size of the corresponding sql. Ordered and functional queries do things that are difficult in sql. See <a href="http://kx.com/q/e">http://kx.com/q/e</a> for examples.  <code><nobr>i</nobr></code> is a special token that indicates record handle.</p>
 <p><h5 id="Default Column Names">8 Default Column Names</h5></p>
-<p>Create, select and update will create names from expressions if there is no assignment. The name is last token (first token if operation is % or -) in the expression or <code><nobr>x</nobr></code> if this token isn't a valid name, e.g.</p>
+<p>Create, select and update will create names from expressions if there is no assignment. The name is last token (first token if operation is +, -, *, %, & or |) in the expression or <code><nobr>x</nobr></code> if this token isn't a valid name, e.g.</p>
 
 <xmp>select count i,sum qty by order.customer.nation ..
 </xmp>
@@ -278,6 +283,7 @@ query .01ms .3ms      10ms(seek)
 <p>64bit has an advantage on medium (and large) because queries on 32bit are dominated by mapping.</p>
 <p><h5 id="Small">19 Small</h5></p>
 <p><a href="http://kx.com/q/tick">http://kx.com/q/tick</a></p>
+<p>One day's worth of tick(trades, quotes, orders, ..) is a few GB and fits in RAM.</p>
 <p>Queries are around 10 microseconds.</p>
 <p><h5 id="Medium">20 Medium</h5></p>
 
