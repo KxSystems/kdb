@@ -19,31 +19,30 @@
 -t timer milliseconds                                              
 -T timeout seconds                                                 
 -o offset hours(from GMT: affects .z.Z)                            
--u usr:pwd file                                                    
+-u usr:pwd file (-U allow file operations)                         
 -w workspace MB limit (e.g. 2*RAM)                                 
 -r replicate from :host:port (-R sync)                             
 -l log updates to filesystem (-L sync)                             
 </xmp>
 
-<xmp>-z [0]       "D"$ uses mm/dd/yyyy or dd/mm/yyyy
--P [7]       printdigits(0:all)                
--W [2]       week offset(0:sat)                
--c [23 79]   console x and y                   
--C [36 2000] webbrowser x and y                
+<xmp>-z [0] "D"$ uses mm/dd/yyyy or dd/mm/yyyy
+-P [7] printdigits(0:all)                
+-W [2] week offset(0:sat)                
 </xmp>
 <p><h5 id="Atom and List">4 Atom and List</h5></p>
 
 <xmp>(boolean byte short int long real float char symbol month date datetime minute second time enum*)
 atom:(0b;0x00;0h;0;0j;0e;0.0;" ";`;2000.01m;2000.01.01;..T..;00:00;00:00:00;00:00:00.000;*)      
-list:(01b;0x00ff;2 3h;2 3;2 3j;2 3e;2 3.0;"ab";`a`b;..)  null:(0Nh;0N;0Nj;0Ne;0n;.0Nm..0Nt)      
+list:(01b;0x00ff;2 3h;2 3;2 3j;2 3e;2 3.0;"ab";`a`b;..)  null:(0Nh;0N;0Nj;0Ne;0n;' ';`;.0Nm..0Nt)
 </xmp>
 <p>NB: there is no notation for singleton lists -- they must be built, e.g. <code><nobr>enlist"a"</nobr></code></p>
 <p><h5 id="Dict and Table">5 Dict and Table</h5></p>
 <p>Dictionaries are maps of lists to lists. A table is a list of similar dicts(records).</p>
 
-<xmp>d:`x`y!(`a;2)     / a dict is a map from a list to a list
-f:(d;`x`y!(`b;3)) / a table is a list of dictionaries    
-([]x:`a`b;y:2 3)  / a column notation for the same table 
+<xmp>d:`x`y!(`a;2)         / a dict is a map from a list to a list
+f:(d;`x`y!(`b;3))     / a table is a list of dictionaries    
+f:flip`x`y!(`a`b;2 3) / same table as flip of dict of lists  
+([]x:`a`b;y:2 3)      / a column notation for the same table 
 </xmp>
 <p>A keyed table is a dict whose key and value are both tables.</p>
 <p><h5 id="Insert and Upsert">6 Insert and Upsert</h5></p>
@@ -77,6 +76,7 @@ upsert: K,:K (also K,:r K,:l K,:L K,:R)
 
 <xmp>x lj y
 </xmp>
+<p>or <code><nobr>y[([]k);`c]</nobr></code> and <code><nobr>y[([]k:j);`c]</nobr></code> to get just the <code><nobr>y.c</nobr></code> column.</p>
 <p>Fkey joins are 10 to 100 million per second (ram/cache). Adhoc joins are 4 to 40 million per second (ram/cache).</p>
 <p><h5 id="Adhoc Join">8 Adhoc Join</h5></p>
 
@@ -114,7 +114,7 @@ upsert: K,:K (also K,:r K,:l K,:L K,:R)
 </xmp>
 <p>See <a href="http://kx.com/q/taq/adj.q">http://kx.com/q/taq/adj.q</a> for applying corporate actions using asof joins. If the map isn't keyed, e.g.</p>
 
-<xmp>quote:([]sym,time,..)
+<xmp>quote:([]sym;time;..)
 </xmp>
 <p>then we must use <code><nobr>aj</nobr></code> . The map is often: <code><nobr>([]time;..)</nobr></code> or <code><nobr>([]sym;time;..)</nobr></code> and it is treated as if these fields were key, e.g.</p>
 
@@ -184,7 +184,7 @@ other     get distinct group where enlist flip raze rand type key value
 </xmp>
 
 <xmp>i # L;i # D;X # D / take, e.g. -2#2 3 4 
-i _ L;i _ D;X # D / drop, e.g. -2_2 3 4 
+i _ L;i _ D;X _ D / drop, e.g. -2_2 3 4 
 L _ i;D _ x       / delete, e.g. 2 3 4_1
 I cut L           / e.g. 0 2 cut 2 3 4  
 </xmp>
@@ -234,18 +234,19 @@ f:{[a;b] / parameters
 f[2;3]
 </xmp>
 
-<xmp>/ conditional expression                                                 
-$[cond;true;false]       / $[..;[..;..];[..;..]] for multiple expressions
+<xmp>/ conditional expression                                                       
+$[cond;true;false]             / $[..;[..;..];[..;..]] for multiple expressions
+$[cond;true;cond;true;..false]                                                 
 </xmp>
 
-<xmp>/ control statements                                   
-do[n;..]                                               
-while[cond;..]                                         
-if[cond;..]                                            
-if[cond;:..]         / return                          
-if[cond;'..]         / signal                          
-@[f;x;r]             / trap: f @ x  (return r on error)
-.[f;x;r]             / trap: f . x  (return r on error)
+<xmp>/ control statements                                                                            
+do[n;..]                                                                                        
+while[cond;..]                                                                                  
+if[cond;..]                                                                                     
+if[cond;:..]         / return                                                                   
+if[cond;'..]         / signal                                                                   
+@[f;x;r]             / trap: f @ x  (return r on error. if r is a func apply r to error string.)
+.[f;x;r]             / trap: f . x  (return r on error. if r is a func apply r to error string.)
 </xmp>
 <p><h5 id="Parameters">18 Parameters</h5></p>
 <p>Functions can have queries and queries can have functions, e.g. given</p>
@@ -312,7 +313,7 @@ hclose h
 <xmp>h:hopen`:host:port                               
 h"f[2;3]"          / execute                     
 h(`f;2;3)          / func args                   
-(neg h)"a:2"       / asynch                      
+neg[h]"a:2"        / asynch                      
 hclose h           / close                       
 .z.pg              / get callback(default: value)
 .z.ps              / set callback(default: value)
@@ -422,8 +423,12 @@ x,`y parses to (,;`x;,`y)
 .[x;y]
 </xmp>
 
-<xmp>@[x;y;z;r]
-.[x;y;z;r]
+<xmp>@[x;y;z] / x[y]:z'x[y]
+.[x;y;z]              
+</xmp>
+
+<xmp>@[x;y;z;r] / x[y]:x[y]z'r
+.[x;y;z;r]               
 </xmp>
 
 <xmp>set is .[;();:;]
@@ -437,15 +442,17 @@ x f\:y / eachleft
 </xmp>
 <p><h5 id="System Commands">36 System Commands</h5></p>
 
-<xmp>\w          workspace(used allocated max mapped)         
-\l [f]      load file (or dir:files splays parts scripts)
-\t [x]      time expression                              
-\d [d]      directory                                    
-\v [d]      variables                                    
-\f [d]      functions                                    
-\cd         Directory                                    
-\oscommands                                              
-\\          exit                                         
+<xmp>\w           workspace(used allocated max mapped)         
+\l [f]       load file (or dir:files splays parts scripts)
+\t [x]       time expression                              
+\d [d]       proc directory                               
+\v [d]       variables                                    
+\f [d]       functions                                    
+\c [23 79]   console x and y                              
+\C [36 2000] webbrowser x and y                           
+\cd          file directory                               
+\..          o/s commands                                 
+\\           exit                                         
 </xmp>
 <p><h5 id="System Variables">37 System Variables</h5></p>
 
@@ -498,8 +505,8 @@ last t[`IBM;`price]
 </xmp>
 <p>or we can precalculate the link: </p>
 
-<xmp>s:update t:`t!foo[s;t]from s
-select t.a,t.b from s       
+<xmp>s:update t:`t!f[s;t]from s
+select t.a,t.b from s     
 </xmp>
 <p>So having the link is generally better if it will be used more than once. A link can give us the performance(or better) of denormalization with minimal extra storage.</p>
 <p><h5 id="Attributes">42 Attributes</h5></p>
@@ -517,7 +524,7 @@ select t.a,t.b from s
 .. where x in v, ..    
 .. where x within v, ..
 </xmp>
-<p>`u is for unique lists. `p and `g are for lists with a lot of repetition. `s#table marks the table to use binary search and marks first column sorted. `s#dict(incl. keyed tables) marks the dict to behave as step function. Vector and single-column table lookups run at about 200ns per lookup. 2 column lookups when the first column has an attribute are about 2us per lookup. Put the most distinguishing column first. The attribute flags are descriptive -- not prescriptive. Amends and appends preserve flags iff the attribute is preserved, e.g.</p>
+<p>`u is for unique lists. `p and `g are for lists with a lot of repetition. `s#table marks the table to use binary search and marks first column sorted. `s#dict(incl. keyed tables) marks the dict to behave as step function. Vector and single-column table lookups run at about 200ns per lookup. 2 column lookups when the first column has an attribute are about 2us per lookup. Put the most distinguishing column first. The attribute flags are descriptive -- not prescriptive. Amends and appends preserve flags if and only if the attribute is preserved, e.g.</p>
 
 <xmp>t:([]a:`s#2 3;b:4 1)   
 t,:3 4 / `s#a preserved
