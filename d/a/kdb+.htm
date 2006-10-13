@@ -209,8 +209,8 @@ q)sp:([]s:`s$();p:`p$();qty:`int$())
 q)`s insert(`s1;`smith;20;`london)              
 </xmp>
 
-<xmp>s)update s set status=1+status where s='s1'
-q)update 1+status from`s where s=`s1       
+<xmp>s)update s set status=status+1 where s='s1'
+q)update status:status+1 from`s where s=`s1
 </xmp>
 
 <xmp>s)delete from s where s='s1'  

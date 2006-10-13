@@ -162,6 +162,7 @@ second.(hh mm ss minute)
 
 <xmp>`sym$`a / check referential integrity
 `sym?`a / append if necessary        
+`sym$ 0 / hardcode reference         
 </xmp>
 <p><h5 id="Functions">14 Functions</h5></p>
 <p>Functions are atomic (atom from atom), aggregate (atom from list), uniform (list from list) or other. </p>
@@ -240,14 +241,15 @@ $[cond;true;cond;true;..false]
 </xmp>
 
 <xmp>/ control statements                                                                            
-do[n;..]                                                                                        
-while[cond;..]                                                                                  
-if[cond;..]                                                                                     
-if[cond;:..]         / return                                                                   
-if[cond;'..]         / signal                                                                   
+do[n;..];                                                                                       
+while[cond;..];                                                                                 
+if[cond;..];                                                                                    
+if[cond;:..];        / return                                                                   
+if[cond;'..];        / signal                                                                   
 @[f;x;r]             / trap: f @ x  (return r on error. if r is a func apply r to error string.)
 .[f;x;r]             / trap: f . x  (return r on error. if r is a func apply r to error string.)
 </xmp>
+<p>N.B. statements must be separated with ";"'s.</p>
 <p><h5 id="Parameters">18 Parameters</h5></p>
 <p>Functions can have queries and queries can have functions, e.g. given</p>
 
