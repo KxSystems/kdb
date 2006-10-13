@@ -1,4 +1,4 @@
-/ help.q 2006.08.27T20:13:20.813
+/ help.q 2006.10.13T08:01:50.063
 \d .help
 DIR:TXT:()!()
 display:{if[not 10h=abs type x;x:string x];$[1=count i:where(key DIR)like x,"*";-1 each TXT[(key DIR)[i]];show DIR];}
@@ -132,6 +132,7 @@ TXT,:(enlist`dotz)!enlist(
  ".z.b       dependencies (more information than \\b)";
  ".z.f       startup file";
  ".z.h       hostname";
+ ".z.i       process pid ";
  ".z.k       kdb+ releasedate ";
  ".z.K       kdb+ major version";
  ".z.l       license information (;expirydate;updatedate;;;)";
@@ -183,7 +184,7 @@ TXT,:(enlist`errors)!enlist(
  "";
  "system (file and ipc) errors";
  "XXX:YYY                  XXX is from kdb+, YYY from the OS";
- "XXX from addr, close, conn, snd, rcv or (invalid) filename (read0`:invalidname.txt)";
+ "XXX from addr, close, conn, p(from -p), snd, rcv or (invalid) filename (read0`:invalidname.txt)";
  "";
  "parse errors (execute or load)";
  "[/(/{/]/)/}/\"            open ([{ or \"";
