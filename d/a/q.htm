@@ -162,7 +162,7 @@ second.(hh mm ss minute)
 
 <xmp>`sym$`a / check referential integrity
 `sym?`a / append if necessary        
-`sym! 0 / hardcode reference         
+`sym!0  / hardcode reference         
 </xmp>
 <p><h5 id="Functions">14 Functions</h5></p>
 <p>Functions are atomic (atom from atom), aggregate (atom from list), uniform (list from list) or other. </p>
@@ -342,4 +342,194 @@ dir/{scripts|tables|{tables/fields}}
 <xmp>>q dir / loads parallel database and sets partition variable. 
 dir/{..|{date|month|year|int}/{tables}/{fields}}              
 </xmp>
-<p>There is one partition variable <code><nobr>date|month|year|int</nobr></code>  and it is a virtual column in all the partition tables. There can be other <code><nobr>date</nobr></code> columns with different names. New partitions 
+<p>There is one partition variable <code><nobr>date|month|year|int</nobr></code>  and it is a virtual column in all the partition tables. There can be other <code><nobr>date</nobr></code> columns with different names. New partitions can be added -- then send reset"\\l ."</p>
+<p><h5 id="Loading Tables">28 Loading Tables</h5></p>
+
+<xmp>\cd SRC                        
+x is `file[,offset,length] or G
+</xmp>
+
+<xmp>t:("BXHIJEFCSMDZUVT* ";,delim)0:x / delim text with names in first row
+L:("BXHIJEFCSMDZUVT* "; delim)0:x / delim text                        
+L:("BXHIJEFCSMDZUVT* ";widths)0:x / fixed text                        
+L:("bxhijefcsmdzuvt* ";widths)1:x / fixed data                        
+</xmp>
+<p>E and F also recognize "+dd dd/ddd"</p>
+<p>D recognizes:</p>
+
+<xmp>[yy]yymmdd    e.g. 991231    
+[yy]yy?mm?dd  e.g. 1999-12-31
+ddmmmyy[yy]   e.g. 31Dec99   
+dd?mmm?yy[yy] e.g. 31 Dec 99 
+mm/dd/[yy]yy  e.g. 12/31/99  
+dd/mm/[yy]yy  with \z 1      
+</xmp>
+<p>Syms(S) trim, blank skips and * is character vector. Reverse types and widths to load reverse endian data.</p>
+
+<xmp>data: .[`:f[/];();[:,];..] !`:d .`:d/(defermap) stdout: -1".." stderr: -2".."
+line: f 0:L:read0:f[,i,n] L:d 0:L:("*BXHIJEFCSMDZUVT ";[,]delim)0:{L|f[,i,n]}
+byte: f 1:G:read1:f[,i,n] G:w 1:L:("*bxhijefcsmdzuvt ";   width)1:{G|f[,i,n]}
+</xmp>
+<p><h5 id="Saving Tables">29 Saving Tables</h5></p>
+<p>Tables can be written as a single file or spread across a directory, e.g.</p>
+
+<xmp>`:trade  set x    / write as single file    
+`:trade/ set x    / write across a directory
+trade:get`:trade  / read                    
+trade:get`:trade/ / map columns on demand   
+</xmp>
+<p>Tables splayed across a directory must be fully enumerated(no varchar) and not keyed.</p>
+<p><h5 id="Load and Save">30 Load and Save</h5></p>
+
+<xmp>save`[:../]trade           / `:trade set trade
+load`[:../]trade           / trade:get `:trade
+save`[:../]trade.{txt|csv} / delimited text   
+</xmp>
+<p>Datetime txt and csv are written as: <code><nobr>yyyy-mm-dd hh:mm:ss.ddd</nobr></code></p>
+<p><h5 id="Exec">31 Exec</h5></p>
+
+<xmp>?[t;i;x]           / i(indices) x(parse tree expression)
+?[sp;::;(last;`s)]                                      
+</xmp>
+<p><h5 id="Select and Update">32 Select and Update</h5></p>
+
+<xmp>?[t;c;b;a] /select
+![t;c;b;a] /update
+</xmp>
+
+<xmp>a dict of aggrs      
+b dict of groupbys   
+c list of constraints
+</xmp>
+
+<xmp>select max qty,sum qty by s from sp where qty>100,s in`s1`s2                                   
+?[sp;((>;`qty;100);(in;`s;enlist`s1`s2));(enlist`s)!enlist`s;`qty`qty1!((max;`qty);(sum;`qty))]
+</xmp>
+
+<xmp>{select.. update ..} are parsed to @ and ! so there is no speed difference here.
+."select a by b from t where c" is slower than ."?[t;c;b;a]"                    
+?[t;c;b;a] allows you to manufacture the c, b and a.                            
+</xmp>
+<p><h5 id="Parse tree">33 Parse tree</h5></p>
+
+<xmp>(f;x;y) / ,`s for sym constant
+</xmp>
+<p>sym constants need to be distinguished from sym references, e.g.</p>
+
+<xmp>x,3 parses to (,;`x;3)   
+x,`y parses to (,;`x;,`y)
+</xmp>
+<p><h5 id="Apply and Amend">34 Apply and Amend</h5></p>
+
+<xmp>@[x;y]
+.[x;y]
+</xmp>
+
+<xmp>@[x;y;z] / x[y]:z'x[y]
+.[x;y;z]              
+</xmp>
+
+<xmp>@[x;y;z;r] / x[y]:x[y]z'r
+.[x;y;z;r]               
+</xmp>
+
+<xmp>set is .[;();:;]
+</xmp>
+<p><h5 id="Operators">35 Operators</h5></p>
+<p>Operators take functions and produce derived functions.</p>
+
+<xmp>x f'y  / eachboth 
+x f/:y / eachright
+x f\:y / eachleft 
+</xmp>
+<p><h5 id="System Commands">36 System Commands</h5></p>
+
+<xmp>\w           workspace(used allocated max mapped)         
+\l [f]       load file (or dir:files splays parts scripts)
+\t [x]       time expression                              
+\d [d]       proc directory                               
+\v [d]       variables                                    
+\f [d]       functions                                    
+\c [23 79]   console x and y                              
+\C [36 2000] webbrowser x and y                           
+\cd          file directory                               
+\..          o/s commands                                 
+\\           exit                                         
+</xmp>
+<p><h5 id="System Variables">37 System Variables</h5></p>
+
+<xmp>.z. f(file) x(args) a(addr) h(host) u(user) w(who) zZ(gmt/local) k(releasedate)
+.z. pg[x](get) ps[x](set) po[h](open) pc[h](close) ph[x](http) ts[z](timer)    
+</xmp>
+<p>We can watch open/close with <code><nobr>.z.po:{0N!x} .z.pc:{0N!neg x}</nobr></code></p>
+<p><h5 id="Clients">38 Clients</h5></p>
+<p>Connect and make remote function calls, e.g.   (OS is s32|l32|w32)</p>
+
+<xmp>http://kx.com/q/c/c.java c c=new c("host",port);c.k(string|{func,args..});  
+http://kx.com/q/c/c.c    int c=khp("host",port);k(c,string|{func,args..},0);
+</xmp>
+
+<xmp>QHOME/OS>gcc ../c/c.c c.o   (-lsocket)
+QHOME/OS>cl  ..\c\c.c c.lib           
+</xmp>
+<p>No arguments is a blocking read, e.g. <code><nobr>Object r=c.k(); (or K r=k(c,0);)</nobr></code></p>
+<p>The language is q and location is `. no matter what the server console is doing.</p>
+<p><h5 id="Dynamic Load">39 Dynamic Load</h5></p>
+<p>q calls c, e.g. in QHOME/OS (see c/k.h for generators and accessors)</p>
+
+<xmp>>gcc -G ../c/a.c -o a.so    
+>cl /LD ..\c\a.c a.def q.lib
+>q                          
+..                          
+ f:`a 2:(`f;1)              
+ g:`a 2:(`g;1)              
+ f 2                        
+ g 3                        
+</xmp>
+<p>c calls q (just like the clients) with handle 0. Also</p>
+
+<xmp>sd1(d,f); / set callback f on socket d 
+sd0(d);   / remove callback and close d
+</xmp>
+<p><h5 id="Performance">40 Performance</h5></p>
+<p>Bottom line: vector operations are up to 100 times faster per element than scalar operations. Q scalars are similar to java Objects(Integer etc.) and .net boxed elements. Given 400MHZ 64bit bus and 1.6GHZ cpu - about .5 of fastest 2004 cpus - q operation overhead(incl. fn call,each, object create) is about 50 ns. Vector operations are between .5ns(boolean in cache) and 500ns(exp,random access) per element. So a time dominating iterative inner loop may be a candidate for writing in c.</p>
+<p>One technique for maintaining constant(or log) time insert and select is to store nested data, e.g.</p>
+
+<xmp>t:([sym]time,price,size,..)
+t,:select by sym from x    
+last t[`IBM;`price]        
+</xmp>
+<p>We look for 10,000 to 100,000 inserts and selects per second.</p>
+<p><h5 id="Links">41 Links</h5></p>
+<p>Suppose f[s;t] calculates a link from table s to table t, e.g. previous quote, next quote, .. Then we can do:</p>
+
+<xmp>select t[f[s;t];`a],t[f[s;t];`b] from s
+</xmp>
+<p>or we can precalculate the link: </p>
+
+<xmp>s:update t:`t!f[s;t]from s
+select t.a,t.b from s     
+</xmp>
+<p>So having the link is generally better if it will be used more than once. A link can give us the performance(or better) of denormalization with minimal extra storage.</p>
+<p><h5 id="Attributes">42 Attributes</h5></p>
+
+<xmp>example          overhead            
+`s#2 2 3 sorted  0                   
+`u#2 4 5 unique  16*u                
+`p#2 2 1 parted  (4*u;16*u;4*u+1)    
+`g#2 1 2 grouped (4*u;16*u;4*u+1;4*n)
+</xmp>
+<p>The byte overheads use n(number of elements) and u(number of uniques). These are used by lookups, e.g.</p>
+
+<xmp>x?v                    
+.. where x = v, ..     
+.. where x in v, ..    
+.. where x within v, ..
+</xmp>
+<p>`u is for unique lists. `p and `g are for lists with a lot of repetition. `s#table marks the table to use binary search and marks first column sorted. `s#dict(incl. keyed tables) marks the dict to behave as step function. Vector and single-column table lookups run at about 200ns per lookup. 2 column lookups when the first column has an attribute are about 2us per lookup. Put the most distinguishing column first. The attribute flags are descriptive -- not prescriptive. Amends and appends preserve flags if and only if the attribute is preserved, e.g.</p>
+
+<xmp>t:([]a:`s#2 3;b:4 1)   
+t,:3 4 / `s#a preserved
+t,:2 3 / `s#a lost     
+</xmp>
+</body></html>
