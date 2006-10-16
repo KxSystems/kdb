@@ -1,4 +1,4 @@
-/ help.q 2006.10.13T08:01:50.063
+/ help.q 2006.10.16T16:22:50.141
 \d .help
 DIR:TXT:()!()
 display:{if[not 10h=abs type x;x:string x];$[1=count i:where(key DIR)like x,"*";-1 each TXT[(key DIR)[i]];show DIR];}
@@ -234,7 +234,8 @@ TXT,:(enlist`syscmd)!enlist(
  "\\S [-314159] seed";
  "\\t [i]       timer [x] milliseconds (1st fire after delay)";
  "\\t expr      time expression ";
- "\\T [i]       timeout [x] seconds ";
+ "\\T [i]       timeout [x] seconds";
+ "\\u           reload -u/-U user/pswd file  ";
  "\\v [d]       variables [directory]";
  "\\w           workspace(used allocated max mapped)";
  "             (max set by -w, 0 => unlimited)";
