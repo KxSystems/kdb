@@ -1,9 +1,9 @@
 <html><head><style>a{text-decoration:none}a:link{color:024C7E}a:visited{color:024C7E}a:active{color:958600}body{font:10pt verdana;text-align:justify}</style></head><body>Copyright &copy; <font color=024C7E><b>kx</b></font><font color=958600><b>.com</b></font>
 <h5>Q Language Reference Manual</h5>
 <p>Don Orth</p>
-<p><h5 id='Introduction'>1 Introduction</h5></p>
+<p><h5 id="Introduction">1 Introduction</h5></p>
 <p>This manual begins with two sections summarizing kdb+ data and functionality that is covered in this manual. The rest of the manual contains the details. </p>
-<p><h5 id='Datatypes Summary'>2 Datatypes Summary</h5></p>
+<p><h5 id="Datatypes Summary">2 Datatypes Summary</h5></p>
 <p>The table below summarizes the types in kdb+. Many of them were introduced in <u>kdb+</u>, but there is more to be said. For example, you will see in the table that there are two ways to designate a type: a char and a short int. Shorts are used to functionally determine the types of objects and cast objects from one type to another. You will also see the null value for each type in the table; see <a href="#More about Nulls">More about Nulls</a> for more information.</p>
 
 <xmp>Name     Example             Char Type Size Null  
@@ -27,7 +27,7 @@ enum     `s$`b, where s:`a`b *    20.. 4    `s$..
 </xmp>
 <p>Varchars are interned in a hash table. An atom has a negative type value, say -n. A simple list of those atoms has type value n. For example, <code><nobr>`abc</nobr></code> is a varchar atom with datatype value <code><nobr>-11h</nobr></code> , and the simple varchar list <code><nobr>`abc`s</nobr></code> has datatype value <code><nobr>11h</nobr></code> . See <u>kdb+s</u> for the forms of other simple lists.</p>
 <p>Enumerations are familiar from <u>kdb+</u> as foreign keys. They are like atomic types, in that individual enumerated values can be atoms or simple lists, atoms have negative datatype values, and simple lists have positive values. See <a href="#Enumeration">Enumeration</a> for more.</p>
-<p><h5 id='Primitive Function Summary'>3 Primitive Function Summary</h5></p>
+<p><h5 id="Primitive Function Summary">3 Primitive Function Summary</h5></p>
 <p>The table below summarizes the primitive functions discussed in this manual. Note the entry for the function Deltas; this function is just one of several defined in <a href="#Uniform Functions">Uniform Functions</a>. Unlike the Datatypes table above, this table does not include the primitive functions defined in the <u>kdb+</u> manual.</p>
 <p>Syntactically, q has verbs and functions. Verbs are primitive symbols and names that can be evaluated with infix notation, as in <code><nobr>a+b</nobr></code> . Functionally, verbs are dyadic functions that can be evaluated in the functional form f[a;b], but rarely are. For example, <code><nobr>+[2;3]</nobr></code> . The verb form of dyadic primitives is used below. Monadic primitive functions appear in the juxtaposition form of monadic function evaluation.</p>
 <p>A function expression appears more than once below if the expression defines more than one distinct function (depending on the arguments). The examples in the table are representative and do not necessarily indicate the full scope of the definitions.</p>
@@ -56,7 +56,7 @@ a_b (Cut)     0 3_2 3 4 5 6         (2 3 4;5 6)     Take, Drop and Cut
 a@b (Apply)   1 2 3@1 0             2 1             Verb Forms of x[...]           
 a . b (Apply) (1 2;3 4). 1 0        3               Verb Forms of x[...]           
 </xmp>
-<p><h5 id='One-Item Lists and Enlist'>4 One-Item Lists and Enlist</h5></p>
+<p><h5 id="One-Item Lists and Enlist">4 One-Item Lists and Enlist</h5></p>
 <p>You may have noticed that the various forms of list notation in <u>kdb+</u> do not provide a way to create a one-item list.  Creating one-item lists comes up from time to time, and there is a monadic primitive function called Enlist that does it. For example,</p>
 
 <xmp>enlist 34.5
@@ -71,7 +71,7 @@ a . b (Apply) (1 2;3 4). 1 0        3               Verb Forms of x[...]
 <xmp>  enlist(2 5;3.5 10 12)
 ,(2 5;3.5 10 12)       
 </xmp>
-<p><h5 id='Index, Index Assignment, and Amend'>5 Index, Index Assignment, and Amend</h5></p>
+<p><h5 id="Index, Index Assignment, and Amend">5 Index, Index Assignment, and Amend</h5></p>
 <p>These constructs all share the same syntactic form and the same functional form. We'll start with the syntactic form, which is denoted by square brackets ([]). Simple assignment of a value to a name with : has been used since early in the <u>kdb+</u> manual. There is also the matter of both simple assignment and index assignment within defined functions; see <a href="#Localization">Localization</a>.</p>
 <p>Indices start at 0. That is, the index of the first item of a list is 0. For example,</p>
 
@@ -160,7 +160,7 @@ a . b (Apply) (1 2;3 4). 1 0        3               Verb Forms of x[...]
 17          
 </xmp>
 <p>If the result of the assignment was the new value of b, which is <code><nobr>8 -3 7</nobr></code> , then the result of <code><nobr>10+b[2]:7</nobr></code>  would be  18 7 17 <code><nobr>.</nobr></code></p>
-<p><h5 id='Amend'>5.1 Amend</h5></p>
+<p><h5 id="Amend">5.1 Amend</h5></p>
 <p>Items of a list can be modified with a combination of indexing and index assignment. For example,</p>
 
 <xmp>  s:3 20 -4 10     
@@ -188,7 +188,7 @@ a . b (Apply) (1 2;3 4). 1 0        3               Verb Forms of x[...]
   s[0 2]+:100h / causes a type error 
 </xmp>
 <p>Any dyadic primitive atom function can be used in place of +.</p>
-<p><h5 id='Indexing and Function Evaluation'>5.2 Indexing and Function Evaluation</h5></p>
+<p><h5 id="Indexing and Function Evaluation">5.2 Indexing and Function Evaluation</h5></p>
 <p>The syntactic forms for function evaluation use square brackets in the same way as indexing. For example,</p>
 
 <xmp>  sum[1 2 3 4]
@@ -208,7 +208,7 @@ a . b (Apply) (1 2;3 4). 1 0        3               Verb Forms of x[...]
   m[]            
 (1 2;`w`y;3.70)  
 </xmp>
-<p><h5 id='Indexing at Depth'>5.3 Indexing at Depth</h5></p>
+<p><h5 id="Indexing at Depth">5.3 Indexing at Depth</h5></p>
 <p>The following list has several levels. Example results may be displayed on multiple lines to aid comparisons with the indices that created them.</p>
 
 <xmp>  d:((1 2 3;4 5 6 7);(8 9;10;11 12);(13 14;15 16 17 18;19 20))
@@ -234,7 +234,7 @@ a . b (Apply) (1 2;3 4). 1 0        3               Verb Forms of x[...]
   4 5 6 7))    / item 1 of item 0
 </xmp>
 <p>Note that the selected items are arranged in the result in the same order as the atoms in (2 0;0 1). There is no limit on the structure of the indices.</p>
-<p><h5 id='Elided Indices'>5.3.1 Elided Indices</h5></p>
+<p><h5 id="Elided Indices">5.3.1 Elided Indices</h5></p>
 <p>An example of an elided index is the item index expression d[]. There are more interesting situations when indices in an index at depth expression are elided. For example, d[;0] denotes the 0th item of each item of d.</p>
 
 <xmp>  d[;0]                   
@@ -251,9 +251,9 @@ a . b (Apply) (1 2;3 4). 1 0        3               Verb Forms of x[...]
   16 15       / items 1 and 0 of item 1 of item 2 
   20 19))     / items 1 and 0 of item 2 of item 2 
 </xmp>
-<p><h5 id='Elided Function Arguments'>5.3.2 Elided Function Arguments</h5></p>
+<p><h5 id="Elided Function Arguments">5.3.2 Elided Function Arguments</h5></p>
 <p>Function arguments can also be elided, as in f[a;;b]. The result is another function, monadic in this case; see <a href="#Projections">Projections</a> for more.</p>
-<p><h5 id='Juxtaposition'>5.4 Juxtaposition</h5></p>
+<p><h5 id="Juxtaposition">5.4 Juxtaposition</h5></p>
 <p>Function evaluation in <u>kdb+</u> is commonly done with juxtaposition, as in <code><nobr>sum 1 2 3 4</nobr></code> for  <code><nobr>sum[1 2 3 4]</nobr></code> . Juxtaposition can also be used for indexing. For example,</p>
 
 <xmp>  m 0    
@@ -270,7 +270,7 @@ a . b (Apply) (1 2;3 4). 1 0        3               Verb Forms of x[...]
 <xmp>  insert[`t;(`a;1;4.56)]
 </xmp>
 <p>The expression <code><nobr>insert[`t]</nobr></code> denotes the monadic function formed from the dyadic insert function by fixing the first argument. The argument to that monadic function is the right argument of insert. Since monadic functions can be evaluated by juxtaposition, we arrive at the above evaluation expression, <code><nobr>insert[`t](`a;1;4.56)</nobr></code> . See <a href="#Projections">Projections</a> for more. </p>
-<p><h5 id='Verb Forms for x[...]'>5.5 Verb Forms for x[...]</h5></p>
+<p><h5 id="Verb Forms for x[...]">5.5 Verb Forms for x[...]</h5></p>
 <p>All indexing and function application can be done with the verb denoted by Dot. Here are some examples from earlier in this section.</p>
 
 <xmp>  d:((1 2 3;4 5 6 7);(8 9;10;11 12);(13 14;15 16 17 18;19 20))
@@ -299,7 +299,7 @@ a . b (Apply) (1 2;3 4). 1 0        3               Verb Forms of x[...]
 5          
 </xmp>
 <p>Dot is particularly useful when executing functions of varying valence (argument count) under program control. Both Dot and @ are referred to as Index or Apply, depending on the context. </p>
-<p><h5 id='Functional Forms of Amend'>5.5.1 Functional Forms of Amend</h5></p>
+<p><h5 id="Functional Forms of Amend">5.5.1 Functional Forms of Amend</h5></p>
 <p>There are functional forms of Amend based on @ and Dot. The @ form, <code><nobr>@[d;i;f;y]</nobr></code> is analogous to <code><nobr>d[i]f:y</nobr></code> and  <code><nobr>@[d;i;:;y]</nobr></code> is analogous to  <code><nobr>d[i]:y</nobr></code> . Repeating an example from above,</p>
 
 <xmp>  s:3 20 -4 10  
@@ -330,7 +330,7 @@ a . b (Apply) (1 2;3 4). 1 0        3               Verb Forms of x[...]
   s                                     
 (1 3 -2;"xyzw")                         
 </xmp>
-<p><h5 id='Uniform Functions'>6 Uniform Functions</h5></p>
+<p><h5 id="Uniform Functions">6 Uniform Functions</h5></p>
 <p>Uniform functions extend the concept of atom functions. Like an atom function, a uniform function applies to lists, and the count of the argument list equals the count of the corresponding result list. Unlike an atom function, an item of a uniform function result is not solely dependent on the corresponding item of the argument. The relationship between the argument and result is more general. A typical example is the function named sums. Let's look at an example.</p>
 
 <xmp>  sums 1 2 3 -4 5       
@@ -343,7 +343,7 @@ a . b (Apply) (1 2;3 4). 1 0        3               Verb Forms of x[...]
 4 5 -14 6 1        
 </xmp>
 <p>The ith item of the result of <code><nobr>deltas v</nobr></code> is <code><nobr>v[i]-v[i-1]</nobr></code> for i greater than 0. Note that the first item of the result is identical to the first item of the argument.  </p>
-<p><h5 id='Primitive Uniform Function Summary'>6.1 Primitive Uniform Function Summary</h5></p>
+<p><h5 id="Primitive Uniform Function Summary">6.1 Primitive Uniform Function Summary</h5></p>
 
 <xmp>Function Source Example           Result                       
 ---------------------------------------------------------------
@@ -354,7 +354,7 @@ ratios   %      ratios 1 2 3 -4 5 1.00 2.00 1.50 -1.33 -1.25
 mins     &      mins 1 2 3 -4 5   1 1 1 -4 -4                  
 maxs     |      maxs 1 2 3 -4 5   1 2 3 3 5                    
 </xmp>
-<p><h5 id='Aggregation in Update Expressions'>7 Aggregation in Update Expressions</h5></p>
+<p><h5 id="Aggregation in Update Expressions">7 Aggregation in Update Expressions</h5></p>
 <p>In SQL, update statements modify existing tables. This is also true in q, but q has also extended the traditional definition to include the creation of new columns. It also permits update expressions to produce new tables instead of modifying the source tables in place. In effect, update expressions are an alternative form of select expressions. Here is an example comparing an aggregation within a select expression to an aggregation within an update expression.</p>
 
 <xmp>  select ap:avg price by sym from trade
@@ -406,14 +406,14 @@ yyyy 73.25
 09:30:05.000 ccc  84.25 1500 -10.68 
 </xmp>
 <p>The pct value for the first or only occurrence of a sym is 100.00. Otherwise, for example, the value of pct in the fourth row is the percent change of the prices of the sym `aaa in the second and fourth rows. </p>
-<p><h5 id='More about Nulls'>8 More about Nulls</h5></p>
-<p><h5 id='Nulls and Out-of-Range Indexing'>8.1 Nulls and Out-of-Range Indexing</h5></p>
+<p><h5 id="More about Nulls">8 More about Nulls</h5></p>
+<p><h5 id="Nulls and Out-of-Range Indexing">8.1 Nulls and Out-of-Range Indexing</h5></p>
 <p>Null values are used in tables to represent missing values. Some null values are exceptional values, such as the IEEE Nan for floats. Others are actual values, such as 0b for bools. Nulls for all datatypes can be found in <a href="#Datatypes Summary">Datatypes Summary</a>. Indexing a list with an out-of-range index produces the null value for the datatype of the list. For example,</p>
 
 <xmp>  1 -2 12h[3]
 0Nh          
 </xmp>
-<p><h5 id='Processing Nulls'>8.2 Processing Nulls</h5></p>
+<p><h5 id="Processing Nulls">8.2 Processing Nulls</h5></p>
 <p>There are two primitive functions for processing null values. The dyadic function ^(fill) replaces null values in the right argument with the atomic left argument. For example,</p>
 
 <xmp>  0^1 2 3 0N              
@@ -485,7 +485,7 @@ yyyy 73.25
 10.00 -3.10 -3.10 0.10 0.10 0.10 0.10 3.40          
                                                     
 </xmp>
-<p><h5 id='Type and Cast'>9 Type and Cast</h5></p>
+<p><h5 id="Type and Cast">9 Type and Cast</h5></p>
 <p>The Type function is a monadic function that gives the numeric datatype value of its argument ( see the Datatype Value column of the table in <A href="#Datatypes Summary">Datatypes Summary</A>). For example,</p>
 
 <xmp>  type 100                                  
@@ -531,7 +531,7 @@ yyyy 73.25
 1.00e          
 </xmp>
 <p>The negative type values for atoms is not used in Cast.</p>
-<p><h5 id='Creating Varchars'>9.1 Creating Varchars</h5></p>
+<p><h5 id="Creating Varchars">9.1 Creating Varchars</h5></p>
 <p>Casting simple char lists to varchars is a very important operation. It is used, for example, for importing text (varchar) data into tables. There is a special case of Cast that does it, where the left argument is the empty sym `. For example,</p>
 
 <xmp>  `$"varchar"                    
@@ -541,7 +541,7 @@ yyyy 73.25
 </xmp>
 <p>This form of Cast applies to right argument lists differently than the forms in the preceding section. Those forms, with left argument "x" or "d" or 6, apply independently to all atoms in the right argument, giving an atom result for each one. However, when the left argument is `, Cast applies independently to all simple char lists in the right argument, giving an atom for each one.</p>
 <p>Note that, as these examples show, all varchars are displayed in the console with back-quote followed by the varchar's contents.</p>
-<p><h5 id='Casting with Computed Types'>9.2 Casting with Computed Types</h5></p>
+<p><h5 id="Casting with Computed Types">9.2 Casting with Computed Types</h5></p>
 <p>Casting with datatype values is particularly useful when associated with computed type values. For example, replacing an item in a simple list is strict, in that the datatype of the replacement value (short, float, etc.) must be the same as the simple list. There may be situations in which more latitude can be allowed. For example, if a simple list has type int, a replacement of type boolean, byte, short or int may be acceptable. A general expression that accepts all such values is <code><nobr>c[i]:(type c)$d</nobr></code> , which casts the replacement value d to the datatype of c. For example,  </p>
 
 <xmp>  c:10 345 -20 11   
@@ -551,8 +551,8 @@ yyyy 73.25
 23 345 171 11       
 </xmp>
 <p>We'll continue this example in <a href="#Protected Evaluation">Protected Evaluation</a>.</p>
-<p><h5 id='String and More Casting'>9.3 String and More Casting</h5></p>
-<p><h5 id='Extracting Data from Text'>9.3.1 Extracting Data from Text</h5></p>
+<p><h5 id="String and More Casting">9.3 String and More Casting</h5></p>
+<p><h5 id="Extracting Data from Text">9.3.1 Extracting Data from Text</h5></p>
 <p>kdb+ provides primitive functions for extracting data from text files, but sometimes you have to do it yourself. A text file is read into the workspace as a list of simple char lists. The simple char lists are processed by partitioning them into smaller lists containing the text of individual values. If the values can be extracted with a special form of casting. For example,</p>
 
 <xmp>  "S"$"abc012"      / extract a symbol            
@@ -576,7 +576,7 @@ yyyy 73.25
   "D"$"03/23/03"  
 2003.03.23        
 </xmp>
-<p><h5 id='Creating Text from Data'>9.4 Creating Text from Data</h5></p>
+<p><h5 id="Creating Text from Data">9.4 Creating Text from Data</h5></p>
 <p>The primitive function named String produces simple char lists from atomic data. For example,</p>
 
 <xmp>  string 345        
@@ -601,7 +601,7 @@ yyyy 73.25
 (,"5";"23";(,"a";"uvw";"xz"))
 </xmp>
 <p>Note that the result of  <code><nobr>string 5</nobr></code> and <code><nobr>string`a </nobr></code> are the one-item simple lists  <code><nobr>,5</nobr></code> and <code><nobr>,"a"</nobr></code> , respectively; see <a href="#One-Item Lists and Enlist">One-Item Lists and Enlist</a>.</p>
-<p><h5 id='Join'>10 Join</h5></p>
+<p><h5 id="Join">10 Join</h5></p>
 <p>The join of two data objects a and b is denoted by a,b. Any two atoms or lists can be joined (concatenated). For example,</p>
 
 <xmp>  1 2 3,4                 
@@ -658,7 +658,7 @@ a      b c  d
 3      c 30 5.60
 </xmp>
 <p>Join for key tables is strict; both the key and data columns must match in names and datatypes.</p>
-<p><h5 id='Enumeration'>11 Enumeration</h5></p>
+<p><h5 id="Enumeration">11 Enumeration</h5></p>
 <p>The process of enumeration is a form of cast. The general form is</p>
 
 <xmp>`d$v
@@ -721,7 +721,7 @@ a      b c  d
 010011110001011b
 </xmp>
 <p>Internally, an enumerated value is a pair of objects, the name of the domain, say `d, and an int list k of indices into d; the enumerated value is identical to <code><nobr>d[k]</nobr></code> . When an enumerated value is written to a file, the name of the domain and the index list k are actually written. For simple varchar lists, k is a simple int list. As a result, reading a file of an enumerated simple varchar list is nearly instantaneous. Note the domain d, which is not written to disk with the enumerated value, must be present in the workspace when the file is read.</p>
-<p><h5 id='Associations, Xkey, Key and Value'>12 Associations, Xkey, Key and Value</h5></p>
+<p><h5 id="Associations, Xkey, Key and Value">12 Associations, Xkey, Key and Value</h5></p>
 <p>Associations are the only primitive datatype that has no syntactic form; associations are created with the primitive dyadic function denoted by ! and called Xkey. Associations are associative lists; the items of the left argument to Xkey are the indices, or keys, and the items of the right argument are the values. The left and right arguments must have the same length. The arguments can be any lists, although duplicate items in left argument lists are ineffective. An association whose left argument is a simple varchar list is called a dictionary. See <a href="#More about Tables">More about Tables</a> for the relationships between tables and dictionaries.</p>
 <p>For example, the following associations relate type values to type names.</p>
 
@@ -823,9 +823,9 @@ a      b c  d
 <xmp>  til count (1;2.00 3.50 7.00;`a;"xyz")
 0 1 2 3                                
 </xmp>
-<p><h5 id='Dictionaries and Tables'>12.1 Dictionaries and Tables</h5></p>
+<p><h5 id="Dictionaries and Tables">12.1 Dictionaries and Tables</h5></p>
 <p>This section deals with the relationships between dictionaries and tables. We start with the fact that tables are lists of dictionaries, which in this context are called records.</p>
-<p><h5 id='A Table is a List of Dictionaries'>12.1.1 A Table is a List of Dictionaries</h5></p>
+<p><h5 id="A Table is a List of Dictionaries">12.1.1 A Table is a List of Dictionaries</h5></p>
 <p>The dictionaries that make up a table are called records. Since tables are lists, structural primitives such as indexing apply to them. Here are some examples.</p>
 
 <xmp>  trade[5] / any record (row) with an atom index    
@@ -855,10 +855,10 @@ a      b c  d
 +`time`sym`price`size!(09:30:01.000 09:30:03.000;`xx`xx;59.25 84.00;1900 2200) 
 </xmp>
 <p>The last line shows the console display of a table, as well as the functional form for defining tables. We are now in a position to discuss this form.</p>
-<p><h5 id='A Table is the Flip of a Dictionary'>12.1.2 A Table is the Flip of a Dictionary</h5></p>
+<p><h5 id="A Table is the Flip of a Dictionary">12.1.2 A Table is the Flip of a Dictionary</h5></p>
 <p>In the last result display in the previous section, you can see that everything to the right of the leading + is the definition of a dictionary. That dictionary has the column names of the trade table as its keys and the contents of the columns as its value list.</p>
 <p>The leading + denotes the Flip function, or transpose. In this manual we use the Flip function to create tables, not +.</p>
-<p><h5 id='Flip'>12.1.2.1 Flip</h5></p>
+<p><h5 id="Flip">12.1.2.1 Flip</h5></p>
 <p>Flip is a monadic primitive that applies to lists and associations. The effect is to interchange the top two levels of it argument. That is, if <code><nobr>c:flip b</nobr></code> then <code><nobr>b[i][j]</nobr></code> and <code><nobr>c[j][i]</nobr></code> are identical for all valid indices i and j. In particular, all items of b must have the same count in order that b can be flipped. For example,</p>
 
 <xmp>  b:((1;2 3);(4 5 6;7);(8;9 10 11 12))
@@ -895,13 +895,8 @@ a      b c  d
 <xmp>  trade[;`sym]                        
 `xx`aaa`dd`aaa`ccc`xx`aaa`yyyy`aaa`ccc
 </xmp>
-<p>Note that any association can be flipped and a table will result, as long as the items of its value list are all lists with the same count. For example,</p>
-
-<xmp>  flip 1 2 3 4!(1 2; 3.2 4;`x`y;"ab")
-+1 2 3 4!(1 2;3.20 4.00;`x`y;"ab")   
-</xmp>
 <p>The result is a table with columns named 1, 2, 3 and 4. This is not a relational table, however; q select and update expressions only apply to tables that are the flips of dictionaries whose keys are valid simple names (all alphanumeric characters and a leading alphabetic).</p>
-<p><h5 id='Creating Tables'>12.1.3 Creating Tables</h5></p>
+<p><h5 id="Creating Tables">12.1.3 Creating Tables</h5></p>
 <p>When creating a table in <u>kdb+</u>, we used the syntactic form to initialize the table with empty columns and then populated it with applications of the insert function. For example,</p>
 
 <xmp>  t:([]a:();b:())           
@@ -927,7 +922,7 @@ a      b c  d
 +`a`b!(`a`b`c;10.70 -5.60 21.73)
 </xmp>
 <p>One last point: even though a table is the flip of a dictionary, the flip is never carried out. In particular, if the value items of the dictionary are simple lists, so are the columns of the table. There is some indication of this in the console displays. The console display of a flipped list shows the effect of the flip, while the console display of a table does not show a list of records, but simply indicates the flip with a leading +.  </p>
-<p><h5 id='A Key Table is a Dictionary'>12.2 A Key Table is a Dictionary</h5></p>
+<p><h5 id="A Key Table is a Dictionary">12.2 A Key Table is a Dictionary</h5></p>
 <p>A key table is not a table, but a pair of tables instead. The primary key columns form one table and the data columns the other. For example, the key table s has the primary key s and data columns name, status and city. Those two tables are</p>
 
 <xmp>+(,`s)!,`s1`s2`s3`s4`s5                                                                             
@@ -944,7 +939,7 @@ a      b c  d
   value s                                                                                           
 +`name`status`city!(`smith`jones`blake`clark`adams;20 10 30 20 30;`london`paris`paris`london`athens)
 </xmp>
-<p><h5 id='How Dot Notation Works'>12.3 How Dot Notation Works</h5></p>
+<p><h5 id="How Dot Notation Works">12.3 How Dot Notation Works</h5></p>
 <p>We can now see how dot notation works. For example, consider the query</p>
 
 <xmp>  select s.name from sp                                                            
@@ -960,7 +955,7 @@ a      b c  d
 <xmp>  (value s)[sp[;`s];`name]                                              
 `smith`smith`smith`smith`clark`smith`jones`jones`blake`clark`clark`smith
 </xmp>
-<p><h5 id='Associative Arithmetic'>13 Associative Arithmetic</h5></p>
+<p><h5 id="Associative Arithmetic">13 Associative Arithmetic</h5></p>
 <p>Arithmetic is defined for associations with numeric value lists. For example, </p>
 
 <xmp>  d:10 20 30!25 38.5 17       
@@ -971,7 +966,7 @@ a      b c  d
 10 20 30 45!287.5 38.5 408 -18
 </xmp>
 <p>You can see that the keys of the sum are the union of the keys of the arguments. Also, if a key is in both arguments then the value for that key in the result is the sum of the values in the arguments. Otherwise, the value in the sum for that key is the value for that key in whichever argument it appears.</p>
-<p><h5 id='Generating Test Data with Rand'>14 Generating Test Data with Rand</h5></p>
+<p><h5 id="Generating Test Data with Rand">14 Generating Test Data with Rand</h5></p>
 <p>kdb+ provides a convenient way to generate random test data, which is very useful when experimenting with the language or modeling applications. The primitive function called Rand produces random sequences of ints and floats. For example, the expression <code><nobr>20?5</nobr></code> produces an int vector of length 20 whose items are random ints between 0 and 4, as follows.</p>
 
 <xmp>  20?5                                 
@@ -992,7 +987,7 @@ a      b c  d
   v[10?count v]                                                   
 `Dennis`Arthur`Steve`Arthur`Dennis`Steve`Arthur`Arthur`Steve`Steve
 </xmp>
-<p><h5 id='Find'>15 Find</h5></p>
+<p><h5 id="Find">15 Find</h5></p>
 <p>The function named Find is a dyadic function whose left argument is a list and right argument is any data object. The result is the lowest index for which the right argument matches (using the Match function) an item of the left argument (the so-called "first occurrence"). If there is no match the result is the count of the left argument. For example,</p>
 
 <xmp>  w:10 -8 3 5 -1 2 3                            
@@ -1047,7 +1042,7 @@ a      b c  d
   sp?`s`p`qty!(`s2;`p5;450)
 12                         
 </xmp>
-<p><h5 id='Reverse'>16 Reverse</h5></p>
+<p><h5 id="Reverse">16 Reverse</h5></p>
 <p>Reverse applies to lists and gives their items in the opposite order. For example,</p>
 
 <xmp>  reverse `a`b`c
@@ -1071,7 +1066,7 @@ a      b c  d
   l:reverse l         
 </xmp>
 <p>See <a href="#More about Amend">More about Amend</a>.</p>
-<p><h5 id='Where and Distinct'>17 Where and Distinct</h5></p>
+<p><h5 id="Where and Distinct">17 Where and Distinct</h5></p>
 <p>The primitives in this section provide the basic functionality for aggregation queries of lists other than tables. They also provide the potential for calculations not easily done as queries. As an example, first form a list of the data in the sp table.</p>
 
 <xmp>  v:value flip sp
@@ -1103,7 +1098,7 @@ a      b c  d
   distinct v[0]                        
 `s$`s1`s4`s2`s3                        
 </xmp>
-<p><h5 id='Take, Drop and Cut'>18 Take, Drop and Cut</h5></p>
+<p><h5 id="Take, Drop and Cut">18 Take, Drop and Cut</h5></p>
 <p>The Take and Drop primitives are useful for selecting from the front or back of a list. Cut, which is an extension of Drop, is used to partition a list into sublists. For example,</p>
 
 <xmp>  5#0 1 2 3 4 5 6 7 8     / take the first 5 items               
@@ -1164,7 +1159,7 @@ a      b c  d
 <xmp>  5#sp                                                               
 +`s`p`qty!(`s$`s1`s1`s1`s1`s4;`p$`p1`p2`p3`p4`p5;300 200 400 200 100)
 </xmp>
-<p><h5 id='Initializing Database Tables'>18.1 Initializing Database Tables</h5></p>
+<p><h5 id="Initializing Database Tables">18.1 Initializing Database Tables</h5></p>
 <p>So far we have discussed only one empty list, the one denoted by (). In addition to this, every atomic datatype has a empty list. The thing that distinguishes these lists is their datatypes. Each of the empty lists can be created by Cast. For example,</p>
 
 <xmp>  type()                                          
@@ -1197,10 +1192,10 @@ a      b c  d
 
 <xmp>  trade:([]time:0#0Nt;sym:0#`;price:0#0n;size:0#0N)
 </xmp>
-<p><h5 id='Verbs and Adverbs'>19 Verbs and Adverbs</h5></p>
+<p><h5 id="Verbs and Adverbs">19 Verbs and Adverbs</h5></p>
 <p>Syntactically, kdb+ has nouns, verbs and adverbs. All data objects are nouns, as are all functions. Verbs are primitive symbols and names that can be evaluated with infix notation, as in <code><nobr>a+b</nobr></code> . If Plus were a dyadic function and not a verb, it would have to be evaluated as <code><nobr>+[a;b]</nobr></code> . It turns out that Plus can be evaluated in this way because, operationally, it's a function. Syntactically, whenever Plus appears in an infix expression, it is a verb. Otherwise, syntactically, it is a noun. Verbs, juxtaposition for monadic functions and indexing, and function projections enhance readability by reducing the number of square brackets and parentheses in expressions.</p>
 <p>Adverbs modify dyadic functions and verbs to produce new, related verbs. The functions produced by adverbs are called derived functions or derived verbs, depending on context.</p>
-<p><h5 id='Each, Each-Left, Each-Right'>19.1 Each, Each-Left, Each-Right</h5></p>
+<p><h5 id="Each, Each-Left, Each-Right">19.1 Each, Each-Left, Each-Right</h5></p>
 <p>The adverb Each, denoted by quote ('), modifies dyadic functions and verbs to apply to the items of lists instead of the lists themselves. For example,</p>
 
 <xmp>  1 2 3,4 5                 / join          
@@ -1232,7 +1227,7 @@ a      b c  d
   each[reverse](1 2 3;"abc") / Reverse-Each
 (3 2 1;"cba")                              
 </xmp>
-<p><h5 id='Grouping Without Aggregating'>20 Grouping Without Aggregating</h5></p>
+<p><h5 id="Grouping Without Aggregating">20 Grouping Without Aggregating</h5></p>
 <p>Usually the biggest cost in execution time for evaluating an aggregation, particularly for large tables, is the grouping caused by the "by phrase". Moreover, that cost may occur repeatedly because the same grouping may be done for many different aggregations. In q it is possible to precompute the grouping and save it in a separate table to which aggregations are applied later. The aggregations must be computed differently than in an ordinary select-by expression, but a few examples will show you what to do.</p>
 <p>In the <u>kdb+</u> manual we restricted out attention to tables whose columns are simple lists, which conforms to the SQL domain. However, q tables allow any lists as columns, as long as the columns all have the same length. In particular, the following q statement, which groups but does not aggregate, is valid and produces a q table. </p>
 
@@ -1316,7 +1311,7 @@ ccc  88.75
 <xmp>  r4:select sym,ap:price af'size from t where sym in `aaa`ccc
 </xmp>
 <p>The difference between r3 and r4 is the same as r1 and r2.</p>
-<p><h5 id='The Organization of the Workspace'>21 The Organization of the Workspace</h5></p>
+<p><h5 id="The Organization of the Workspace">21 The Organization of the Workspace</h5></p>
 <p>So far the identifiers (names) used in the manuals are composed of alphanumeric characters, with the condition that the first character must be alphabetic, for example, abc and a0B. Kdb+ also permits dots (.) in names; the first character can be a dot and if so, one other character can also be a dot. For example, .c0w and .c0w.abc are valid names, but a.b and .a.b.c are not.</p>
 <p>The kdb+ workspace is logically partitioned into directories, or contexts, according to dots in names. For example, start a new kdb+ session and then do</p>
 
@@ -1380,8 +1375,8 @@ ccc  88.75
 14 15 16      / the evaluation still uses d in the default context               
 </xmp>
 <p>That is, the value of an unqualified global name in a defined function is the one in the context where the function was defined, not the one where the function resides. This rule for referenced global names works for any two contexts; it is not necessary that one is the default context. It takes time to get used to this rule, and you can avoid it by always using fully qualified names. However, that can be tiresome in complex applications. It is also easier to reorganize scripts when names are unqualified.</p>
-<p><h5 id='Defined Functions'>22 Defined Functions</h5></p>
-<p><h5 id='The General Form'>22.1 The General Form</h5></p>
+<p><h5 id="Defined Functions">22 Defined Functions</h5></p>
+<p><h5 id="The General Form">22.1 The General Form</h5></p>
 <p>The general form of defined functions is</p>
 
 <xmp>{[argument list] body}
@@ -1398,7 +1393,7 @@ ccc  88.75
 175.88                   
 </xmp>
 <p>The argument list for a monadic function is one name between square brackets (no semi-colons). It is possible to define a function with no arguments by specifying the empty list, []. The empty argument list can be omitted, but if so, default arguments may come into play.</p>
-<p><h5 id='Default Arguments'>22.2 Default Arguments</h5></p>
+<p><h5 id="Default Arguments">22.2 Default Arguments</h5></p>
 <p>The argument list can be omitted when default arguments are used. The default arguments are x, y and z. If any of these names appears in a function definition that has no argument list then that name is a function argument. Moreover, z is always the third argument, whether or not x or y is present in the function definition. Similarly, y is always the second argument and x is always the first. For example,</p>
 
 <xmp>  f:{z*z}                                                                    
@@ -1408,7 +1403,7 @@ ccc  88.75
 9                                                                            
 </xmp>
 <p>Whether or not you use default arguments is a matter of taste. In general, they are useful in general utility functions whose arguments can't be named in meaningful ways.</p>
-<p><h5 id='Default Result'>22.3 Default Result</h5></p>
+<p><h5 id="Default Result">22.3 Default Result</h5></p>
 <p>The value of the right-most expression in a function body is the default result if there is no semi-colon between it and the closing }. However, functions always have some kind of results. Even in a case such as</p>
 
 <xmp>  f:{.cx.global:0;}
@@ -1423,7 +1418,7 @@ ccc  88.75
 <xmp>  r:f[]
 </xmp>
 <p>will not fail. Consequently, we say that this function has no explicit result. </p>
-<p><h5 id='Localization'>22.4 Localization</h5></p>
+<p><h5 id="Localization">22.4 Localization</h5></p>
 <p>All unqualified names in a function definition in which there is at least one simple assignment of the form <code><nobr>name:value</nobr></code> are local to that function. A local name has no value in references before an assignment is made, and any assignment to a global with that name, e.g. <code><nobr>name::value</nobr></code> , is treated like the local assignment <code><nobr>name:value</nobr></code> . For example,</p>
 
 <xmp>  a:5            / global a                                                
@@ -1436,7 +1431,7 @@ ccc  88.75
   a                                                                        
 10               / the value of global a is unchanged                      
 </xmp>
-<p><h5 id='Projections'>22.5 Projections</h5></p>
+<p><h5 id="Projections">22.5 Projections</h5></p>
 <p>For functions of valence at least two, when any of the argument positions are left blank in an evaluation expression, i.e. when those arguments are not specified, the effect is to create a new function in which the specified arguments have those fixed values. The new function is called a projection onto those fixed values. For example:</p>
 
 <xmp>  f:{x+y+z}
@@ -1475,7 +1470,7 @@ ccc  88.75
   g 2  
 6      
 </xmp>
-<p><h5 id='Verbs'>22.5.1 Verbs</h5></p>
+<p><h5 id="Verbs">22.5.1 Verbs</h5></p>
 <p>It is also possible to project onto the left argument of a verb. For example, 3+ is a monadic function.</p>
 
 <xmp>  (3+)10
@@ -1486,7 +1481,7 @@ ccc  88.75
 <xmp>  +[;10]3
 13       
 </xmp>
-<p><h5 id='Projections in Practice'>22.5.2 Projections in Practice</h5></p>
+<p><h5 id="Projections in Practice">22.5.2 Projections in Practice</h5></p>
 <p>Projections are useful when many different evaluations of a function have some number of common arguments. For example, in <u>kdb+</u> the trade table was constructed with a series of table inserts of the form</p>
 
 <xmp>insert[`trade](09:30:01.000;`aaa;53.75;1200)  
@@ -1496,7 +1491,7 @@ ccc  88.75
 <xmp>insert[`trade;(09:30:01.000;`aaa;53.75;1200)]
 </xmp>
 <p>In the first expression, the subexpression <code><nobr>insert[`trade]</nobr></code> is a projection of the insert function onto the first argument. The expression is the application of the monadic function <code><nobr>insert[`trade]</nobr></code> to the argument <code><nobr>(09:30:01.000;`aaa;53.75;1200)</nobr></code> using juxtaposition. Whether to use the style of the first or second expression is a matter of taste. Some programmers find the first expression easier to read.</p>
-<p><h5 id='Parameterized Queries'>22.6 Parameterized Queries</h5></p>
+<p><h5 id="Parameterized Queries">22.6 Parameterized Queries</h5></p>
 <p>Select, update and delete expressions can be evaluated in defined functions. Every name except column names can be a function argument, local variable or global variable (think of column names as local within the phrases). For example,</p>
 
 <xmp>  v:200                                                                        
@@ -1505,7 +1500,7 @@ ccc  88.75
 +`s`p`qty!(`s$`s1`s1`s2`s2`s4`s1;`p$`p1`p3`p1`p2`p4`p5;300 400 300 400 300 400)
 </xmp>
 <p>Default arguments cannot be used in parameterized queries.</p>
-<p><h5 id='Debugging'>22.7 Debugging</h5></p>
+<p><h5 id="Debugging">22.7 Debugging</h5></p>
 <p>If a defined function fails you will see a console display of the failed primitive function and it's argument(S). The console prompt becomes a ">  ". You can examine the arguments and local variables of the function that failed. For example,</p>
 
 <xmp>  f:{[a] b:`x`y;b[0]+a*2}                                             
@@ -1569,7 +1564,7 @@ ccc  88.75
 >  _
 </xmp>
 <p>We can now see that the local d is the problem. Enter \ to abort or ' to signal up and out and fix the definition of function g.   </p>
-<p><h5 id='Script Files'>23 Script Files</h5></p>
+<p><h5 id="Script Files">23 Script Files</h5></p>
 <p>Kdb+ scripts are text files with file extensions q or k. For example, the scripts sp.q and q.k are kdb+ product distribution scripts. Scripts with the file extension q support the level of the q language described in this manual and <u>kdb+</u>.</p>
 <p>Scripts can contain any expressions or commands, which are executed from top to bottom when the script is loaded. A script can be named in the startup command, or loaded from a kdb+ console with a load command (\l), or loaded by another script with a load command. </p>
 <p>Here are a few lines from sp.q.</p>
@@ -1597,8 +1592,8 @@ select sum qty by p.color from sp
  principal*rate*time}           
 </xmp>
 <p>There are two lines below the definition of sp in the first display. The first line is a comment and the second line is a q expression that will be executed whenever the script is loaded. The commented line contains the equivalent SQL statement. The "s)" in that line indicates SQL.</p>
-<p><h5 id='Execution Control'>24 Execution Control</h5></p>
-<p><h5 id='Conditional Evaluation'>24.1 Conditional Evaluation</h5></p>
+<p><h5 id="Execution Control">24 Execution Control</h5></p>
+<p><h5 id="Conditional Evaluation">24.1 Conditional Evaluation</h5></p>
 <p>The simplest form of Conditional evaluation is denoted by <code><nobr>$[condexp;truexp;falsexp]</nobr></code> . For example,</p>
 
 <xmp>  f:{$[x<10;`abc;`defg]}
@@ -1631,7 +1626,7 @@ select sum qty by p.color from sp
 110                                        
 </xmp>
 <p>The individual expressions in a bracketed set such as <code><nobr>[t:5;u:7;t+u]</nobr></code> are executed left to right and the rightmost one gives the result of the set. </p>
-<p><h5 id='Protected Evaluation'>24.2 Protected Evaluation</h5></p>
+<p><h5 id="Protected Evaluation">24.2 Protected Evaluation</h5></p>
 <p>It is possible to execute a function in such a way that an error does not halt execution. This is particularly useful when executing user input, such as ad hoc queries. Like Amend, there is a Dot version and an At version.</p>
 <p>The primitive Value function is useful for executing user input. Here is an example of a protected execution of Value.</p>
 
@@ -1665,19 +1660,19 @@ select sum qty by p.color from sp
   c                           
 23 0N 171 11                  
 </xmp>
-<p><h5 id='Do Statements'>24.3 Do Statements</h5></p>
+<p><h5 id="Do Statements">24.3 Do Statements</h5></p>
 
 <xmp>do[count; expr]            
 do[count; expr1;...; exprN]
 </xmp>
 <p>The first Do statement executes the expression count times. The second do statement executes the expression list count times. The expressions in the expression list are executed left to right. If count is an expression then it is executed first and that value determines the number of times the other expressions are executed. Do statements do not have explicit results.</p>
-<p><h5 id='If Statements'>24.4 If Statements</h5></p>
+<p><h5 id="If Statements">24.4 If Statements</h5></p>
 
 <xmp>if[cond; expr]            
 if[cond; expr1;...; exprN]
 </xmp>
 <p>The conditional expression is like the one in Conditional Evaluation. If its result is not 0 then the expression or expression list is executed. In the second case the expressions are executed left to right. If statements do not have explicit results.</p>
-<p><h5 id='While Statements'>24.5 While Statements</h5></p>
+<p><h5 id="While Statements">24.5 While Statements</h5></p>
 
 <xmp>while[cond; expression]                  
 while[cond; expression1;...; expressionN]
@@ -1706,7 +1701,7 @@ while[cond; expression1;...; expressionN]
   v                                       
 10.00 -3.10 -3.10 0.10 0.10 0.10 0.10 3.40
 </xmp>
-<p><h5 id='Control Primitives'>24.6 Control Primitives</h5></p>
+<p><h5 id="Control Primitives">24.6 Control Primitives</h5></p>
 <p>There are two primitive functions that alter the default execution flow in a defined function by exiting, either with a result value or an error signal. The first is Return, which is denoted by <code><nobr>:r</nobr></code> . For example, the following function returns the sym atom `other if the argument is not an atom.</p>
 
 <xmp>  f:{if[not 0>type x;:`other];x}
@@ -1722,7 +1717,7 @@ while[cond; expression1;...; expressionN]
 >  _                            
 </xmp>
 <p>Signal is useful for debugging and processing user input. In the above example, the reason for the signal can be analyzed by the techniques in <a href="#Debugging">Debugging</a>. The function f could also be called with user input under protected execution by another function. The signal from f would indicate to the caller that the message "other" was an error message, which could be reported to the user.</p>
-<p><h5 id='Commands'>25 Commands</h5></p>
+<p><h5 id="Commands">25 Commands</h5></p>
 <p>Commands are special statements for interacting with the programming environment. All commands have a leading back-slash. Here is a list.</p>
 
 <xmp>Command    Syntax           
@@ -1739,24 +1734,24 @@ exit       \\
 </xmp>
 <p>The brackets indicate optional content. If the content is omitted then the command displays its current value. </p>
 <p>We have seen \d and \v in <a href="#The Organization of the Kdb+ Workspace">The Organization of the Kdb+ Workspace</a>.</p>
-<p><h5 id='Dictionary: \d [dict]'>25.1 Dictionary: \d [dict]</h5></p>
+<p><h5 id="Dictionary: \d [dict]">25.1 Dictionary: \d [dict]</h5></p>
 <p>This command is used to specify the current dictionary; see <a href="#The Organization of the Kdb+ Workspace">The Organization of the Kdb+ Workspace</a> for examples.</p>
-<p><h5 id='Variables: \v [dict]'>25.2 Variables: \v [dict]</h5></p>
+<p><h5 id="Variables: \v [dict]">25.2 Variables: \v [dict]</h5></p>
 <p>This command displays the names of all global variables in the specified dictionary; see <a href="#The Organization of the Kdb+ Workspace">The Organization of the Kdb+ Workspace</a> for examples.</p>
-<p><h5 id='Load: \l file'>25.3 Load: \l file</h5></p>
+<p><h5 id="Load: \l file">25.3 Load: \l file</h5></p>
 <p>This command loads the named script into the current k session. In most examples in these manuals the script to be loaded is given in the startup command. However, it is also possible to load a script from within the kdb+ console. For example,</p>
 
 <xmp>  \l sp.q
 </xmp>
 <p>This is useful when testing changes to a script because changes can be made and repeatedly loaded without exiting from the kdb+ process. Also, commands can be included in scripts. Consequently applications can be partitioned into sets of scripts, all of which are loaded by the top-level script given in the command line.</p>
-<p><h5 id='Port: \p [digits]'>25.4 Port: \p [digits]</h5></p>
+<p><h5 id="Port: \p [digits]">25.4 Port: \p [digits]</h5></p>
 <p>Set the listening port. As with script loading, in this manual we have set the port with the -p command line option. It can also be set (or changed) in a console, e.g.</p>
 
 <xmp>  \p 5001
 </xmp>
-<p><h5 id='Timer: \t [milliseconds]'>25.5 Timer: \t [milliseconds]</h5></p>
+<p><h5 id="Timer: \t [milliseconds]">25.5 Timer: \t [milliseconds]</h5></p>
 <p>Set the timer to the number of milliseconds given by the integer represented by digits, or display the current setting if digits is not present. If the setting is a positive integer n then the function .z.ts is called every n seconds. No calls are made if the setting is 0 (the default). The function .z.ts is user defined and has no arguments.</p>
-<p><h5 id='Time: \t expression'>25.6 Time: \t expression</h5></p>
+<p><h5 id="Time: \t expression">25.6 Time: \t expression</h5></p>
 <p>The execution time of the expression, in milliseconds, will be printed out when execution completes. It often happens that the result is 0, in which case you can execute the expression a sufficient number of times to get a positive result, with which you can compute the average number of milliseconds required for one execution. For example, </p>
 
 <xmp>  \t sum til 15000          
@@ -1765,28 +1760,28 @@ exit       \\
 390                         
 </xmp>
 <p>The last result shows that, on average, execution of <code><nobr>sum til 15000</nobr></code> takes 0.04 milliseconds (on the author's laptop). </p>
-<p><h5 id='Workspace: \w'>25.7 Workspace: \w</h5></p>
+<p><h5 id="Workspace: \w">25.7 Workspace: \w</h5></p>
 <p>This command displays 3 longs summarizing the memory usage of the current kdb+ session. For example,</p>
 
 <xmp>  \w            
 57904 1056784 0j
 </xmp>
 <p>The middle number is the number of bytes allocated by the kdb+ process. The first number is the number of bytes actually in use at the present time. The third number is the size of the current mapped file space.</p>
-<p><h5 id='Exit Kdb+: \\'>25.8 Exit Kdb+: \\</h5></p>
+<p><h5 id="Exit Kdb+: \\">25.8 Exit Kdb+: \\</h5></p>
 <p>End the kdb+ session.</p>
-<p><h5 id='OS Command: \text'>25.9 OS Command: \text</h5></p>
+<p><h5 id="OS Command: \text">25.9 OS Command: \text</h5></p>
 <p>When the text following the back-slash is not the text of one of the above commands, it is passed to the operating system for evaluation. </p>
-<p><h5 id='Ctrl-C'>25.10 Ctrl-C</h5></p>
+<p><h5 id="Ctrl-C">25.10 Ctrl-C</h5></p>
 <p>Interrupt.</p>
-<p><h5 id='Inter-Process Communication'>26 Inter-Process Communication</h5></p>
+<p><h5 id="Inter-Process Communication">26 Inter-Process Communication</h5></p>
 <p>A Kdb+ process is a server. The port is specified with the -p option in the startup command. For example, the following process will have the port 5001. </p>
 
 <xmp>q sp.q -p 5001
 </xmp>
 <p>The port can also be specified in a script or in the console with the command \p; see <a href="#Commands">Commands</a>. </p>
-<p><h5 id='Kdb+ Data Client'>26.1 Kdb+ Data Client</h5></p>
+<p><h5 id="Kdb+ Data Client">26.1 Kdb+ Data Client</h5></p>
 <p>We have already used the port in <u>kdb+</u> for executing q queries and displaying results in a web browser. We'll now look at Kdb+ data clients.</p>
-<p><h5 id='Opening and Closing a Connection'>26.1.1 Opening and Closing a Connection</h5></p>
+<p><h5 id="Opening and Closing a Connection">26.1.1 Opening and Closing a Connection</h5></p>
 <p>A kdb+ client can connect to a kdb+ server process on the same computer, on the same network, or remotely. The client uses the Hopen function to connect. For example, suppose the server listening on port 5001 is named srvr and is on the same network as the client. In that case the client connects to the server as follows.</p>
 
 <xmp>  h:hopen`:srvr:5001
@@ -1796,7 +1791,7 @@ exit       \\
 
 <xmp>hclose h
 </xmp>
-<p><h5 id='Asynchronous and Synchronous'>26.1.2 Asynchronous and Synchronous</h5></p>
+<p><h5 id="Asynchronous and Synchronous">26.1.2 Asynchronous and Synchronous</h5></p>
 <p>There are two ways to send messages to a server, asynchronously and synchronously. An asynchronous message does not return a result. The expression that sends an asynchronous message completes as soon as the expression is executed (which may be a little sooner than when the message is sent). Asynchronous messages are also called set messages because typically they cause changes in the state of the server. For example, a delete or insert statement can be sent asynchronously.</p>
 <p>A synchronous message expects a response from the server. The expression that sends a synchronous message waits for the response and returns it as its result. For example, a select statement must be sent as a synchronous message. Synchronous messages are also called get messages, since they expect a response.</p>
 <p>There are two forms of messages. One is a character string holding an executable expression. For example,</p>
@@ -1840,14 +1835,14 @@ exit       \\
 <xmp>  (neg h)("insert";`sp;(`s1;`p1;400))  
 </xmp>
 <p>In most realistic situations the data to be inserted is not constant, but is either generated algorithmically or received from an external source. Consequently, the function-arguments message format is the more generally useful one because it does not require formatting the data into char strings.</p>
-<p><h5 id='Message Filters'>26.1.3 Message Filters</h5></p>
+<p><h5 id="Message Filters">26.1.3 Message Filters</h5></p>
 <p>The default behavior of a kdb+ server is to apply the Value function to incoming messages. This behavior can be modified with message filters. Message filters are monadic, user-defined functions with reserved names .z.ps for asynchronous (set) messages and .z.pg for synchronous (get) messages. The reason for two filters is that the asynchronous message filter is not expected to return a result - and even it did, the result would not be sent to the sender - while the synchronous filter is expected to return a result. The argument to each function is the complete message received from the sender. </p>
 <p>There are many different uses for message filters. In a server that processes ad hoc queries the filters can use protected execution to avoid stopping on query errors. In so-called gateway servers, message filters route client messages to other servers. For example, select statements with a date specification in the where phrase can be routed to a real-time server or historical server. (How can the message filter know the date? The message can be in a stored procedure call, with a parameterized query and the date as arguments). Message filters can also maintain state while a sequence of related messages is processed. </p>
 <p>Whenever a message is received the variable .z.w is automatically given the value of the server's connection handle to the sender. This value can be referenced in the message filters. The value can be used for various purposes. For example, if you maintain a list of connected partners and the current value of .z.w is not in the list then you know this is a new user, in which case authorization and initialization functions can be executed. For example,</p>
 
 <xmp>  if[not .z.w in cp;cp,:.z.w;init .z.w]
 </xmp>
-<p><h5 id='Evaluating Messages'>26.1.4 Evaluating Messages</h5></p>
+<p><h5 id="Evaluating Messages">26.1.4 Evaluating Messages</h5></p>
 <p>The primitive Value function can evaluate either form of message. It applies to a simple char list holding a valid kdb+ expression, evaluates the expression as if it had been entered at a console, and returns the result of the evaluation, if any. For example,</p>
 
 <xmp>  value"3+4"                                                         
@@ -1856,22 +1851,22 @@ exit       \\
   m             / this is the next input line; display the value of m
 2 3e                                                                 
 </xmp>
-<p><h5 id='The Close Handler'>26.1.5 The Close Handler</h5></p>
+<p><h5 id="The Close Handler">26.1.5 The Close Handler</h5></p>
 <p>Either communicating partner can close a connection. A message indicating the close is printed in the console of the other partner unless that partner has a close handler. A close handler is a monadic function with the name .z.pc that is automatically called with the connection handle to the partner that closed the connection.</p>
 <p>If a client closes a connection then the server's .z.pc can use the argument to remove that client from its client list. If the server unexpectedly closes a connection (the server crashes) then the client may try to reconnect. Typically this is done with a timer so that reconnection is attempted repeatedly until successful, or perhaps up to some maximum number of attempts. In the following example, .z.pc resets the connection handle to 0 and sets the timer to 1 second. Note that the way to execute a command within a defined function is to apply the Value function to a char string holding the command text. The function .z.ts will then be called automatically every second. On each call the client attempts to reconnect. If successful, the connection handle will be assigned a positive int value. In addition, the if statement in .z.ts resets the timer to 0 if the reconnection attempt is successful.</p>
 
 <xmp>.z.pc:{o::0;value"\\t 1000"}                    
 .z.ts:{o::hopen`:srvr:5001;if[o>0;value"\\t 0"]}
 </xmp>
-<p><h5 id='Kdb+ HTTP Server'>26.2 Kdb+ HTTP Server</h5></p>
+<p><h5 id="Kdb+ HTTP Server">26.2 Kdb+ HTTP Server</h5></p>
 <p>There is also a message filter for HTTP messages, with the reserved name .z.ph. HTTP messages are always synchronous, so there is only one filter. This filter, which manages the Kdb+ Web Viewer, is the only one with a default definition. It can be replaced with a customized version.</p>
-<p><h5 id='Working with Files'>27 Working with Files</h5></p>
+<p><h5 id="Working with Files">27 Working with Files</h5></p>
 <p>Kdb+ distinguishes three types of files, kdb+ data files, text files and all others, which we will call binary files. Files are identified by file handles, which are sym atoms of the form</p>
 
 <xmp>`:[path]name
 </xmp>
 <p>For example, `:c:/kdbtestdata is the file handle. File handles, like communication handles, are sym atoms that begin with the character ":".</p>
-<p><h5 id='Kdb+ Data Files'>27.1 Kdb+ Data Files</h5></p>
+<p><h5 id="Kdb+ Data Files">27.1 Kdb+ Data Files</h5></p>
 <p>Data in the Kdb+ workspace is self-describing, which is accomplished by appending the descriptive information to the actual data. A kdb+ data file is a binary file that is the image of a kdb+ workspace data object, including the descriptive information.</p>
 <p>Kdb+ data can be written to kdb+ data files with Dot Amend. For example,</p>
 
@@ -1905,7 +1900,7 @@ exit       \\
 1 3 -4 5 10 11 10 23 -56 100 101 1050 1100 1125 
 </xmp>
 <p>Kdb+ data files are used for transaction logging. When a transaction is appended to the log file with Amend, the file write is immediately synchronized to disk because the file is closed after the write. If an open file handle is used then the file write is not synchronized, which permits many more logging operations per second.</p>
-<p><h5 id='Tables'>27.1.1 Tables</h5></p>
+<p><h5 id="Tables">27.1.1 Tables</h5></p>
 <p>The above Amend expression, when applied to tables, writes an entire table as one file. It is also possible to write the table to disk as a directory whose file contents are the individual columns. That is, there is one file per column in the directory. This format of a table on disk is called splayed format. The Amend statement for writing a splayed table differs from the one above only in the file handle. </p>
 
 <xmp>.[`:trade/;();:;trade]
@@ -1914,7 +1909,7 @@ exit       \\
 
 <xmp>.[`:currentdb;();:;value`.]
 </xmp>
-<p><h5 id='Text Files'>27.2 Text Files</h5></p>
+<p><h5 id="Text Files">27.2 Text Files</h5></p>
 <p>Text files are not Kdb+ data files and therefore the above applications of Amend do not apply. The primitive verb denoted by 0: takes a file handle as its left argument and a list of char strings as it right argument and writes the list to the text file with that handle. For example,</p>
 
 <xmp>  `:f.txt 0:("abc";"defg")
@@ -1931,7 +1926,7 @@ exit       \\
 <xmp>  read0`:f.txt        
 ("abc";"defg";"hijkl")
 </xmp>
-<p><h5 id='Binary Files'>27.3 Binary Files</h5></p>
+<p><h5 id="Binary Files">27.3 Binary Files</h5></p>
 <p>Binary files are managed in the same way as text files, using the verb 1: instead of 0:. From the Kdb+ point of view, binary files are lists of byte items. For example,</p>
 
 <xmp>  `:f.bin 1: 0xabcdef
@@ -1957,7 +1952,7 @@ exit       \\
   "c"$read1`:f.txt                 / cast the data to char type
 "abc\r\ndefg\r\nhijkl"                                         
 </xmp>
-<p><h5 id='Specifying Field Types'>27.4 Specifying Field Types</h5></p>
+<p><h5 id="Specifying Field Types">27.4 Specifying Field Types</h5></p>
 <p>There are two primitives for doing this, one for text files (0:) and one for binary files (1:). The field types are designated by letters, like the q datatypes. The letters are same for text files as q data, only capitalized. For binary files, the letters are lower case.</p>
 
 <xmp>0 1   Type        Data(1) Text(0)                             
