@@ -100,20 +100,20 @@ if["?"in exec t from info;'`unknown.field]; / check all done
 
 info:select c,ci,t,maybe,j10,j12,ipa,mw,mdot,rule,gr,ndv,dchar from info
 / make changes to <st> and they'll be picked up correctly, test with: show LOAD10 LOADFILE, or sba[]
-/ update t:" " from `st where not t="S" / only load symbols
-/ update t:"*" from `st where t="S" / load all char as strings, no need to enumerate before save
+/ update t:" " from`st where not t="S" / only load symbols
+/ update t:"*" from`st where t="S" / load all char as strings, no need to enumerate before save
 / run savescript[] when results are correct
 
 LOADNAME:`${x where((first x)in .Q.a),1_ x in .Q.an}lower first"."vs last"/"vs 1_string LOADFILE
-LOADFMTS::raze exec t from `ci xasc select ci,t from info
-LOADHDRS::exec c from `ci xasc select ci,c from info where not t=" "
+LOADFMTS::raze exec t from`ci xasc select ci,t from info
+LOADHDRS::exec c from`ci xasc select ci,c from info where not t=" "
 LOADDEFN:{(LOADFMTS;$[NOHEADER;DELIM;enlist DELIM])}
 /DATA:LOAD LOADFILE / for files loadable in one go
 LOAD:{[file] POSTLOAD$[NOHEADER;flip LOADHDRS!LOADDEFN[]0:;LOADHDRS xcol LOADDEFN[]0:]file}
 /(10#DATA):LOAD10 LOADFILE / load just the first 10 rows, convenient when debugging column types
 LOAD10:{[file] LOAD(file;0;1+last(11-NOHEADER)#where"\n"=read1(file;0;20000))}
 SAVE:{(` sv SAVEDB,SAVEPTN,LOADNAME,`)set PRESAVE .Q.en[SAVEDB] x}
-DATA:() / delete from `DATA
+DATA:() / delete from`DATA
 k)fs2:{[f;s]((-7!s)>){[f;s;x]i:1+last@&"\n"=r:1:(s;x;CHUNKSIZE);f@`\:i#r;x+i}[f;s]/0j} / .Q.fs with bigger chunks
 BULKLOAD:{[file] fs2[{`DATA insert POSTLOAD$[NOHEADER or count DATA;flip LOADHDRS!(LOADFMTS;DELIM)0:x;LOADHDRS xcol LOADDEFN[]0: x]}file];count DATA}
 BULKSAVE:{[file] .tmp.bsc:0;fs2[{.[` sv SAVEDB,SAVEPTN,LOADNAME,`;();,;]PRESAVE t:.Q.en[SAVEDB]POSTLOAD$[NOHEADER or .tmp.bsc;flip LOADHDRS!(LOADFMTS;DELIM)0:x;LOADHDRS xcol LOADDEFN[]0: x];.tmp.bsc+:count t}]file;.tmp.bsc}
@@ -162,7 +162,7 @@ if[SAVESCRIPT;-1"* savescript file ",(1_string savescript[])," written"]
 / maybe - set if type is a guess based on name+content (M/D/V/U) or could-be symbol
 / mw - maxwidth; j10,j12 - could be encoded using .Q.j10/j12; ipa - ip-address
 / gr - granularity% of unique values; dchar - distinct characters
-/ info:getinfo[]; update multi:c in exec c from(select count i by c from info)where x>1 from `info
+/ info:getinfo[]; update multi:c in exec c from(select count i by c from info)where x>1 from`info
 INFOFILE:`$":",(lower first"."vs last"/"vs string .z.f),".info.csv"
 INFOFMTS:"SSICBIBBBIS"
 readinfo:{(INFOFMTS;enlist",")0:INFOFILE}
