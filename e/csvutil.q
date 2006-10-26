@@ -24,6 +24,7 @@ SYMMAXWIDTH:11 / character columns narrower than this are stored as symbols
 FORCECHARWIDTH:30 / every field (of any type) with values this wide or more is forced to character "*"
 DISCARDEMPTY:0b / completely ignore empty columns if true else set them to "C"
 
+k)nameltrim:{$[~@x;.z.s'x;~(*x)in aA:.Q.a,.Q.A;(+/&\~x in aA)_x;x]}
 cleanhdrs:{{$[ZAPHDRS;lower x except"_";x]}x where x in DELIM,.Q.an}
 cancast:{nl:x$"";$[not nl in x$(11&count y)#y;$[11<count y;not nl in x$y;1b];0b]}
 
@@ -31,13 +32,13 @@ read:{[file]data[file;info[file]]}
 read10:{[file]data10[file;info[file]]}  
 
 colhdrs:{[file]
-	`$DELIM vs cleanhdrs first read0(file;0;1+first where"\n"=read1(file;0;WIDTHHDR))}
+	`$nameltrim DELIM vs cleanhdrs first read0(file;0;1+first where"\n"=read1(file;0;WIDTHHDR))}
 data:{[file;info]
 	(exec c from info where not t=" ")xcol(exec t from info;enlist DELIM)0:file}
 data10:{[file;info]
 	data[;info](file;0;1+last 11#where"\n"=read1(file;0;15*WIDTHHDR))}
 info0:{[file;onlycols]
-	colhdrs:`$DELIM vs cleanhdrs first head:read0(file;0;1+last where"\n"=read1(file;0;WIDTHHDR));
+	colhdrs:`$nameltrim DELIM vs cleanhdrs first head:read0(file;0;1+last where"\n"=read1(file;0;WIDTHHDR));
 	loadfmts:(count colhdrs)#"S";if[count onlycols;loadfmts[where not colhdrs in onlycols]:"C"];
 	breaks:where"\n"=read1(file;0;floor(10+READLINES)*WIDTHHDR%count head);
 	as:colhdrs xcol(loadfmts;enlist DELIM)0:(file;0;1+last((1+READLINES)&count breaks)#breaks);
