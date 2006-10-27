@@ -16,7 +16,7 @@ the master column should be a foreign key into a master table.
  more than 33 million rows. e.g. 13000 securities over 10 years]
 the number of columns doesn't matter. there can be hundreds.
 adjprice (splits and dividends) can be stored (rewrite data on update)
-or calculated on the fly. (e.g. http://kx.com/k4/taq/adj.q)
+or calculated on the fly. (e.g. http://kx.com/q/taq/adj.q)
 
 queries:  ... where mas=?, ... (for cross-section: mas in ?)
 are .1 to 10 milliseconds per sym*field depending on mem/disk.
