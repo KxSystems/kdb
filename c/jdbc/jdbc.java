@@ -1,7 +1,8 @@
+// 2006.10.28 qx/ex
 // 2005.10.26 fix setTime setDate
 // 2005.04.03 getInt etc. on nulls
 // 2005.03.15 jdbc:q:
-// jar cf jdbc.jar *.class  url(jdbc:q:host:port) isql(new service resources jdbc.jar) 
+// jar cf jdbc.jar *.class ..\*.class url(jdbc:q:host:port) isql(new service resources jdbc.jar) 
 // http://www.minq.se/products/dbvis/
 import java.io.*;import java.math.*;import java.util.*;import java.sql.*;import java.sql.Date;import java.net.URL;
 public class jdbc implements Driver{static int V=2,v=0;static void O(String s){System.out.println(s);}
@@ -19,10 +20,9 @@ static void q(Exception e)throws SQLException{throw new SQLException(e.getMessag
 
 public class co implements Connection{private c c;public co(String s,Object u,Object p)throws SQLException{int i=s.indexOf(":");
  try{c=new c(s.substring(0,i),Integer.parseInt(s.substring(i+1)),u==null?"":(String)u+":"+(String)p);}catch(Exception e){q(e);}}
- public Object k(String s,Object[]p)throws SQLException{if(!s.startsWith("q)"))q("q");try{return 0<c.n(p)?c.k(s,p):c.k(s);}catch(Exception e){q(e);return null;}}
- public void ks(String s,Object[]p)throws SQLException{if(!s.startsWith("q)"))q("q");try{if(0<c.n(p))c.ks(s,p);else c.ks(s);}catch(Exception e){q(e);}}
- public rs ex(String s,Object[]p)throws SQLException{try{return new rs(c.k(s,p));}catch(Exception e){q(e);return null;}}
- public rs ex(String s)throws SQLException{try{return new rs(c.k(s));}catch(Exception e){q(e);return null;}}
+ public Object ex(String s,Object[]p)throws SQLException{try{return 0<c.n(p)?c.k(s,p):c.k(".o.ex",s.toCharArray());}catch(Exception e){q(e);return null;}}
+ public rs qx(String s)throws SQLException{try{return new rs(c.k(s));}catch(Exception e){q(e);return null;}}
+ public rs qx(String s,Object x)throws SQLException{try{return new rs(c.k(s,x));}catch(Exception e){q(e);return null;}}
  private boolean a=true;public void setAutoCommit(boolean b)throws SQLException{a=b;}public boolean getAutoCommit()throws SQLException{return a;}
  public void rollback()throws SQLException{}public void commit()throws SQLException{}
  public boolean isClosed()throws SQLException{return c==null;}
@@ -62,9 +62,9 @@ public PreparedStatement prepareStatement(String s,String[]columnNames)throws SQ
 
 public class st implements Statement{private co co;private Object r;private int R,T;
 protected Object[]p={};public st(co x){co=x;}
- public int executeUpdate(String s)throws SQLException{co.ks(s,p);return -1;}
- public ResultSet executeQuery(String s)throws SQLException{return new rs(co.k(s,p));}
- public boolean execute(String s)throws SQLException{return null!=(r=co.k(s,p));}
+ public int executeUpdate(String s)throws SQLException{co.ex(s,p);return -1;}
+ public ResultSet executeQuery(String s)throws SQLException{return new rs(co.ex(s,p));}
+ public boolean execute(String s)throws SQLException{return null!=(r=co.ex(s,p));}
  public ResultSet getResultSet()throws SQLException{return new rs(r);}public int getUpdateCount(){return -1;}
  public int getMaxRows()throws SQLException{return R;}public void setMaxRows(int i)throws SQLException{R=i;}
  public int getQueryTimeout()throws SQLException{return T;}public void setQueryTimeout(int i)throws SQLException{T=i;}
@@ -387,20 +387,20 @@ public class rm implements ResultSetMetaData{private String[]f;private Object[]d
 public String getColumnClassName(int column)throws SQLException{q("col");return null;}}
 
 public class dm implements DatabaseMetaData{private co co;public dm(co x){co=x;}
- public ResultSet getCatalogs()throws SQLException{return co.ex("([]TABLE_CAT:`symbol$())");}
- public ResultSet getSchemas()throws SQLException{return co.ex("([]TABLE_SCHEM:`symbol$())");}
- public ResultSet getTableTypes()throws SQLException{return co.ex("([]TABLE_TYPE:`TABLE`VIEW)");}
- public ResultSet getTables(String a,String b,String t,String x[])throws SQLException{return co.ex(
+ public ResultSet getCatalogs()throws SQLException{return co.qx("([]TABLE_CAT:`symbol$())");}
+ public ResultSet getSchemas()throws SQLException{return co.qx("([]TABLE_SCHEM:`symbol$())");}
+ public ResultSet getTableTypes()throws SQLException{return co.qx("([]TABLE_TYPE:`TABLE`VIEW)");}
+ public ResultSet getTables(String a,String b,String t,String x[])throws SQLException{return co.qx(
   "raze{([]TABLE_CAT:`;TABLE_SCHEM:`;TABLE_NAME:system string`a`b x=`VIEW;TABLE_TYPE:x)}each",x);}
- public ResultSet getTypeInfo()throws SQLException{return co.ex(
+ public ResultSet getTypeInfo()throws SQLException{return co.qx(
   "`DATA_TYPE xasc([]TYPE_NAME:`boolean`byte`short`int`long`real`float`symbol`date`time`timestamp;DATA_TYPE:16 -2 5 4 -5 7 8 12 91 92 93;PRECISION:11;LITERAL_PREFIX:`;LITERAL_SUFFIX:`;CREATE_PARAMS:`;NULLABLE:1h;CASE_SENSITIVE:1b;SEARCHABLE:1h;UNSIGNED_ATTRIBUTE:0b;FIXED_PREC_SCALE:0b;AUTO_INCREMENT:0b;LOCAL_TYPE_NAME:`;MINIMUM_SCALE:0h;MAXIMUM_SCALE:0h;SQL_DATA_TYPE:0;SQL_DATETIME_SUB:0;NUM_PREC_RADIX:10)");}
- public ResultSet getColumns(String a,String b,String t,String c)throws SQLException{if(t.startsWith("%"))t="";return co.ex(
+ public ResultSet getColumns(String a,String b,String t,String c)throws SQLException{if(t.startsWith("%"))t="";return co.qx(
   "select TABLE_CAT:`,TABLE_SCHEM:`,TABLE_NAME:n,COLUMN_NAME:c,DATA_TYPE:0,TYPE_NAME:t,COLUMN_SIZE:2000000000,BUFFER_LENGTH:0,DECIMAL_DIGITS:16,NUM_PREC_RADIX:10,NULLABLE:1,REMARKS:`,COLUMN_DEF:`,SQL_DATA_TYPE:0,SQL_DATETIME_SUB:0,CHAR_OCTET_LENGTH:2000000000,ORDINAL_POSITION:1+til count n,NULLABLE:`YES from .Q.nct`"+t);}
- public ResultSet getPrimaryKeys(String a,String b,String t)throws SQLException{q("pk");return co.ex(
+ public ResultSet getPrimaryKeys(String a,String b,String t)throws SQLException{q("pk");return co.qx(
   "");} //"q)([]TABLE_CAT:'',TABLE_SCHEM:'',TABLE_NAME:'"+t+"',COLUMN_NAME:key "+t+",KEY_SEQ:1+asc count key "+t+",PK_NAME:'')");}
- public ResultSet getImportedKeys(String a,String b,String t)throws SQLException{q("imp");return co.ex(
+ public ResultSet getImportedKeys(String a,String b,String t)throws SQLException{q("imp");return co.qx(
   "");} //"q)select PKTABLE_CAT:'',PKTABLE_SCHEM:'',PKTABLE_NAME:x,PKCOLUMN_NAME:first each key each x,FKTABLE_CAT:'',FKTABLE_SCHEM:'',FKTABLE_NAME:'"+t+"',FKCOLUMN_NAME:y,KEY_SEQ:1,UPDATE_RULE:1,DELETE_RULE:0,FK_NAME:'',PK_NAME:'',DEFERRABILITY:0 from('x','y')vars fkey "+t);}
- public ResultSet getProcedures(String a,String b,String p)throws SQLException{q("pr");return co.ex(
+ public ResultSet getProcedures(String a,String b,String p)throws SQLException{q("pr");return co.qx(
   "");} // "q)([]PROCEDURE_CAT:'',PROCEDURE_SCHEM:'',PROCEDURE_NAME:varchar(),r0:0,r1:0,r2:0,REMARKS:'',PROCEDURE_TYPE:0)");}
  public ResultSet getExportedKeys(String a,String b,String t)throws SQLException{q("exp");return null;}
  public ResultSet getCrossReference(String pa,String pb,String pt,String fa,String fb,String ft)throws SQLException{q("cr");return null;} 
@@ -594,7 +594,7 @@ class re implements Ref{public String getBaseTypeName()throws SQLException{q();r
 // DriverPropertyInfo a=new DriverPropertyInfo("user",null),b=new DriverPropertyInfo("password",null),r[]=new DriverPropertyInfo[2];
 // a.required=b.required=false;r[0]=a;r[1]=b;for(int i=0;i<r.length;i++)r[i].value = p.getProperty(r[i].name);return r;}   
 public ResultSet getBestRowIdentifier(String a,String b,String t,int scope,boolean nullable)throws SQLException
-  {return co.ex("select SCOPE:'1',COLUMN_NAME:name,DATA_TYPE:([x:('int','float','varchar','date','time','timestamp','varbinary')]
+  {return co.qx("select SCOPE:'1',COLUMN_NAME:name,DATA_TYPE:([x:('int','float','varchar','date','time','timestamp','varbinary')]
    y:(4,8,12,91,92,93,-3,1111))[T].y,TYPE_NAME:T,COLUMN_SIZE:2000000000,BUFFER_LENGTH:0,DECIMAL_DIGITS:16,PSEUDO_COLUMN:1 from meta " + t+" where name in key "+t);}
 */
 
