@@ -16,4 +16,4 @@ n:1000
 \
 
 \t .[`:t/;();,;update date+1 from select from t where date=last date]
-\t @[;`mas;`g#]@[;`date;`p#]`:t
+\t @[;`mas;`g#]@[;`date;`s#]`:t/
