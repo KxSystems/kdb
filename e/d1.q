@@ -13,7 +13,7 @@ n:1000
 \t do[n;select i from t where date in D]
 \t do[n;select i from t where mas in M]
 
-
 \
 
 \t .[`:t/;();,;update date+1 from select from t where date=last date]
+\t @[;`mas;`g#]@[;`date;`p#]`:t
