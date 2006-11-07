@@ -36,7 +36,7 @@ twap:{[s;a;b](twp[s;b]-twp[s;a])%b-a}
 /\t do[n;twap[`IBM;11:00:00.0;12:00:00.0]]
 
 /nbbo
-nu:{n,:exec last sym,last time,max bid,min ask from(quote,:x)where sym=x`sym}
+nu:{n,:exec last sym,max time,max bid,min ask from(quote,:x)where sym=x`sym}
 ni:{[f;x]quote::sg select by sym,ex from x;n::f delete ex from x}
 if[a~`n;t:`quote;img.quote:ni[su];upd.quote:nu]
 if[a~`N;t:`quote;img.quote:ni[sg];upd.quote:nu]
