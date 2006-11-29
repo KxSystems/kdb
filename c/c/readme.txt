@@ -11,7 +11,7 @@ K r(ref) t(type) atom(ghijefs) list(u(supg) n(count) G(data)) flip(+k) dict(kK(x
 B(bool8) G(byte8) H(short16) I(int32) J(long64) E(real32) F(float64) C(char8) S(symbol32) D(date32) T(time32) Z(datetime64)
 
 type: KB KG KH KI KJ KE KF KC KS KD KT KZ 0(nested list)
-atom: kb(I) kg(I) kh(I) ki(I) kj(J) ke(F) kf(F) kc(I) ks(S) kc(I) kt(I) kz(I)  
+atom: kb(I) kg(I) kh(I) ki(I) kj(J) ke(F) kf(F) kc(I) ks(S) kc(I) kt(I) kz(F)  
 list: x=ktn(type,length);x=knk(n,x,y,z);  e.g. x=knk(2,kf(2.3),ktn(KI,10));
 also: K kp(string);K kpn(string,length);S ss(string); //intern string
 
@@ -45,7 +45,7 @@ servers, e.g. http://kx.com/q/c/a.c
 
 1. dynamic load, e.g. q/c/a.c K f(K x,K y){return ki(x->i+y->i);}
 2. callbacks,  e.g. q/c/ssl.c
- sd1(d,f); // put V f(I d){..} on q mainloop given socket d
+ sd1(d,f); // put V f(I d){..} on q mainloop given socket d (-d for nonblock)
  sd0(d);   // remove it
  krr(S); signal error
 
@@ -114,3 +114,6 @@ a=ktn(KS,0);b=ktn(KF,0);c=ktn(KI,0);
 
 while(..){ja(&a,&sym);ja(&b,&price);ja(&c,&size);}
 
+
+
+K r=dot(K x,K y); // does not decrement
