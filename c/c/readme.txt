@@ -16,7 +16,7 @@ type: KB   KG   KH    KI  KJ   KE   KF    KC   KS     KD   KT   KZ
 list has x->n (also xn) for count.
 
 generate  
-atom(xt< 0): kb(I) kg(I) kh(I) ki(I) kj(J) ke(F) kf(F) kc(I) ks(S) kc(I) kt(I) kz(F)  
+atom(xt< 0): kb(I) kg(I) kh(I) ki(I) kj(J) ke(F) kf(F) kc(I) ks(S) kd(I) kt(I) kz(F)  
 list(xt>=0): ktn(xt,xn) also K knk(n,...),kp(S),kpn(S,I);
 dict(XD): xD(KS,KK)
 flip(XT): xT(XD)
@@ -37,7 +37,7 @@ v(unixtime) is seconds since 1970.01.01T00:00:00
 z(datetime) is 64bit float days since 2000.01.01
 I o=10957*86400;
 I tz(F z){R .5+86400*z+o;}  // unix from kdb+
-F zs(I t){R (t-o)/8.64e4;}  // kdb+ from unix time(0)
+F zt(I t){R (t-o)/8.64e4;}  // kdb+ from unix time(0)
 F zu(timeval u){R(1e6*(u.tv_sec-o)+u.tv_usec)/8.64e10;} //gettimeofday
 
 examples:
@@ -61,7 +61,8 @@ servers, e.g. http://kx.com/q/c/a.c
 2. callbacks,    e.g. q/c/feed/ssl.c
  sd1(d,f); // put K f(I d){..} on q mainloop given socket d (-d for nonblock)
  sd0(d);   // remove it
- krr(S);   // error
+ krr(S);   // k   error, e.g. if(xt!=KI)return krr("type");
+ orr(S);   // o/s error, e.g. if(-1==..)return orr("file");
 
 CLIENT (link l32/c.o s32/c.o w32/c.dll(c.lib))
 e.g. http://kx.com/q/c/c/c.c (requires gcc 3.0 or later)
@@ -128,4 +129,7 @@ a=ktn(KS,0);b=ktn(KF,0);c=ktn(KI,0);
 while(..){ja(&a,&sym);ja(&b,&price);ja(&c,&size);}
 
 ja(K*,V*); js(K*,S); jk(K*,K);  join atom/string/k e.g. K r=ktn(KI,0);int i=2;ja(&r,&i);
+
+
+other:
 K r=dot(K x,K y); // does not decrement
