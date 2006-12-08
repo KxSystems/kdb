@@ -34,7 +34,7 @@ sel:{s:$[(*)~x:r j+:d:(?:)~x:r j::1;i();nm[a]x];e:j;v:.`.;@[`.;x:!x;:;.:'. x:nm[
   if[~$[g;o~(g&#o)#!s;0];x:g!x{x y z x}/[::;(<:;>:)0<@:'o;(x:0!x)@*:'o:|o]]];x}
 
 cre:{c:+p l{(p;x;$[`references~r j+:2*p:`primary~r j+:3*`symbol=t:tt@_i n[];i n[];t])};.[r[2];();:;(+/*c)!+c[1]!c[2]$\:()];}
-ins:{r[2]insert$["("~r j;l[i]n[];!+0!. r 2]!-6!'l[a]r j::2+r?`values;}
+ins:{f:$["("~r j;l[i]n[];!+0!. r 2];r[2]insert f!-6!'l[a]r j::2+r?`values;}
 upd:{![r[1];wh[];0b;(!).+l[{|(a n[];i x)}]r j];};del:{![r[2];wh[];0b;0#`];}
 \
 
@@ -66,7 +66,7 @@ q)select sum qty by p.color from sp
 /q)select sp.s,sp.p,sp.qty from s,p,sp where sp.s=s.s and sp.p=p.p and p.city=s.city
 
 \
-2006.12.01 ins:-6!;'??';a in list
+2006.12.07 ins:-6!;'??';a in list
 2006.11.27 del:{..;};date/time/timestamp
 2006.11.09 upd:{..;};insert into t(..)..
 2006.09.20 order by p.p;desc
