@@ -1,24 +1,25 @@
 / guess a reasonable loadstring for a csv file (kdb+ 2.3 or greater)
+/ 2006.12.25 JUSTSYM
 / 2006.09.17 PRESAVE,POSTLOAD, add saveptn  
 / 2006.09.14 add incremental save option
 / 2006.08.30 add comment on how to save in generated script, allow short MM/DD/YY form rule 16 
 / 2006.08.01 fix saveinfo 
 / 2006.01.28 put back maybe flag 
 / 2006.01.26 add load stats if -bl is used
-"kdb+csvguess 0.27 2006.10.26"
+"kdb+csvguess 0.28 2006.12.25"
 o:.Q.opt .z.x;if[1>count .Q.x;-2">q ",(string .z.f)," CSVFILE [-noheader|nh] [-discardempty|de] [-semicolon|sc] [-zaphdrs|zh] [-savescript|ss] [-saveinfo|si] [-exit]";exit 1]
 / -noheader|nh - the csv file doesn't have headers, so create some (c00..)
 / -discardempty|de - if a column is empty don't bother to load it 
 / -semicolon|sc - use semicolon as delimiter in place of the default comma
 / -zaphdrs|zh - by default junk characters are removed from column headers, so for example
-/	"Profit & Loss_2005" will become "ProfitLoss_2005". Use the zaphdrs flag to force the name to lowercase 
-/	and to remove the underscores ("profitloss2005")
+/ "Profit & Loss_2005" will become "ProfitLoss_2005". Use the zaphdrs flag to force the name to lowercase 
+/ and to remove the underscores ("profitloss2005")
 / -savescript|ss - save a standalone load script for the data. Do this manually (perhaps after adjusting 
-/	<info>) by calling savescript[]
+/ <info>) by calling savescript[]
 / saveinfo|si - *append* the table information to a shared csv - potentially with information from other tables
 / -exit - exit on completion, only makes sense in conjunction with savescript or saveinfo 
 / example:
-/	for %1 in (import\*.csv) do q csvguess.q %1 -zh -ss -si -exit
+/ for %1 in (import\*.csv) do q csvguess.q %1 -zh -ss -si -exit
 
 FILE:LOADFILE:hsym`${x[where"\\"=x]:"/";x}first .Q.x
 NOHEADER:any`noheader`nh in key o
@@ -107,8 +108,11 @@ info:select c,ci,t,maybe,j10,j12,ipa,mw,mdot,rule,gr,ndv,dchar from info
 
 LOADNAME:`${x where((first x)in .Q.a),1_ x in .Q.an}lower first"."vs last"/"vs 1_string LOADFILE
 LOADFMTS::raze exec t from`ci xasc select ci,t from info
+JUSTSYMFMTS::{x[where not x="S"]:" ";x}LOADFMTS
 LOADHDRS::exec c from`ci xasc select ci,c from info where not t=" "
+JUSTSYMHDRS::LOADHDRS where LOADFMTS="S"
 LOADDEFN:{(LOADFMTS;$[NOHEADER;DELIM;enlist DELIM])}
+JUSTSYMDEFN:{(JUSTSYMFMTS;$[NOHEADER;DELIM;enlist DELIM])}
 /DATA:LOAD LOADFILE / for files loadable in one go
 LOAD:{[file] POSTLOAD$[NOHEADER;flip LOADHDRS!LOADDEFN[]0:;LOADHDRS xcol LOADDEFN[]0:]file}
 /(10#DATA):LOAD10 LOADFILE / load just the first 10 rows, convenient when debugging column types
@@ -118,21 +122,23 @@ DATA:() / delete from`DATA
 k)fs2:{[f;s]((-7!s)>){[f;s;x]i:1+last@&"\n"=r:1:(s;x;CHUNKSIZE);f@`\:i#r;x+i}[f;s]/0j} / .Q.fs with bigger chunks
 BULKLOAD:{[file] fs2[{`DATA insert POSTLOAD$[NOHEADER or count DATA;flip LOADHDRS!(LOADFMTS;DELIM)0:x;LOADHDRS xcol LOADDEFN[]0: x]}file];count DATA}
 BULKSAVE:{[file] .tmp.bsc:0;fs2[{.[` sv SAVEDB,SAVEPTN,LOADNAME,`;();,;]PRESAVE t:.Q.en[SAVEDB]POSTLOAD$[NOHEADER or .tmp.bsc;flip LOADHDRS!(LOADFMTS;DELIM)0:x;LOADHDRS xcol LOADDEFN[]0: x];.tmp.bsc+:count t}]file;.tmp.bsc}
+JUSTSYM:{[file] .tmp.bsc:0;fs2[{t:.Q.en[SAVEDB]POSTLOAD$[NOHEADER or .tmp.bsc;flip JUSTSYMHDRS!(JUSTSYMFMTS;DELIM)0:x;JUSTSYMHDRS xcol JUSTSYMDEFN[]0: x];.tmp.bsc+:count t}]file;.tmp.bsc}
 
 / create a standalone load script - savescript[]
 / call it with:
-/	q xxx.q / to define all the necessary functions and variables 
-/	q xxx.q FILENAME  / to define the global FILE as <FILENAME>
-/	q xxx.q FILENAME -bl / to bulkload FILENAME to DATA
-/	q xxx.q -bl / to bulkload original filename (LOADFILE) to DATA
-/   q xxx.q -bs / to bulksave original filename to directory SAVEDB
-/   q xxx.q -bs -savedb foo / to bulksave original filename to directory foo
-/   q xxx.q FILENAME -bs -savedb foo / to bulksave FILENAME to directory foo
-/   q xxx.q FILENAME -bs -savedb foo -saveptn 2006.12.25 / to bulksave FILENAME to directory foo in the 2006.12.25 date partition
-/   q xxx.q ... -exit / exit on completion of commands (only makes sense with -bs)
+/ q xxx.q / to define all the necessary functions and variables 
+/ q xxx.q FILENAME  / to define the global FILE as <FILENAME>
+/ q xxx.q FILENAME -bl / to bulkload FILENAME to DATA
+/ q xxx.q -bl / to bulkload original filename (LOADFILE) to DATA
+/ q xxx.q -bs / to bulksave original filename to directory SAVEDB
+/ q xxx.q -bs -savedb foo / to bulksave original filename to directory foo
+/ q xxx.q FILENAME -bs -savedb foo / to bulksave FILENAME to directory foo
+/ q xxx.q FILENAME -js -savedb foo / to just save the symbols from FILENAME to directory foo (allow parallel load+save thereafter)
+/ q xxx.q FILENAME -bs -savedb foo -saveptn 2006.12.25 / to bulksave FILENAME to directory foo in the 2006.12.25 date partition
+/ q xxx.q ... -exit / exit on completion of commands (only makes sense with -bs and -js)
 savescript:{f:`$":",(string LOADNAME),".load.q";f 1:"";hs:neg hopen f;
 	hs"/ ",(string .z.z)," ",(string .z.h)," ",(string .z.u);
-	hs"/ q ",(string LOADNAME),".load.q FILE [-bl|bulkload] [-bs|bulksave] [-exit] [-savedb SAVEDB] [-saveptn SAVEPTN] ";
+	hs"/ q ",(string LOADNAME),".load.q FILE [-bl|bulkload] [-bs|bulksave] [-js|justsym] [-exit] [-savedb SAVEDB] [-saveptn SAVEPTN] ";
 	hs"/ q ",(string LOADNAME),".load.q FILE";
 	hs"/ q ",(string LOADNAME),".load.q";
 	hs"FILE:LOADFILE:`$\"",(string LOADFILE),"\"";
@@ -144,9 +150,12 @@ savescript:{f:`$":",(string LOADNAME),".load.q";f 1:"";hs:neg hopen f;
 	hs"\\z ",(string system"z")," / D date format 0 => mm/dd/yyyy or 1 => dd/mm/yyyy (yyyy.mm.dd is always ok)";
 	hs"LOADNAME:",-3!LOADNAME;hs"LOADFMTS:\"",LOADFMTS,"\"";hs"LOADHDRS:",raze"`",'string LOADHDRS;
 	hs"LOADDEFN:",-3!LOADDEFN;hs"POSTLOAD:",-3!POSTLOAD;hs"LOAD:",-3!LOAD;hs"LOAD10:",(-3!LOAD10)," / just load first 10 records";
+	hs"JUSTSYMFMTS:\"",JUSTSYMFMTS,"\"";hs"JUSTSYMHDRS:",raze"`",'string JUSTSYMHDRS;
+	hs"JUSTSYMDEFN:",-3!JUSTSYMDEFN;
 	hs"CHUNKSIZE:",string CHUNKSIZE;hs"DATA:()";
 	hs"k)fs2:",2_ last value fs2;
-	hs"BULKLOAD:",-3!BULKLOAD;hs"PRESAVE:",-3!PRESAVE;hs"SAVE:",-3!SAVE;hs"BULKSAVE:",-3!BULKSAVE;
+	hs"BULKLOAD:",-3!BULKLOAD;hs"PRESAVE:",-3!PRESAVE;hs"SAVE:",-3!SAVE;hs"BULKSAVE:",-3!BULKSAVE;hs"JUSTSYM:",-3!JUSTSYM;
+	hs"if[any`js`justsym in key o;-1(string`second$.z.z),\" saving `sym for \",(1_string FILE),\" to directory \",1_string SAVEDB;.tmp.st:`time$.z.z;.tmp.rc:JUSTSYM FILE;.tmp.et:`time$.z.z;.tmp.fs:hcount FILE;-1(string`second$.z.z),\" done (\",(string .tmp.rc),\" records; \",(string floor .tmp.rc%1e-3*.tmp.et-.tmp.st),\" records/sec; \",(string floor 0.5+.tmp.fs%1e3*.tmp.et-.tmp.st),\" MB/sec)\"]";
 	hs"if[any`bs`bulksave in key o;-1(string`second$.z.z),\" saving \",(1_string FILE),\" to directory \",1_string` sv SAVEDB,SAVEPTN,LOADNAME;.tmp.st:`time$.z.z;.tmp.rc:BULKSAVE FILE;.tmp.et:`time$.z.z;.tmp.fs:hcount FILE;-1(string`second$.z.z),\" done (\",(string .tmp.rc),\" records; \",(string floor .tmp.rc%1e-3*.tmp.et-.tmp.st),\" records/sec; \",(string floor 0.5+.tmp.fs%1e3*.tmp.et-.tmp.st),\" MB/sec)\"]";
 	hs"if[any`bl`bulkload in key o;-1(string`second$.z.z),\" loading \",(1_string FILE),\" to variable DATA\";.tmp.st:`time$.z.z;BULKLOAD FILE;.tmp.et:`time$.z.z;.tmp.rc:count DATA;.tmp.fs:hcount FILE;-1(string`second$.z.z),\" done (\",(string .tmp.rc),\" records; \",(string floor .tmp.rc%1e-3*.tmp.et-.tmp.st),\" records/sec; \",(string floor 0.5+.tmp.fs%1e3*.tmp.et-.tmp.st),\" MB/sec)\"]";
 	hs"if[`exit in key o;exit 0]";
