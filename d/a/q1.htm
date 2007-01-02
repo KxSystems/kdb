@@ -670,20 +670,20 @@ a      b c  d
   v.name                       / dot notation works
 `jones`clark`blake`smith`adams                     
 </xmp>
-<p>Individual enumerations are distinguished datatypes; enumerations with different domains have different datatype values. Datatype values are assigned in the order in which the enumerations are defined, starting at +-20. (As for the primitive atomic types, an enumerated atom has a negative datatype value and an enumerated simple list has a positive datatype value. For example,</p>
+<p>Individual enumerations are distinguished datatypes. Datatype values are assigned in the order in which the enumerations are defined, starting at +-20. (As for the primitive atomic types, an enumerated atom has a negative datatype value and an enumerated simple list has a positive datatype value. For example,</p>
 
-<xmp>  s:`a`b`c                                        
-  t:1 2 3 4                                       
-  e:`s$        / enumeration of s is defined first
-  f:`t$                                           
-  type e `b    / e has type +-20                  
--20h                                              
-  type e `b`a                                     
-20h                                               
-  type f 1     / f has type +-21                  
--21h                                              
-  type f 1 3 1                                    
-21h                                               
+<xmp>  s:`a`b`c                                         
+  t:`a`e                                           
+  e:`s$         / enumeration of s is defined first
+  f:`t$                                            
+  type e `b     / e has type +-20                  
+-20h                                               
+  type e `b`a                                      
+20h                                                
+  type f `a     / f has type +-21                  
+-21h                                               
+  type f `a`e`a                                    
+21h                                                
 </xmp>
 <p>If another enumeration is subsequently defined it will have datatype value +-22, and so on.</p>
 <p>Enumerating simple varchar lists with large item counts and relatively few distinct items is an important optimization technique. Kdb+ data is self-describing. For example, a simple int list is stored as a few bytes of descriptive information followed by the int atoms in a contiguous array. When saved to disk this list has essentially the same format. When read from disk it is simply mapped into memory, a nearly instantaneous operation.</p>
