@@ -663,13 +663,8 @@ a      b c  d
 
 <xmp>`d$v
 </xmp>
-<p>where d is the name of an existing data object. There are two possibilities for d, either a key table or a simple list of unique atoms. The object v is either an atom whose value is a key value or item of d, respectively, or a list of those atoms. We say that the projection <code><nobr>`d$</nobr></code> is an enumeration, d is an enumeration domain, and <code><nobr>`d$v</nobr></code> is an enumerated value.</p>
-<p>If `d names a key table then the enumeration defines a foreign key of that table, whether or not the enumeration is a column in another table. For example, using the table s from the product distribution script sp.q,</p>
-
-<xmp>  v:`s$`s2`s4`s3`s1`s5                             
-  v.name                       / dot notation works
-`jones`clark`blake`smith`adams                     
-</xmp>
+<p>where d is the name of an existing data object. There are two possibilities for d, either a key table or a simple list of unique symbols. The object v is either an atom whose value is a key value or item of d, respectively, or a list of those atoms. We say that the projection <code><nobr>`d$</nobr></code> is an enumeration, d is an enumeration domain, and <code><nobr>`d$v</nobr></code> is an enumerated value.</p>
+<p>If `d names a key table then the enumeration defines a foreign key of that table.</p>
 <p>Individual enumerations are distinguished datatypes. Datatype values are assigned in the order in which the enumerations are defined, starting at +-20. (As for the primitive atomic types, an enumerated atom has a negative datatype value and an enumerated simple list has a positive datatype value. For example,</p>
 
 <xmp>  s:`a`b`c                                         
@@ -701,7 +696,7 @@ a      b c  d
 `u$`c`b`c`c`a`b`a`a`c`c`c`b`c`b`a                                                  
   k:0 1 0 0 2 1 2 2 0 0 0 1 0 1 2  / k is the list of indices                      
   c~u[k]                           / c is identical to u[k]                        
-1                                                                                  
+1b                                                                                 
   e[9 3 11]                        / select from e; e is a list because c is a list
 `u$`c`c`b                          / the result is also an enumeration             
   u[k[9 3 11]]                                                                     
