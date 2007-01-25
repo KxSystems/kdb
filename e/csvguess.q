@@ -1,4 +1,5 @@
 / guess a reasonable loadstring for a csv file (kdb+ 2.3 or greater)
+/ 2007.01.25 -tables
 / 2006.12.25 JUSTSYM
 / 2006.09.17 PRESAVE,POSTLOAD, add saveptn  
 / 2006.09.14 add incremental save option
@@ -6,11 +7,12 @@
 / 2006.08.01 fix saveinfo 
 / 2006.01.28 put back maybe flag 
 / 2006.01.26 add load stats if -bl is used
-"kdb+csvguess 0.28 2006.12.25"
-o:.Q.opt .z.x;if[1>count .Q.x;-2">q ",(string .z.f)," CSVFILE [-noheader|nh] [-discardempty|de] [-semicolon|sc] [-zaphdrs|zh] [-savescript|ss] [-saveinfo|si] [-exit]";exit 1]
+"kdb+csvguess 0.29 2007.01.25"
+o:.Q.opt .z.x;if[1>count .Q.x;-2">q ",(string .z.f)," CSVFILE [-noheader|nh] [-discardempty|de] [-semicolon|sc] [-tab|tb] [-zaphdrs|zh] [-savescript|ss] [-saveinfo|si] [-exit]";exit 1]
 / -noheader|nh - the csv file doesn't have headers, so create some (c00..)
 / -discardempty|de - if a column is empty don't bother to load it 
 / -semicolon|sc - use semicolon as delimiter in place of the default comma
+/ -tab|tb - use tab as delimiter in place of default comma
 / -zaphdrs|zh - by default junk characters are removed from column headers, so for example
 / "Profit & Loss_2005" will become "ProfitLoss_2005". Use the zaphdrs flag to force the name to lowercase 
 / and to remove the underscores ("profitloss2005")
@@ -21,10 +23,13 @@ o:.Q.opt .z.x;if[1>count .Q.x;-2">q ",(string .z.f)," CSVFILE [-noheader|nh] [-d
 / example:
 / for %1 in (import\*.csv) do q csvguess.q %1 -zh -ss -si -exit
 
+if[(any`semicolon`sc in key o)&any`tab`tb in key o;-2"delimiter: -tab OR -semicolon";exit 1]
+
 FILE:LOADFILE:hsym`${x[where"\\"=x]:"/";x}first .Q.x
 NOHEADER:any`noheader`nh in key o
 DISCARDEMPTY:any`discardempty`de in key o
 DELIM:",;"[any`semicolon`sc in key o]
+DELIM:(DELIM,"\t")[any`tab`tb in key o]
 ZAPHDRS:any`zaphdrs`zh in key o
 ZAPHDRS:ZAPHDRS and not NOHEADER
 SAVESCRIPT:any`savescript`ss in key o
@@ -122,7 +127,7 @@ DATA:() / delete from`DATA
 k)fs2:{[f;s]((-7!s)>){[f;s;x]i:1+last@&"\n"=r:1:(s;x;CHUNKSIZE);f@`\:i#r;x+i}[f;s]/0j} / .Q.fs with bigger chunks
 BULKLOAD:{[file] fs2[{`DATA insert POSTLOAD$[NOHEADER or count DATA;flip LOADHDRS!(LOADFMTS;DELIM)0:x;LOADHDRS xcol LOADDEFN[]0: x]}file];count DATA}
 BULKSAVE:{[file] .tmp.bsc:0;fs2[{.[` sv SAVEDB,SAVEPTN,LOADNAME,`;();,;]PRESAVE t:.Q.en[SAVEDB]POSTLOAD$[NOHEADER or .tmp.bsc;flip LOADHDRS!(LOADFMTS;DELIM)0:x;LOADHDRS xcol LOADDEFN[]0: x];.tmp.bsc+:count t}]file;.tmp.bsc}
-JUSTSYM:{[file] .tmp.bsc:0;fs2[{t:.Q.en[SAVEDB]POSTLOAD$[NOHEADER or .tmp.bsc;flip JUSTSYMHDRS!(JUSTSYMFMTS;DELIM)0:x;JUSTSYMHDRS xcol JUSTSYMDEFN[]0: x];.tmp.bsc+:count t}]file;.tmp.bsc}
+JUSTSYM:{[file] .tmp.jsc:0;fs2[{.tmp.jsc+:count .Q.en[SAVEDB]POSTLOAD$[NOHEADER or .tmp.jsc;flip JUSTSYMHDRS!(JUSTSYMFMTS;DELIM)0:x;JUSTSYMHDRS xcol JUSTSYMDEFN[]0: x]}]file;.tmp.jsc}
 
 / create a standalone load script - savescript[]
 / call it with:
