@@ -146,21 +146,27 @@ r = k(c,"b:til 100",(K)0);         // Synchronously set b to be a list up to 100
  Join a string to a list           |  K js(K*,S);  
  Join another K object to a list   |  K jk(K*,K);  
 </xmp>
-<p><h5 id="Strings and date-times">9 Strings and date-times</h5></p>
-<p>Strings and date-times are special cases and extra utility functions are provided: </p>
+<p><h5 id="Strings">9 Strings</h5></p>
+<p>Strings are a special case: </p>
 
-<xmp> Create a string                         |  K kp(string);          
- Create an empty strong of length n      |  K kpn(string, n);      
- Intern a string                         |  S ss(string);          
- Create a Kdb+ datetime from a UNIX time |  double zu(int u);      
- Create a UNIX time from a Kdb+ datetime |  int uz(double z);      
- Encode a year/month/day as an int       |  I ymd(year,month,day); 
+<xmp> Create a string                         |  K kp(string);     
+ Create an empty strong of length n      |  K kpn(string, n); 
+ Intern a string                         |  S ss(string);     
 </xmp>
-<p>Recall that a UNIX time is the number of seconds since 1970.01.01T00:00:00 while a Kdb+ datetime is a 64 bit float number of days since 2000.01.01. What's the difference between a symbol and a char vector? A symbol is a pointer to a location in an internal map of strings; that is symbols are interned zero terminated strings. On the other hand, a char vector is similar to an int vector and is instead a counted K vector as usual. In order to create a symbol we must intern a string, using ss, and then use the resulting pointer in further expressions. </p>
+<p>What's the difference between a symbol and a char vector? A symbol is a pointer to a location in an internal map of strings; that is symbols are interned zero terminated strings. On the other hand, a char vector is similar to an int vector and is instead a counted K vector as usual. In order to create a symbol we must intern a string, using ss, and then use the resulting pointer in further expressions. </p>
 
 <xmp>K some_symbol = ks(ss("some symbol"));
 </xmp>
-<p><h5 id="Creating dictionaries and tables">10 Creating dictionaries and tables</h5></p>
+<p><h5 id="DateTime">10 DateTime</h5></p>
+
+<xmp> Encode a year/month/day as an int       |  I ymd(year,month,day);
+</xmp>
+<p>Recall that a UNIX time is the number of seconds since 1970.01.01T00:00:00 while a Kdb+ datetime is a 64 bit float number of days since 2000.01.01, e.g.</p>
+
+<xmp>double zu(int u){return u/8.64e4-10957;}   // kdb+ from unix
+int uz(double f){return 86400*(f+10957);}  // unix from kdb+
+</xmp>
+<p><h5 id="Creating dictionaries and tables">11 Creating dictionaries and tables</h5></p>
 <p>We can create dictionaries and tables from C using the following functions: </p>
 
 <xmp> Create a dict                              |  K xD(K,K); 
@@ -189,7 +195,7 @@ if (0 == y)
 else                                                                       
    (void) puts ("y is a simple table and x has been deallocated.");        
 </xmp>
-<p><h5 id="Signaling an error in C code">11 Signaling an error in C code</h5></p>
+<p><h5 id="Signaling an error in C code">12 Signaling an error in C code</h5></p>
 <p>Use the function </p>
 
 <xmp>krr(S);
