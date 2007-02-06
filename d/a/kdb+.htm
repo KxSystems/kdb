@@ -198,7 +198,7 @@ update .. from sp where s.city=p.city / try that in sql
 <p>Following is a map of how to do sql things in q. There is no reverse map since q is a much richer language than sql. With respect to CJDate "The SQL Standard"</p>
 
 <xmp>s)create table s(s varchar(*)primary key,name varchar(*),status int,city varchar(*))
-q)s:([s:`symbol$()]name:`symbol$();status:`symbol$();city:`symbol$())               
+q)s:([s:`symbol$()]name:`symbol$();status:`int$();city:`symbol$())                  
 </xmp>
 
 <xmp>s)create table sp(s varchar(*)references s,p varchar(*)references p,qty int)
