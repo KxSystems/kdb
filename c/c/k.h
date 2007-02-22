@@ -1,9 +1,9 @@
 #ifdef WIN32
-typedef __int64 J;
+typedef long I;typedef __int64 J;
 #else
-typedef long long J;
+typedef int I;typedef long long J;
 #endif  // typedef struct k0{I r;H t,u;I n;G G0[1];}*K; before gcc3.0
-typedef int I;typedef unsigned char*A,G,*S,C;typedef short H;typedef float E;typedef double F;typedef void V;
+typedef unsigned char*S,G,C;typedef short H;typedef float E;typedef double F;typedef void V;
 typedef struct k0{I r;H t,u;union{G g;H h;I i;J j;E e;F f;S s;struct k0*k;struct{I n;G G0[1];};};}*K;
 
 // vector accessors, e.g. kF(x)[i] for float&datetime
@@ -42,8 +42,8 @@ typedef struct k0{I r;H t,u;union{G g;H h;I i;J j;E e;F f;S s;struct k0*k;struct
 extern"C"{
 #endif
 extern I khpu(char*,I,char*),khp(char*,I),ymd(I,I,I),dj(I);extern V r0(K),sd0(I);extern S sn(S,I),ss(S);
-extern K ka(I),kb(I),kg(I),kh(I),ki(I),kj(J),ke(F),kf(F),kc(I),ks(S),kd(I),kz(F),kt(I),sd1(I,K(*)(I)),
- ktn(I,I),knk(I,...),kp(S),kpn(S,I),ja(K*,A),js(K*,S),jk(K*,K),k(I,char*,...),xT(K),xD(K,K),ktd(K),r1(K),krr(S),orr(S),dot(K,K);
+extern K ka(I),kb(I),kg(I),kh(I),ki(I),kj(J),ke(F),kf(F),kc(I),ks(S),kd(I),kz(F),kt(I),sd1(I,K(*)(I)),dl(V*f,I),
+ ktn(I,I),knk(I,...),kp(S),kpn(S,I),ja(K*,S),js(K*,S),jk(K*,K),k(I,char*,...),xT(K),xD(K,K),ktd(K),r1(K),krr(S),orr(S),dot(K,K);
 #ifdef __cplusplus 
 }
 #endif
@@ -98,7 +98,6 @@ extern double log();
 #define xt x->t
 #define xu x->u
 #define xn x->n
-#define xk TX(K,x)
 #define xx xK[0]
 #define xy xK[1]
 #define xg TX(G,x)
@@ -108,13 +107,12 @@ extern double log();
 #define xe TX(E,x)
 #define xf TX(F,x)
 #define xs TX(S,x)
-#define xB ((G*)xG)
+#define xk TX(K,x)
 #define xG x->G0
 #define xH ((H*)xG)
 #define xI ((I*)xG)
 #define xJ ((J*)xG)
 #define xE ((E*)xG)
 #define xF ((F*)xG)
-#define xC ((C*)xG)
 #define xS ((S*)xG)
 #define xK ((K*)xG)
