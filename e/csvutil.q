@@ -92,3 +92,6 @@ bulkload:{[file;info]
 	.Q.fs[{[file;loadhdrs;loadfmts] `DATA insert $[count DATA;flip loadhdrs!(loadfmts;.csv.DELIM)0:file;loadhdrs xcol(loadfmts;enlist .csv.DELIM)0:file]}[file;loadhdrs;loadfmts]];
 	count DATA}
 @[.:;"\\l csvutil.custom.q";::]; / save your custom settings in csvutil.custom.q to override those set at the beginning of the file 
+l(loadfmts;enlist .csv.DELIM)0:file]}[file;loadhdrs;loadfmts]];
+	count DATA}
+@[.:;"\\l csvutil.custom.q";::]; / save your custom settings in csvutil.custom.q to override those set at the beginning of the file 
