@@ -1,5 +1,6 @@
 / guess a reasonable loadstring for a csv file (kdb+ 2.3 or greater)
-/ 2007.01.25 -tables
+/ 2007.03.01 more bizarre Z possibilities
+/ 2007.01.25 -tab
 / 2006.12.25 JUSTSYM
 / 2006.09.17 PRESAVE,POSTLOAD, add saveptn  
 / 2006.09.14 add incremental save option
@@ -7,7 +8,7 @@
 / 2006.08.01 fix saveinfo 
 / 2006.01.28 put back maybe flag 
 / 2006.01.26 add load stats if -bl is used
-"kdb+csvguess 0.29 2007.01.25"
+"kdb+csvguess 0.30 2007.03.01"
 o:.Q.opt .z.x;if[1>count .Q.x;-2">q ",(string .z.f)," CSVFILE [-noheader|nh] [-discardempty|de] [-semicolon|sc] [-tab|tb] [-zaphdrs|zh] [-savescript|ss] [-saveinfo|si] [-exit]";exit 1]
 / -noheader|nh - the csv file doesn't have headers, so create some (c00..)
 / -discardempty|de - if a column is empty don't bother to load it 
@@ -23,13 +24,12 @@ o:.Q.opt .z.x;if[1>count .Q.x;-2">q ",(string .z.f)," CSVFILE [-noheader|nh] [-d
 / example:
 / for %1 in (import\*.csv) do q csvguess.q %1 -zh -ss -si -exit
 
-if[(any`semicolon`sc in key o)&any`tab`tb in key o;-2"delimiter: -tab OR -semicolon";exit 1]
+if[(any`semicolon`sc in key o)&any`tab`tb in key o;-2"delimiter: -tab OR -semicolon (default \",\")";exit 1]
 
 FILE:LOADFILE:hsym`${x[where"\\"=x]:"/";x}first .Q.x
 NOHEADER:any`noheader`nh in key o
 DISCARDEMPTY:any`discardempty`de in key o
-DELIM:",;"[any`semicolon`sc in key o]
-DELIM:(DELIM,"\t")[any`tab`tb in key o]
+DELIM:$[any`semicolon`sc in key o;";";any`tab`tb in key o;"\t";","]
 ZAPHDRS:any`zaphdrs`zh in key o
 ZAPHDRS:ZAPHDRS and not NOHEADER
 SAVESCRIPT:any`savescript`ss in key o
@@ -90,25 +90,26 @@ info:update t:"D",rule:18,maybe:0b from info where t="?",mw in 7 9 11,mdot in 0 
 info:update t:"U",rule:19,maybe:0b from info where t="n",mw in 4 5,mdot=0,{all x like"*[0-9]:[0-5][0-9]"}peach sdv
 info:update t:"T",rule:20,maybe:0b from info where t="n",mw within 7 12,mdot<2,{all x like"*[0-9]:[0-5][0-9]:[0-5][0-9]*"}peach sdv
 info:update t:"V",rule:21,maybe:0b from info where t="T",mw in 7 8,mdot=0
-info:update t:"Z",rule:22,maybe:0b from info where t="n",mw within 19 23,mdot<4,{$[all x in"0123456789.:T- ";2<sum".:T -"in x;0b]}each dchar,cancast["Z"]peach sdv
+/ info:update t:"Z",rule:22,maybe:0b from info where t="n",mw within 19 23,mdot<4,{$[all x in"0123456789.:T- ";2<sum".:T -"in x;0b]}each dchar,cancast["Z"]peach sdv
+info:update t:"Z",rule:22,maybe:0b from info where t in"n?",mw within 11 24,mdot<4,{$[all x in"0123456789.:ABCDEFGJLMNOPRSTUVYabcdefgjlmnoprstuvy/- ";2<sum".:/ -"in x;0b]}each dchar,cancast["Z"]peach sdv
 info:update t:"?",rule:23,maybe:0b from info where t="n" / reset remaining maybe numeric
 info:update t:"C",rule:24,maybe:0b from info where t="?",mw=1 / char
 info:update t:"B",rule:25,maybe:0b from info where t in"?IHC",mw=1,mdot=0,{$[all x in" 01tTfFyYnN";(any" 0fFnN"in x)and any"1tTyY"in x;0b]}each dchar / boolean
 info:update t:"X",rule:26,maybe:0b from info where t="?",mw=2,{$[all x in"0123456789ABCDEF";(any .Q.n in x)and any"ABCDEF"in x;0b]}each dchar /hex
 info:update t:"S",rule:27,maybe:1b from info where t="?",mw<SYMMAXWIDTH,mw>1,gr<SYMMAXGR / symbols (max width permitting)
 info:update t:"*",rule:28,maybe:0b from info where t="?" / the rest as strings
-/ flag those S/* columns which could be encoded to integers (.Q.j10/x10/j12/x12) to avoid symbols
 info:update maybe:1b from info where mw>4,not t="D",(lower c)like"*date*"
 info:update maybe:1b from info where mw>1,not t in"TUV",(lower c)like"*time*"
+/ flag those S/* columns which could be encoded to integers (.Q.j10/x10/j12/x12) to avoid symbols
 info:update j10:0b,j12:0b from info
 info:update j12:1b from info where t in"S*",mw<13,{all x in .Q.nA}each dchar
 info:update j10:1b from info where t in"S*",mw<11,{all x in .Q.b6}each dchar 
 if["?"in exec t from info;'`unknown.field]; / check all done
 
 info:select c,ci,t,maybe,j10,j12,ipa,mw,mdot,rule,gr,ndv,dchar from info
-/ make changes to <st> and they'll be picked up correctly, test with: show LOAD10 LOADFILE, or sba[]
-/ update t:" " from`st where not t="S" / only load symbols
-/ update t:"*" from`st where t="S" / load all char as strings, no need to enumerate before save
+/ make changes to <info> and they'll be picked up correctly, test with: show LOAD10 LOADFILE, or sba[]
+/ update t:" " from`info where not t="S" / only load symbols
+/ update t:"*" from`info where t="S" / load all char as strings, no need to enumerate before save
 / run savescript[] when results are correct
 
 LOADNAME:`${x where((first x)in .Q.a),1_ x in .Q.an}lower first"."vs last"/"vs 1_string LOADFILE
@@ -188,12 +189,6 @@ saveinfo:{savedinfo:$[@[hcount;INFOFILE;0j];(INFOFMTS;enlist",")0:INFOFILE;()];
 	INFOFILE 0:.h.cd`tbl`c xasc savedinfo;INFOFILE}
 if[SAVEINFO;-1"* saveinfo file ",(1_string saveinfo[])," updated"]
 if[EXIT;exit 0]
-
-sba:{show update before:(({x[where not x=" "]:"*";x}LOADFMTS;DELIM)0:sample),after:(LOADFMTS;DELIM)0:sample from select c,t from info} / show before+after
-\
-show delete dv from info
-show first LOAD10 FILE
-show select from (delete dv from info) where maybe
 
 sba:{show update before:(({x[where not x=" "]:"*";x}LOADFMTS;DELIM)0:sample),after:(LOADFMTS;DELIM)0:sample from select c,t from info} / show before+after
 \
