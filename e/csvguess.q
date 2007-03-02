@@ -1,4 +1,5 @@
 / guess a reasonable loadstring for a csv file (kdb+ 2.3 or greater)
+/ 2007.03.02 fix invalid JUSTSYMHDRS in savescript when no sym fields
 / 2007.03.01 more bizarre Z possibilities
 / 2007.01.25 -tab
 / 2006.12.25 JUSTSYM
@@ -8,7 +9,7 @@
 / 2006.08.01 fix saveinfo 
 / 2006.01.28 put back maybe flag 
 / 2006.01.26 add load stats if -bl is used
-"kdb+csvguess 0.30 2007.03.01"
+"kdb+csvguess 0.31 2007.03.02"
 o:.Q.opt .z.x;if[1>count .Q.x;-2">q ",(string .z.f)," CSVFILE [-noheader|nh] [-discardempty|de] [-semicolon|sc] [-tab|tb] [-zaphdrs|zh] [-savescript|ss] [-saveinfo|si] [-exit]";exit 1]
 / -noheader|nh - the csv file doesn't have headers, so create some (c00..)
 / -discardempty|de - if a column is empty don't bother to load it 
@@ -113,10 +114,10 @@ info:select c,ci,t,maybe,j10,j12,ipa,mw,mdot,rule,gr,ndv,dchar from info
 / run savescript[] when results are correct
 
 LOADNAME:`${x where((first x)in .Q.a),1_ x in .Q.an}lower first"."vs last"/"vs 1_string LOADFILE
-LOADFMTS::raze exec t from`ci xasc select ci,t from info
-JUSTSYMFMTS::{x[where not x="S"]:" ";x}LOADFMTS
-LOADHDRS::exec c from`ci xasc select ci,c from info where not t=" "
-JUSTSYMHDRS::LOADHDRS where LOADFMTS="S"
+LOADFMTS:raze exec t from`ci xasc select ci,t from info
+JUSTSYMFMTS:{x[where not x="S"]:" ";x}LOADFMTS
+LOADHDRS:exec c from`ci xasc select ci,c from info where not t=" "
+JUSTSYMHDRS:LOADHDRS where LOADFMTS="S"
 LOADDEFN:{(LOADFMTS;$[NOHEADER;DELIM;enlist DELIM])}
 JUSTSYMDEFN:{(JUSTSYMFMTS;$[NOHEADER;DELIM;enlist DELIM])}
 /DATA:LOAD LOADFILE / for files loadable in one go
@@ -156,7 +157,7 @@ savescript:{f:`$":",(string LOADNAME),".load.q";f 1:"";hs:neg hopen f;
 	hs"\\z ",(string system"z")," / D date format 0 => mm/dd/yyyy or 1 => dd/mm/yyyy (yyyy.mm.dd is always ok)";
 	hs"LOADNAME:",-3!LOADNAME;hs"LOADFMTS:\"",LOADFMTS,"\"";hs"LOADHDRS:",raze"`",'string LOADHDRS;
 	hs"LOADDEFN:",-3!LOADDEFN;hs"POSTLOAD:",-3!POSTLOAD;hs"LOAD:",-3!LOAD;hs"LOAD10:",(-3!LOAD10)," / just load first 10 records";
-	hs"JUSTSYMFMTS:\"",JUSTSYMFMTS,"\"";hs"JUSTSYMHDRS:",raze"`",'string JUSTSYMHDRS;
+	hs"JUSTSYMFMTS:\"",JUSTSYMFMTS,"\"";hs"JUSTSYMHDRS:",$[0=count JUSTSYMHDRS;"0#`";raze"`",'string JUSTSYMHDRS];
 	hs"JUSTSYMDEFN:",-3!JUSTSYMDEFN;
 	hs"CHUNKSIZE:",string CHUNKSIZE;hs"DATA:()";
 	hs"k)fs2:",2_ last value fs2;
