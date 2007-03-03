@@ -1,8 +1,0 @@
-EXPORTS
-open
-close
-eval
-tables
-views
-keys
-fkeys
