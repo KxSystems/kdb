@@ -63,6 +63,9 @@ zh0:{$[(count distinct r)=count r:`$"}"vs 1_x[where(x:raze"}",'nameltrim string 
 info:update c:zh0 c from info
 zh1:{$[(count distinct r)=count r:`$"}"vs 1_x[where(x:raze"}",'string lower x)in"}",.Q.an except"_"];r;'`zaphdrs.not.distinct]} / lowercase and remove underscores
 if[ZAPHDRS;info:update c:zh1 c from info]
+/ check for reserved words used as colnames
+info:update res:c in key`.q from info
+/if[.z.K>2.3;info:update res:1b from info where c in .Q.res]
 info:update ci:i,t:"?",ipa:0b,mdot:0,mw:0,rule:0,gr:0,ndv:0,maybe:0b from info
 info:update ci:`s#ci from info
 info:update sdv:{string(distinct x)except`}peach v from info where t="?"
@@ -73,7 +76,7 @@ info:update t:"*",rule:2 from info where t="?",mw>FORCECHARWIDTH / long values
 info:update t:"C "[DISCARDEMPTY],rule:3 from info where t="?",mw=0 / empty columns
 info:update dchar:{asc distinct raze x}peach sdv from info where t="?"
 info:update mdot:{max sum each"."=x}peach sdv from info where t="?",{"."in x}each dchar
-info:update t:"n",rule:4 from info where t="?",{$[any x in"0123456789";all x in".:/-+eTE0123456789 ";0b]}each dchar / vaguely numeric..
+info:update t:"n",rule:4 from info where t="?",{$[any x in"0123456789";all x in".:/-+eE0123456789";0b]}each dchar / vaguely numeric..
 info:update t:"I",rule:5,ipa:1b from info where t="n",mw within 7 15,mdot=3,{all x in".0123456789"}each dchar / ip-address
 info:update t:"J",rule:6 from info where t="n",mdot=0,{all x in"+-0123456789"}each dchar,cancast["J"]peach sdv
 info:update t:"I",rule:7 from info where t="J",mw<10
@@ -92,7 +95,7 @@ info:update t:"U",rule:19,maybe:0b from info where t="n",mw in 4 5,mdot=0,{all x
 info:update t:"T",rule:20,maybe:0b from info where t="n",mw within 7 12,mdot<2,{all x like"*[0-9]:[0-5][0-9]:[0-5][0-9]*"}peach sdv
 info:update t:"V",rule:21,maybe:0b from info where t="T",mw in 7 8,mdot=0
 / info:update t:"Z",rule:22,maybe:0b from info where t="n",mw within 19 23,mdot<4,{$[all x in"0123456789.:T- ";2<sum".:T -"in x;0b]}each dchar,cancast["Z"]peach sdv
-info:update t:"Z",rule:22,maybe:0b from info where t in"n?",mw within 11 24,mdot<4,{$[all x in"0123456789.:ABCDEFGJLMNOPRSTUVYabcdefgjlmnoprstuvy/- ";2<sum".:/ -"in x;0b]}each dchar,cancast["Z"]peach sdv
+info:update t:"Z",rule:22,maybe:0b from info where t in"n?",mw within 11 24,mdot<4,{$[all x in"0123456789.:ABCDEFGJLMNOPRSTUVYabcdefgjlmnoprstuvy/- ";1<sum".:/ T-"in x;0b]}each dchar,cancast["Z"]peach sdv
 info:update t:"?",rule:23,maybe:0b from info where t="n" / reset remaining maybe numeric
 info:update t:"C",rule:24,maybe:0b from info where t="?",mw=1 / char
 info:update t:"B",rule:25,maybe:0b from info where t in"?IHC",mw=1,mdot=0,{$[all x in" 01tTfFyYnN";(any" 0fFnN"in x)and any"1tTyY"in x;0b]}each dchar / boolean
@@ -107,7 +110,7 @@ info:update j12:1b from info where t in"S*",mw<13,{all x in .Q.nA}each dchar
 info:update j10:1b from info where t in"S*",mw<11,{all x in .Q.b6}each dchar 
 if["?"in exec t from info;'`unknown.field]; / check all done
 
-info:select c,ci,t,maybe,j10,j12,ipa,mw,mdot,rule,gr,ndv,dchar from info
+info:select c,ci,t,maybe,res,j10,j12,ipa,mw,mdot,rule,gr,ndv,dchar from info
 / make changes to <info> and they'll be picked up correctly, test with: show LOAD10 LOADFILE, or sba[]
 / update t:" " from`info where not t="S" / only load symbols
 / update t:"*" from`info where t="S" / load all char as strings, no need to enumerate before save
@@ -181,11 +184,11 @@ if[SAVESCRIPT;-1"* savescript file ",(1_string savescript[])," written"]
 / gr - granularity% of unique values; dchar - distinct characters
 / info:getinfo[]; update multi:c in exec c from(select count i by c from info)where x>1 from`info
 INFOFILE:`$":",(lower first"."vs last"/"vs string .z.f),".info.csv"
-INFOFMTS:"SSICBIBBBIS"
+INFOFMTS:"SSICBBIBBBIS"
 readinfo:{(INFOFMTS;enlist",")0:INFOFILE}
 saveinfo:{savedinfo:$[@[hcount;INFOFILE;0j];(INFOFMTS;enlist",")0:INFOFILE;()];
 	if[count savedinfo;savedinfo:delete from savedinfo where tbl=LOADNAME];
-	savedinfo,:select tbl:LOADNAME,c,ci,t,maybe,mw,j10,j12,ipa,gr,`$dchar from info;
+	savedinfo,:select tbl:LOADNAME,c,ci,t,maybe,res,mw,j10,j12,ipa,gr,`$dchar from info;
 	(`$(string INFOFILE),".load.q")1:"info:(",(-3!INFOFMTS),";enlist\",\")0:`$\"",(string INFOFILE),"\"\n";
 	INFOFILE 0:.h.cd`tbl`c xasc savedinfo;INFOFILE}
 if[SAVEINFO;-1"* saveinfo file ",(1_string saveinfo[])," updated"]

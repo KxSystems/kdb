@@ -43,6 +43,7 @@ info0:{[file;onlycols]
 	breaks:where"\n"=read1(file;0;floor(10+READLINES)*WIDTHHDR%count head);
 	as:colhdrs xcol(loadfmts;enlist DELIM)0:(file;0;1+last((1+READLINES)&count breaks)#breaks);
 	info:([]c:key flip as;v:value flip as);as:();
+	info:update res:c in key`.q from info;
 	info:update ci:i,t:"?",mdot:0,mw:0,rule:0,ipa:0b,maybe:0b from info;
 	info:update ci:`s#ci from info;
 	if[count onlycols;info:update t:" ",rule:1 from info where not c in onlycols];
@@ -52,7 +53,7 @@ info0:{[file;onlycols]
 	info:update t:"C "[.csv.DISCARDEMPTY],rule:3 from info where t="?",mw=0; / empty columns
 	info:update dchar:{asc distinct raze x}peach sdv from info where t="?";
 	info:update mdot:{max sum each"."=x}peach sdv from info where t="?",{"."in x}each dchar;
-	info:update t:"n",rule:4 from info where t="?",{$[any x in"0123456789";all x in".:/-+eTE0123456789 ";0b]}each dchar; / vaguely numeric..
+	info:update t:"n",rule:4 from info where t="?",{$[any x in"0123456789";all x in".:/-+eE0123456789";0b]}each dchar; / vaguely numeric..
 	info:update t:"I",rule:5,ipa:1b from info where t="n",mw within 7 15,mdot=3,{all x in".0123456789"}each dchar; / ip-address
 	info:update t:"J",rule:6 from info where t="n",mdot=0,{all x in"+-0123456789"}each dchar,.csv.cancast["J"]peach sdv;
 	info:update t:"I",rule:7 from info where t="J",mw<10;
@@ -71,7 +72,7 @@ info0:{[file;onlycols]
 	info:update t:"T",rule:20,maybe:0b from info where t="n",mw within 7 12,mdot<2,{all x like"*[0-9]:[0-5][0-9]:[0-5][0-9]*"}peach sdv;
 	info:update t:"V",rule:21,maybe:0b from info where t="T",mw in 7 8,mdot=0;
 	/ info:update t:"Z",rule:22,maybe:0b from info where t="n",mw within 19 23,mdot<4,{$[all x in"0123456789.:T- ";2<sum".:T -"in x;0b]}each dchar,.csv.cancast["Z"]peach sdv;
-	info:update t:"Z",rule:22,maybe:0b from info where t in"n?",mw within 11 24,mdot<4,{$[all x in"0123456789.:ABCDEFGJLMNOPRSTUVYabcdefgjlmnoprstuvy/- ";2<sum".:/ -"in x;0b]}each dchar,.csv.cancast["Z"]peach sdv;
+	info:update t:"Z",rule:22,maybe:0b from info where t in"n?",mw within 11 24,mdot<4,{$[all x in"0123456789.:ABCDEFGJLMNOPRSTUVYabcdefgjlmnoprstuvy/- ";1<sum".:/ -T"in x;0b]}each dchar,.csv.cancast["Z"]peach sdv;
 	info:update t:"?",rule:23,maybe:0b from info where t="n"; / reset remaining maybe numeric
 	info:update t:"C",rule:24,maybe:0b from info where t="?",mw=1; / char
 	info:update t:"B",rule:25,maybe:0b from info where t in"?IHC",mw=1,mdot=0,{$[all x in" 01tTfFyYnN";(any" 0fFnN"in x)and any"1tTyY"in x;0b]}each dchar; / boolean
@@ -80,7 +81,7 @@ info0:{[file;onlycols]
 	info:update t:"*",rule:28,maybe:0b from info where t="?"; / the rest as strings
 	info:update maybe:1b from info where mw>4,not t="D",(lower c)like"*date*";
 	info:update maybe:1b from info where mw>1,not t in"TUV",(lower c)like"*time*";
-	select c,ci,t,maybe,ipa,mw,rule,dchar from info}
+	select c,ci,t,maybe,res,ipa,mw,rule,dchar from info}
 info:info0[;()] / by default don't restrict columns
 infolike:{[file;pattern] info0[file;{x where x like y}[colhdrs[file];pattern]]} / .csv.infolike[file;"*time"]
 
