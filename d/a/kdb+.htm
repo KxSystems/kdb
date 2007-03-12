@@ -358,8 +358,8 @@ quote `p#sym
 <p><h5 id="Logs">25 Logs</h5></p>
 <p>Log/commit strategies are none, file (-l) or synch (-L). None is good for test, readonly, readmostly, trusted, duplicated or cache db's. File (100,000 transactions per second) is useful if you trust (or duplicate) the machine. Synch is 100 times per second with SCSI disk and 10,000 times per second with SSD(solid state disk). In any case a single drive can commit more than 40MB of updates per second. A logging database is [script/][state/]log, e.g.</p>
 
-<xmp>>q d -l / loads d.q(func), d.qdb(data), d.log(updates)
-\l      / checkpoint d.qdb and empty d.log            
+<xmp>>q d -l / loads d.q(func), d.qdb(data), d.log(updates)                
+\l      / checkpoint d.qdb and empty d.log (d must not have "." in it)
 </xmp>
 <p>i.e. put code in d.q in directory .u(utilities). all update messages are logged. To send a message from the console use 0, e.g. <code><nobr>0"v+:1"</nobr></code> . An error after a partial update will cause rollback. d can start empty. d, d.q and d.log should all be in the same launch directory. In general only log in production. Keep the database as simple as possible.</p>
 <p><h5 id="Load">26 Load</h5></p>
