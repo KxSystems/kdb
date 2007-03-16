@@ -1,4 +1,4 @@
-#ifdef WIN32
+#if WIN32||_WIN64
 typedef long I;typedef __int64 J;
 #else
 typedef int I;typedef long long J;
@@ -116,3 +116,4 @@ extern double log();
 #define xF ((F*)xG)
 #define xS ((S*)xG)
 #define xK ((K*)xG)
+#define xC xG
