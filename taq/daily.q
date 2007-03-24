@@ -1,5 +1,5 @@
 /book regNMS
-/q taq/nbbo.q f:/taq 2000.10.02
+/q taq/daily.q f:/taq 2000.10.02
 
 value"\\l ",.z.x 0;d:.z.x 1
 
