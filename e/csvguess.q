@@ -199,3 +199,11 @@ sba:{show update before:(({x[where not x=" "]:"*";x}LOADFMTS;DELIM)0:sample),aft
 show delete dv from info
 show first LOAD10 FILE
 show select from (delete dv from info) where maybe
+_string saveinfo[])," updated"]
+if[EXIT;exit 0]
+
+sba:{show update before:(({x[where not x=" "]:"*";x}LOADFMTS;DELIM)0:sample),after:(LOADFMTS;DELIM)0:sample from select c,t from info} / show before+after
+\
+show delete dv from info
+show first LOAD10 FILE
+show select from (delete dv from info) where maybe
