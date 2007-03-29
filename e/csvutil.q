@@ -76,9 +76,10 @@ info0:{[file;onlycols]
 	info:update t:"?",rule:23,maybe:0b from info where t="n"; / reset remaining maybe numeric
 	info:update t:"C",rule:24,maybe:0b from info where t="?",mw=1; / char
 	info:update t:"B",rule:25,maybe:0b from info where t in"?IHC",mw=1,mdot=0,{$[all x in" 01tTfFyYnN";(any" 0fFnN"in x)and any"1tTyY"in x;0b]}each dchar; / boolean
-	info:update t:"X",rule:26,maybe:0b from info where t="?",mw=2,{$[all x in"0123456789ABCDEF";(any .Q.n in x)and any"ABCDEF"in x;0b]}each dchar; /hex
-	info:update t:"S",rule:27,maybe:1b from info where t="?",mw<.csv.SYMMAXWIDTH,mw>1; / symbols (max width permitting)
-	info:update t:"*",rule:28,maybe:0b from info where t="?"; / the rest as strings
+	info:update t:"B",rule:26,maybe:1b from info where t in"?IHC",mw=1,mdot=0,{all x in"01tTfFyYnN"}each dchar;
+	info:update t:"X",rule:27,maybe:0b from info where t="?",mw=2,{$[all x in"0123456789ABCDEF";(any .Q.n in x)and any"ABCDEF"in x;0b]}each dchar; /hex
+	info:update t:"S",rule:28,maybe:1b from info where t="?",mw<.csv.SYMMAXWIDTH,mw>1; / symbols (max width permitting)
+	info:update t:"*",rule:29,maybe:0b from info where t="?"; / the rest as strings
 	info:update maybe:1b from info where mw>4,not t="D",(lower c)like"*date*";
 	info:update maybe:1b from info where mw>1,not t in"TUV",(lower c)like"*time*";
 	select c,ci,t,maybe,res,ipa,mw,rule,dchar from info}
