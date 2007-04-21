@@ -1,10 +1,6 @@
-// 2006.10.28 qx/ex
-// 2005.10.26 fix setTime setDate
-// 2005.04.03 getInt etc. on nulls
-// 2005.03.15 jdbc:q:
-// jar cf jdbc.jar *.class ..\*.class url(jdbc:q:host:port) isql(new service resources jdbc.jar) 
-// http://www.minq.se/products/dbvis/
-import java.io.*;import java.math.*;import java.util.*;import java.sql.*;import java.sql.Date;import java.net.URL;
+//2007.04.20 c.java sql.date/time/timestamp
+//jar cf jdbc.jar *.class   url(jdbc:q:host:port) isql(new service resources jdbc.jar) 
+import java.io.*;import java.math.*;import java.sql.*;import java.net.URL;import java.util.Calendar;import java.util.Map;import java.util.Properties;
 public class jdbc implements Driver{static int V=2,v=0;static void O(String s){System.out.println(s);}
 public int getMajorVersion(){return V;}public int getMinorVersion(){return v;}public boolean jdbcCompliant(){return false;}
 public boolean acceptsURL(String s){return s.startsWith("jdbc:q:");}
@@ -12,7 +8,7 @@ public Connection connect(String s,Properties p)throws SQLException{return!accep
 public DriverPropertyInfo[]getPropertyInfo(String s,Properties p)throws SQLException{return new DriverPropertyInfo[0];}
 static{try{DriverManager.registerDriver(new jdbc());}catch(Exception e){O(e.getMessage());}}
 static int[]SQLTYPE={0,16,0,0,-2,5,4,-5,7,8,0,12,0,0,91,93,0,0,0,92};
-static String[]TYPE={"","boolean","","","byte","short","int","long","real","float","char","symbol","","month","date","datetime","","minute","second","time"};
+static String[]TYPE={"","boolean","","","byte","short","int","long","real","float","char","symbol","","month","date","timestamp","","minute","second","time"};
 static int find(String[]x,String s){int i=0;for(;i<x.length&&!s.equals(x[i]);)++i;return i;}
 static int find(int[]x,int j){int i=0;for(;i<x.length&&x[i]!=j;)++i;return i;}
 static void q(String s)throws SQLException{throw new SQLException(s);}static void q()throws SQLException{q("nyi");}
@@ -21,8 +17,8 @@ static void q(Exception e)throws SQLException{throw new SQLException(e.getMessag
 public class co implements Connection{private c c;public co(String s,Object u,Object p)throws SQLException{int i=s.indexOf(":");
  try{c=new c(s.substring(0,i),Integer.parseInt(s.substring(i+1)),u==null?"":(String)u+":"+(String)p);}catch(Exception e){q(e);}}
  public Object ex(String s,Object[]p)throws SQLException{try{return 0<c.n(p)?c.k(s,p):c.k(".o.ex",s.toCharArray());}catch(Exception e){q(e);return null;}}
- public rs qx(String s)throws SQLException{try{return new rs(c.k(s));}catch(Exception e){q(e);return null;}}
- public rs qx(String s,Object x)throws SQLException{try{return new rs(c.k(s,x));}catch(Exception e){q(e);return null;}}
+ public rs qx(String s)throws SQLException{try{return new rs(null,c.k(s));}catch(Exception e){q(e);return null;}}
+ public rs qx(String s,Object x)throws SQLException{try{return new rs(null,c.k(s,x));}catch(Exception e){q(e);return null;}}
  private boolean a=true;public void setAutoCommit(boolean b)throws SQLException{a=b;}public boolean getAutoCommit()throws SQLException{return a;}
  public void rollback()throws SQLException{}public void commit()throws SQLException{}
  public boolean isClosed()throws SQLException{return c==null;}
@@ -63,9 +59,9 @@ public PreparedStatement prepareStatement(String s,String[]columnNames)throws SQ
 public class st implements Statement{private co co;private Object r;private int R,T;
 protected Object[]p={};public st(co x){co=x;}
  public int executeUpdate(String s)throws SQLException{co.ex(s,p);return -1;}
- public ResultSet executeQuery(String s)throws SQLException{return new rs(co.ex(s,p));}
+ public ResultSet executeQuery(String s)throws SQLException{return new rs(this,co.ex(s,p));}
  public boolean execute(String s)throws SQLException{return null!=(r=co.ex(s,p));}
- public ResultSet getResultSet()throws SQLException{return new rs(r);}public int getUpdateCount(){return -1;}
+ public ResultSet getResultSet()throws SQLException{return new rs(this,r);}public int getUpdateCount(){return -1;}
  public int getMaxRows()throws SQLException{return R;}public void setMaxRows(int i)throws SQLException{R=i;}
  public int getQueryTimeout()throws SQLException{return T;}public void setQueryTimeout(int i)throws SQLException{T=i;}
  // truncate excess BINARY,VARBINARY,LONGVARBINARY,CHAR,VARCHAR,and LONGVARCHAR fields
@@ -115,8 +111,8 @@ public class ps extends st implements PreparedStatement{private String s;public 
  public void setFloat(int i,float x)throws SQLException{setObject(i,new Float(x));}
  public void setDouble(int i,double x)throws SQLException{setObject(i,new Double(x));}
  public void setString(int i,String x)throws SQLException{setObject(i,x);}
- public void setDate(int i,Date x)throws SQLException{setObject(i,new c.Date(x));}
- public void setTime(int i,Time x)throws SQLException{setObject(i,new c.Time(x));}
+ public void setDate(int i,Date x)throws SQLException{setObject(i,x);}
+ public void setTime(int i,Time x)throws SQLException{setObject(i,x);}
  public void setTimestamp(int i,Timestamp x)throws SQLException{setObject(i,x);}
  public void setBytes(int i,byte x[])throws SQLException{q();}
  public void setBigDecimal(int i,BigDecimal x)throws SQLException{q();}
@@ -221,8 +217,8 @@ public Time getTime(String parameterName,Calendar cal)throws SQLException{return
 public Timestamp getTimestamp(String parameterName,Calendar cal)throws SQLException{return null;} 
 public URL getURL(String parameterName)throws SQLException{return null;}}
 
-public class rs implements ResultSet{private String[]f;private Object o,d[];private int r,n;
- public rs(Object x)throws SQLException{c.Flip a=c.td(x);f=a.x;d=a.y;n=c.n(d[0]);r=-1;}
+public class rs implements ResultSet{private st st;private String[]f;private Object o,d[];private int r,n;
+ public rs(st s,Object x)throws SQLException{st=s;c.Flip a=c.td(x);f=a.x;d=a.y;n=c.n(d[0]);r=-1;}
  public ResultSetMetaData getMetaData()throws SQLException{return new rm(f,d);}
  public int findColumn(String s)throws SQLException{return 1+find(f,s);}
  public boolean next()throws SQLException{return++r<n;}
