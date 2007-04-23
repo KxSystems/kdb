@@ -8,6 +8,7 @@ typedef int I;typedef long L;typedef long long J;
 typedef unsigned char*S,G,C;typedef short H;typedef float E;typedef double F;typedef void V;
 typedef struct k0{I r;H t,u;union{G g;H h;I i;J j;E e;F f;S s;struct k0*k;struct{I n;G G0[1];};};}*K;
 
+#include<string.h>
 // vector accessors, e.g. kF(x)[i] for float&datetime
 #define kG(x)	((x)->G0)
 #define kC(x)	kG(x)
