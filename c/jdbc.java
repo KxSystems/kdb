@@ -329,7 +329,7 @@ public void refreshRow()throws SQLException{q();}
 public void cancelRowUpdates()throws SQLException{q();}
 public void moveToInsertRow()throws SQLException{q();}
 public void moveToCurrentRow()throws SQLException{q();}
-public Statement getStatement()throws SQLException{q();return null;}
+public Statement getStatement()throws SQLException{return st;}
 public Object getObject(int i,Map map)throws SQLException{q();return null;}
 public Ref getRef(int i)throws SQLException{q();return null;}
 public Blob getBlob(int i)throws SQLException{q();return null;}
