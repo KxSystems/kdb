@@ -1,7 +1,9 @@
-#if WIN32||_WIN64
-typedef long I;typedef __int64 J;
+#if _WIN64
+typedef long I;typedef __int64 L,J;
+#elif WIN32
+typedef long I,L;typedef __int64 J;
 #else
-typedef int I;typedef long long J;
+typedef int I;typedef long L;typedef long long J;
 #endif  // typedef struct k0{I r;H t,u;I n;G G0[1];}*K; before gcc3.0
 typedef unsigned char*S,G,C;typedef short H;typedef float E;typedef double F;typedef void V;
 typedef struct k0{I r;H t,u;union{G g;H h;I i;J j;E e;F f;S s;struct k0*k;struct{I n;G G0[1];};};}*K;
