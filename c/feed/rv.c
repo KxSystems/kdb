@@ -1,4 +1,4 @@
-//2007.05.19 req(inbox) tables and lists
+//2007.04.19 req(inbox) tables and lists
 //w32>cl /LD rv.def ..\c\feed\rv.c q.lib ws2_32.lib tibrv.lib
 //l32>gcc -shared ../c/feed/rv.c -o rv.so -I/dat/tibrv/linux/7.2/include -L/dat/tibrv/linux/7.2/lib -ltibrv 
 //l64>gcc -shared ../c/feed/rv.c -o rv.so -I/dat/tibrv/linux/7.3/include -L/dat/tibrv/linux/7.3/lib -ltibrv64 -fPIC 
@@ -20,7 +20,7 @@ ZV fq(K x){ZS s;I a=xt<0,t=a?-xt:xt;J j;f.count=1,f.size=nt[t],f.type=rt[t];SW(x
 Z K qm(M m){S s;K x,y;I n;tibrvMsg_GetNumFields(m,&n),x=ktn(KS,n),y=ktn(0,n);
  DO(n,tibrvMsg_GetFieldByIndex(m,&f,i);s=(S)f.name;xS[i]=s?ss(s):0;kK(y)[i]=f.type==1?qm(f.data.msg):qf(f))
  R y=k(0,"k)::'",y,(K)0),xn&&*xS?xD(x,y):(r0(x),y);}
-Z M mq(K x){S s;K y,z;I j;M m,t;tibrvMsg_Create(&m);if(y=xt==XD?*xK:0)x=xK[1];if(r1(x),j=0<xt)x=k(0,"k){*:'(::),(;0)'x}",x,(K)0);if(!xt)
+Z M mq(K x){S s;K y,z;I j;M m,t;tibrvMsg_Create(&m);if(y=xt==XD?*xK:0)x=xK[1];if(r1(x),j=0<xt)x=k(0,"k)*:'(::),(;0)'",x,(K)0);if(!xt)
  DO(xn-j,z=xK[i+j];s=y?kS(y)[i]:0;if(z->t==XD){tibrvMsg_AddMsg(m,s,t=mq(z));md(t);}else{f.name=s;fq(z);tibrvMsg_AddField(m,&f);})R r0(x),m;}
 ZK snd(I i,S s,K x){M m=mq(x),r;tibrvMsg_SetSendSubject(m,s);P(i<0,(tibrvTransport_Send(-i,m),md(m),(K)0))
  R tibrvMsg_SetReplySubject(m,inbox),tibrvTransport_SendRequest(i,m,&r,-1),md(m),x=qm(r),md(r),x;}
