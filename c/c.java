@@ -3,15 +3,20 @@
 //jar cf c.jar *.class
 import java.net.*;import java.io.*;import java.sql.*;import java.lang.reflect.Array;import java.text.*;
 public class c{public static void main(String[]args){try{ //s.setSoTimeout(ms);
- java.util.TimeZone.setDefault(java.util.TimeZone.getTimeZone("GMT"));
-// static long lt(){long t=t();return t+java.util.TimeZone.getDefault().getOffset(t);}
 //c c=new c(new ServerSocket(5010));while(true)c.w(2,c.k());
 //c c=new c("",5010);Object[]x={"GE",new Double(2.5),new Integer(23)};c.k(".u.upd","trade",x);
 c c=new c("",5001);
-c.k("0N!",new Time(0));
-//Object[]x={new Time(lt()),"xx",new Double(93.5),new Integer(300)};for(int i=0;i<1000;++i)c.ks("upsert","trade",x);c.k("");
+O(c.k("0N!",new Time(0,0,0)));
+//Object[]x={new Time(t()),"xx",new Double(93.5),new Integer(300)};for(int i=0;i<1000;++i)c.ks("upsert","trade",x);c.k("");
 //Flip t=td(c.k("select sum size by sym from trade"));O(n(t.x));O(n(t.y[0]));O(at(t.y[0],0)); //cols rows data
  c.close();}catch(Exception e){e.printStackTrace();}}
+
+static long o(long x){return java.util.TimeZone.getDefault().getOffset(x);}
+static long lg(long x){return x+o(x);}static long gl(long x){return x-o(x-o(x));}static long k=86400000L*10957;
+void w(Timestamp z){long l=z.getTime();w(l==nj?nf:(lg(l)-k)/8.64e7);}
+Timestamp rz(){double f=rf();return new Timestamp(Double.isNaN(f)?nj:gl(k+(long)(8.64e7*f)));}
+void w(Time t){long l=t.getTime();w(l==nj?ni:(int)lg(l));}                Time rt(){int i=ri();return new Time(i==ni?nj:gl(i));}
+void w(Date d){long l=d.getTime();w(l==nj?ni:(int)((lg(l)-k)/86400000));} Date rd(){int i=ri();return new Date(i==ni?nj:gl(k+86400000L*i));}
 
 public Socket s;DataInputStream i;OutputStream o;byte[]b,B;int j,J;boolean a;
 void io(Socket x)throws IOException{s=x;i=new DataInputStream(s.getInputStream());o=s.getOutputStream();}
@@ -30,10 +35,10 @@ public static Flip td(Object X){if(t(X)==98)return(Flip)X;Dict d=(Dict)X;Flip a=
 //object.getClass().isArray()   t(int[]) is .5 isarray is .1 lookup .05
 static int t(Object x){return x instanceof Boolean?-1:x instanceof Byte?-4:x instanceof Short?-5:x instanceof Integer?-6:x instanceof Long?-7:
  x instanceof Float?-8:x instanceof Double?-9:x instanceof Character?-10:x instanceof String?-11:x instanceof Month?-13:
- x instanceof Timestamp?-15:x instanceof Time?-19:x instanceof Date?-14:x instanceof Minute?-17:x instanceof Second?-18:
+ x instanceof Time?-19:x instanceof Date?-14:x instanceof Timestamp?-15:x instanceof Minute?-17:x instanceof Second?-18:
  x instanceof boolean[]?1:x instanceof byte[]?4:x instanceof short[]?5:x instanceof int[]?6:x instanceof long[]?7:
  x instanceof float[]?8:x instanceof double[]?9:x instanceof char[]?10:x instanceof String[]?11:x instanceof Month[]?13:
- x instanceof Timestamp[]?15:x instanceof Time[]?19:x instanceof Date[]?14:x instanceof Minute[]?17:x instanceof Second[]?18:
+ x instanceof Time[]?19:x instanceof Date[]?14:x instanceof Timestamp[]?15:x instanceof Minute[]?17:x instanceof Second[]?18:
  x instanceof Flip?98:x instanceof Dict?99:0;}
 static int ni=Integer.MIN_VALUE;static long nj=Long.MIN_VALUE;static double nf=Double.NaN;
 static int[]nt={0,1,0,0,1,2,4,8,4,8,1,0,0,4,4,8,0,4,4,4};
@@ -47,10 +52,7 @@ public static void set(Object x,int i,Object y){Array.set(x,i,null==y?NULL[t(x)]
 static int n(Object x){return x instanceof Dict?n(((Dict)x).x):x instanceof Flip?n(((Flip)x).y[0]):Array.getLength(x);}
 static int nx(Object x){int i=0,n,t=t(x),j;if(t==99)return 1+nx(((Dict)x).x)+nx(((Dict)x).y);if(t==98)return 3+nx(((Flip)x).x)+nx(((Flip)x).y);
  if(t<0)return t==-11?2+ns((String)x):1+nt[-t];j=6;n=n(x);if(t==0||t==11)for(;i<n;++i)j+=t==0?nx(((Object[])x)[i]):1+ns(((String[])x)[i]);else j+=n*nt[t];return j;}
-static long k=86400000L*10957;void w(Timestamp z){long l=z.getTime();w(l==nj?nf:(l-k)/8.64e7);}
-Timestamp rz(){double f=rf();return new Timestamp(Double.isNaN(f)?nj:k+(long)(8.64e7*f));}
-void w(Time t){long l=t.getTime();w(l==nj?ni:(int)l);}                Time rt(){int i=ri();return new Time(i==ni?nj:i);}
-void w(Date d){long l=d.getTime();w(l==nj?ni:(int)((l-k)/86400000));} Date rd(){int i=ri();return new Date(i==ni?nj:k+86400000L*i);}
+
 void w(byte x){B[J++]=x;}void w(boolean x){w((byte)(x?1:0));}void w(short h){w((byte)(h>>8));w((byte)h);}
 void w(int i){w((short)(i>>16));w((short)i);}void w(long j){w((int)(j>>32));w((int)j);}
 void w(float e){w(Float.floatToIntBits(e));}void w(double f){w(Double.doubleToLongBits(f));}
@@ -104,7 +106,7 @@ public Object k(String s,Object x)throws KException,IOException{Object[]a={cs(s)
 public Object k(String s,Object x,Object y)throws KException,IOException{Object[]a={cs(s),x,y};return k(a);}
 public Object k(String s,Object x,Object y,Object z)throws KException,IOException{Object[]a={cs(s),x,y,z};return k(a);}
 static int find(String[]x,String y){int i=0;for(;i<x.length&&!x[i].equals(y);)++i;return i;}
-static void O(Object x){System.out.println(x);}static void O(int x){System.out.println(x);}static void O(boolean x){System.out.println(x);}
+static Object O(Object x){System.out.println(x);return x;}static void O(int x){System.out.println(x);}static void O(boolean x){System.out.println(x);}
 static void O(long x){System.out.println(x);}static void O(double x){System.out.println(x);}
 static long t(){return System.currentTimeMillis();}static long t;static void tm(){long u=t;t=t();if(u>0)O(t-u);}
 static String i2(int i){return new DecimalFormat("00").format(i);}
