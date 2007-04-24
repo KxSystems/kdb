@@ -14,9 +14,7 @@ public class test{public static void main(String args[]){
   p.setTimestamp(6,Timestamp.valueOf("2000-01-02 12:34:56"));
   p.executeUpdate();
 
-  ResultSet r = e.executeQuery("select z from t");
-  r.next();c.O(r.getTimestamp(1));
-
+  ResultSet r = e.executeQuery("select * from t");
   ResultSetMetaData m=r.getMetaData();
   int n=m.getColumnCount(); //for(int i=0;i<n;)c.O(m.getColumnName(++i));
   while(r.next())for(int i=0;i<n;)c.O(r.getObject(++i));

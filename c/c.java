@@ -1,21 +1,20 @@
-//2007.04.20 sql.Timestamp time date
-//2006.10.06 truncate string at null 2006.09.29 Date.Date(); sync with c.cs
-//jar cf c.jar *.class
+//2007.04.20 sql.{Date|Time|Timestamp}
 import java.net.*;import java.io.*;import java.sql.*;import java.lang.reflect.Array;import java.text.*;
 public class c{public static void main(String[]args){try{ //s.setSoTimeout(ms);
 //c c=new c(new ServerSocket(5010));while(true)c.w(2,c.k());
 //c c=new c("",5010);Object[]x={"GE",new Double(2.5),new Integer(23)};c.k(".u.upd","trade",x);
 c c=new c("",5001);
-O(c.k("0N!",new Time(0,0,0)));
+c.k("0N!",O(new Time(t())));
 //Object[]x={new Time(t()),"xx",new Double(93.5),new Integer(300)};for(int i=0;i<1000;++i)c.ks("upsert","trade",x);c.k("");
 //Flip t=td(c.k("select sum size by sym from trade"));O(n(t.x));O(n(t.y[0]));O(at(t.y[0],0)); //cols rows data
- c.close();}catch(Exception e){e.printStackTrace();}}
+ c.close();
+ }catch(Exception e){e.printStackTrace();}}
 
 static long o(long x){return java.util.TimeZone.getDefault().getOffset(x);}
 static long lg(long x){return x+o(x);}static long gl(long x){return x-o(x-o(x));}static long k=86400000L*10957;
-void w(Timestamp z){long l=z.getTime();w(l==nj?nf:(lg(l)-k)/8.64e7);}
+void w(java.util.Date z){long l=z.getTime();w(l==nj?nf:(lg(l)-k)/8.64e7);}
 Timestamp rz(){double f=rf();return new Timestamp(Double.isNaN(f)?nj:gl(k+(long)(8.64e7*f)));}
-void w(Time t){long l=t.getTime();w(l==nj?ni:(int)lg(l));}                Time rt(){int i=ri();return new Time(i==ni?nj:gl(i));}
+void w(Time t){long l=t.getTime();w(l==nj?ni:(int)(lg(l)%86400000));}     Time rt(){int i=ri();return new Time(i==ni?nj:gl(i));}
 void w(Date d){long l=d.getTime();w(l==nj?ni:(int)((lg(l)-k)/86400000));} Date rd(){int i=ri();return new Date(i==ni?nj:gl(k+86400000L*i));}
 
 public Socket s;DataInputStream i;OutputStream o;byte[]b,B;int j,J;boolean a;
@@ -35,10 +34,10 @@ public static Flip td(Object X){if(t(X)==98)return(Flip)X;Dict d=(Dict)X;Flip a=
 //object.getClass().isArray()   t(int[]) is .5 isarray is .1 lookup .05
 static int t(Object x){return x instanceof Boolean?-1:x instanceof Byte?-4:x instanceof Short?-5:x instanceof Integer?-6:x instanceof Long?-7:
  x instanceof Float?-8:x instanceof Double?-9:x instanceof Character?-10:x instanceof String?-11:x instanceof Month?-13:
- x instanceof Time?-19:x instanceof Date?-14:x instanceof Timestamp?-15:x instanceof Minute?-17:x instanceof Second?-18:
+ x instanceof Time?-19:x instanceof Date?-14:x instanceof java.util.Date?-15:x instanceof Minute?-17:x instanceof Second?-18:
  x instanceof boolean[]?1:x instanceof byte[]?4:x instanceof short[]?5:x instanceof int[]?6:x instanceof long[]?7:
  x instanceof float[]?8:x instanceof double[]?9:x instanceof char[]?10:x instanceof String[]?11:x instanceof Month[]?13:
- x instanceof Time[]?19:x instanceof Date[]?14:x instanceof Timestamp[]?15:x instanceof Minute[]?17:x instanceof Second[]?18:
+ x instanceof Time[]?19:x instanceof Date[]?14:x instanceof java.util.Date[]?15:x instanceof Minute[]?17:x instanceof Second[]?18:
  x instanceof Flip?98:x instanceof Dict?99:0;}
 static int ni=Integer.MIN_VALUE;static long nj=Long.MIN_VALUE;static double nf=Double.NaN;
 static int[]nt={0,1,0,0,1,2,4,8,4,8,1,0,0,4,4,8,0,4,4,4};
@@ -63,14 +62,14 @@ void w(Object x){int i=0,n,t=t(x);w((byte)t);if(t<0)switch(t){case-1:w(((Boolean
   case-6:w(((Integer)x).intValue());return;    case-7:w(((Long)x).longValue());return;
   case-8:w(((Float)x).floatValue());return;    case-9:w(((Double)x).doubleValue());return;
  case-10:w(((Character)x).charValue());return; case-11:w((String)x);return;
- case-13:w((Month)x);return;case-14:w((Date)x);return;case-15:w((Timestamp)x);return;
+ case-13:w((Month)x);return;case-14:w((Date)x);return;case-15:w((java.util.Date)x);return;
  case-17:w((Minute)x);return;case-18:w((Second)x);return;case-19:w((Time)x);return;}
  if(t==99){Dict r=(Dict)x;w(r.x);w(r.y);return;}B[J++]=0;if(t==98){Flip r=(Flip)x;B[J++]=99;w(r.x);w(r.y);return;}
  w(n=n(x));for(;i<n;++i)if(t==0)w(((Object[])x)[i]);else if(t==1)w(((boolean[])x)[i]);else if(t==4)w(((byte[])x)[i]);
  else if(t==5)w(((short[])x)[i]);else if(t==6)w(((int[])x)[i]);else if(t==7)w(((long[])x)[i]);
  else if(t==8)w(((float[])x)[i]);else if(t==9)w(((double[])x)[i]);else if(t==10)w(((char[])x)[i]);
  else if(t==11)w(((String[])x)[i]);else if(t==13)w(((Month[])x)[i]);else if(t==14)w(((Date[])x)[i]);
- else if(t==15)w(((Timestamp[])x)[i]);else if(t==17)w(((Minute[])x)[i]);else if(t==18)w(((Second[])x)[i]);
+ else if(t==15)w(((java.util.Date[])x)[i]);else if(t==17)w(((Minute[])x)[i]);else if(t==18)w(((Second[])x)[i]);
  else w(((Time[])x)[i]);}
 
 boolean rb(){return 1==b[j++];}short rh(){int x=b[j++],y=b[j++];return(short)(a?x&0xff|y<<8:x<<8|y&0xff);}
