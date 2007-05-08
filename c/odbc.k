@@ -3,9 +3,8 @@ h:();`open1`close1`eval1`fkeys1`keys`tables`views{.odbc[x]:`odbc 2:(`$(-"1"=*|$x
 
 d:`$":",$["Windows_NT"~getenv`OS;getenv[`commonprogramfiles],"/odbc/data sources";"/etc/ODBCDataSources"]
 o:`mdb`mdf!("driver=Microsoft Access Driver (*.mdb);dbq="
- "driver=sql server;server=(local);trusted_connection=yes;database=")
-open:{*|h,:open1$[0<@x;x;1=#p:`\:x;x;`dsn~e:*|p;";"/:1_0:$[@!f:`$":",$x;f;`/:d,x];o[e],-4_$x]}
-
+            "driver=sql server;server=(local);trusted_connection=yes;database=")
+open:{if[~r:@[open1;$[0<@x;x;1=#p:`\:x;x;`dsn~a:*|p;";"/:1_0:$[@!f:`$":",$x;f;`/:d,x];o[a],-4_$x];{e::x;0}];'e];*|h,:r}
 close:{if[~x in h;'`invalid];h_:h?x;close1 x}
 eval:{if[~x in h;'`invalid];$[@t:eval1[x]y;+@[t;f@&{&/x=_x}'t f@:&15h=@:'t f:!t:+t;_:];t]} / datetime->date
 fkeys:{$[#y:fkeys1[x]y;y[;&~x in t@&=':t:x@<x:y 1];y]}	/ singleton fkeys
@@ -26,6 +25,11 @@ load:{$[#*f:fkeys[x]'t;f;fkey[k[i;0];u i:&1=#:'k:.q.keys'u]'u]xfkey'(u:.Q.id't).
 h:.odbc.open`tempdb.mdf
 e:.odbc.eval
 \
+"exec proc"
+"create proc .."
+
+10MB per sec.
+MSSQL(3MB/sec)
 
 unixODBC ftp://kalamazoolinux.org/pub/pdf/dbaccess.pdf
 need to be superuser
