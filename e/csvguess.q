@@ -1,5 +1,5 @@
 / guess a reasonable loadstring for a csv file (kdb+ 2.3 or greater)
-/ 2007.03.27 explicit refresh[] of derived vars
+/ 2007.05.08 0xa=, add empty to info 
 / 2007.03.02 fix invalid JUSTSYMHDRS in savescript when no sym fields
 / 2007.03.01 more bizarre Z possibilities
 / 2007.01.25 -tab
@@ -10,7 +10,7 @@
 / 2006.08.01 fix saveinfo 
 / 2006.01.28 put back maybe flag 
 / 2006.01.26 add load stats if -bl is used
-"kdb+csvguess 0.32 2007.03.27"
+"kdb+csvguess 0.32 2007.05.08"
 o:.Q.opt .z.x;if[1>count .Q.x;-2">q ",(string .z.f)," CSVFILE [-noheader|nh] [-discardempty|de] [-semicolon|sc] [-tab|tb] [-zaphdrs|zh] [-savescript|ss] [-saveinfo|si] [-exit]";exit 1]
 / -noheader|nh - the csv file doesn't have headers, so create some (c00..)
 / -discardempty|de - if a column is empty don't bother to load it 
@@ -50,9 +50,9 @@ POSTLOAD:{x} / function to be run after each incremental load from file
 @[.:;"\\l csvguess.custom.q";::]; / save your custom settings in csvguess.custom.q to override those set above
 
 if[0=hcount LOADFILE;-2"empty file: ",first .Q.x;exit 1]
-sample:last head:read0(LOADFILE;0;1+last where"\n"=read1(LOADFILE;0;WIDTHHDR))
+sample:last head:read0(LOADFILE;0;1+last where 0xa=read1(LOADFILE;0;WIDTHHDR))
 readwidth:floor(10+READLINES)*WIDTHHDR%count head 
-nas:count as:((1+sum DELIM=first head)#"S";enlist DELIM)0:(LOADFILE;0;1+last where"\n"=read1(LOADFILE;0;readwidth))
+nas:count as:((1+sum DELIM=first head)#"S";enlist DELIM)0:(LOADFILE;0;1+last where 0xa=read1(LOADFILE;0;readwidth))
 if[0=nas;-2"empty file: ",first .Q.x;exit 1]
 
 cancast:{nl:x$"";$[not nl in x$(11&count y)#y;$[11<count y;not nl in x$y;1b];0b]}
@@ -67,14 +67,14 @@ if[ZAPHDRS;info:update c:zh1 c from info]
 / check for reserved words used as colnames
 info:update res:c in key`.q from info
 /if[.z.K>2.3;info:update res:1b from info where c in .Q.res]
-info:update ci:i,t:"?",ipa:0b,mdot:0,mw:0,rule:0,gr:0,ndv:0,maybe:0b from info
+info:update ci:i,t:"?",ipa:0b,mdot:0,mw:0,rule:0,gr:0,ndv:0,maybe:0b,empty:0b from info
 info:update ci:`s#ci from info
 info:update sdv:{string(distinct x)except`}peach v from info where t="?"
 info:update ndv:count each sdv from info where t="?"
 info:update gr:floor 0.5+100*ndv%nas,mw:{max count each x}peach sdv from info where t="?",0<ndv
 / rule:1 only in csvutil.q 
 info:update t:"*",rule:2 from info where t="?",mw>FORCECHARWIDTH / long values
-info:update t:"C "[DISCARDEMPTY],rule:3 from info where t="?",mw=0 / empty columns
+info:update t:"C "[DISCARDEMPTY],rule:3,empty:1b from info where t="?",mw=0 / empty columns
 info:update dchar:{asc distinct raze x}peach sdv from info where t="?"
 info:update mdot:{max sum each"."=x}peach sdv from info where t="?",{"."in x}each dchar
 info:update t:"n",rule:4 from info where t="?",{$[any x in"0123456789";all x in".:/-+eE0123456789";0b]}each dchar / vaguely numeric..
@@ -100,8 +100,7 @@ info:update t:"Z",rule:22,maybe:0b from info where t in"n?",mw within 11 24,mdot
 info:update t:"?",rule:23,maybe:0b from info where t="n" / reset remaining maybe numeric
 info:update t:"C",rule:24,maybe:0b from info where t="?",mw=1 / char
 info:update t:"B",rule:25,maybe:0b from info where t in"?IHC",mw=1,mdot=0,{$[all x in"01tTfFyYnN";(any"0fFnN"in x)and any"1tTyY"in x;0b]}each dchar / boolean
-info:update t:"B",rule:26,maybe:1b from info where t in"?IHC",mw=1,mdot=0,{all x in"01tTfFyYnN"}each dchar / boolean
-/ info:update t:"B",rule:126,maybe:ndv<2 from info where t="H",all each dchar in"01",{all(value each x)in 0 1}each sdv / boolean
+info:update t:"B",rule:26,maybe:1b from info where t in"?IHC",mw=1,mdot=0,{$[all x in"01tTfFyYnN";(1=count x)and all x in"1tTyY";0b]}each dchar / boolean
 info:update t:"X",rule:27,maybe:0b from info where t="?",mw=2,{$[all x in"0123456789ABCDEF";(any .Q.n in x)and any"ABCDEF"in x;0b]}each dchar /hex
 info:update t:"S",rule:28,maybe:1b from info where t="?",mw<SYMMAXWIDTH,mw>1,gr<SYMMAXGR / symbols (max width permitting)
 info:update t:"*",rule:29,maybe:0b from info where t="?" / the rest as strings
@@ -113,33 +112,26 @@ info:update j12:1b from info where t in"S*",mw<13,{all x in .Q.nA}each dchar
 info:update j10:1b from info where t in"S*",mw<11,{all x in .Q.b6}each dchar 
 if["?"in exec t from info;'`unknown.field]; / check all done
 
-info:select c,ci,t,maybe,res,j10,j12,ipa,mw,mdot,rule,gr,ndv,dchar from info
-/ make changes to <info>, run refresh[] and they'll be picked up correctly, test with: show LOAD10 LOADFILE, or sba[]
+info:select c,ci,t,maybe,empty,res,j10,j12,ipa,mw,mdot,rule,gr,ndv,dchar from info
+/ make changes to <info> and they'll be picked up correctly, test with: show LOAD10 LOADFILE, or sba[]
 / update t:" " from`info where not t="S" / only load symbols
 / update t:"*" from`info where t="S" / load all char as strings, no need to enumerate before save
-/ refresh[]
 / run savescript[] when results are correct
 
-k)fs2:{[f;s]((-7!s)>){[f;s;x]i:1+last@&"\n"=r:1:(s;x;CHUNKSIZE);f@`\:i#r;x+i}[f;s]/0j} / .Q.fs with bigger chunks
-
 LOADNAME:`${x where((first x)in .Q.a),1_ x in .Q.an}lower first"."vs last"/"vs 1_string LOADFILE
-SAVE:{(` sv SAVEDB,SAVEPTN,LOADNAME,`)set PRESAVE .Q.en[SAVEDB] x}
-DATA:() / delete from`DATA
-
-refresh:{ / rebuild globals from <info>
-	LOADFMTS::raze exec t from`ci xasc select ci,t from info;
-	JUSTSYMFMTS::{x[where not x="S"]:" ";x}LOADFMTS;
-	LOADHDRS::exec c from`ci xasc select ci,c from info where not t=" ";
-	JUSTSYMHDRS::LOADHDRS where LOADFMTS="S";}
-	
-refresh[]
-
+LOADFMTS:raze exec t from`ci xasc select ci,t from info
+JUSTSYMFMTS:{x[where not x="S"]:" ";x}LOADFMTS
+LOADHDRS:exec c from`ci xasc select ci,c from info where not t=" "
+JUSTSYMHDRS:LOADHDRS where LOADFMTS="S"
 LOADDEFN:{(LOADFMTS;$[NOHEADER;DELIM;enlist DELIM])}
 JUSTSYMDEFN:{(JUSTSYMFMTS;$[NOHEADER;DELIM;enlist DELIM])}
-/ DATA:LOAD LOADFILE / for files loadable in one go
+/DATA:LOAD LOADFILE / for files loadable in one go
 LOAD:{[file] POSTLOAD$[NOHEADER;flip LOADHDRS!LOADDEFN[]0:;LOADHDRS xcol LOADDEFN[]0:]file}
-/ (10#DATA):LOAD10 LOADFILE / load just the first 10 rows, convenient when debugging column types
-LOAD10:{[file] LOAD(file;0;1+last(11-NOHEADER)#where"\n"=read1(file;0;20000))}
+/(10#DATA):LOAD10 LOADFILE / load just the first 10 rows, convenient when debugging column types
+LOAD10:{[file] LOAD(file;0;1+last(11-NOHEADER)#where 0xa=read1(file;0;20000))}
+SAVE:{(` sv SAVEDB,SAVEPTN,LOADNAME,`)set PRESAVE .Q.en[SAVEDB] x}
+DATA:() / delete from`DATA
+k)fs2:{[f;s]((-7!s)>){[f;s;x]i:1+last@&"\n"=r:1:(s;x;CHUNKSIZE);f@`\:i#r;x+i}[f;s]/0j} / .Q.fs with bigger chunks
 BULKLOAD:{[file] fs2[{`DATA insert POSTLOAD$[NOHEADER or count DATA;flip LOADHDRS!(LOADFMTS;DELIM)0:x;LOADHDRS xcol LOADDEFN[]0: x]}file];count DATA}
 BULKSAVE:{[file] .tmp.bsc:0;fs2[{.[` sv SAVEDB,SAVEPTN,LOADNAME,`;();,;]PRESAVE t:.Q.en[SAVEDB]POSTLOAD$[NOHEADER or .tmp.bsc;flip LOADHDRS!(LOADFMTS;DELIM)0:x;LOADHDRS xcol LOADDEFN[]0: x];.tmp.bsc+:count t}]file;.tmp.bsc}
 JUSTSYM:{[file] .tmp.jsc:0;fs2[{.tmp.jsc+:count .Q.en[SAVEDB]POSTLOAD$[NOHEADER or .tmp.jsc;flip JUSTSYMHDRS!(JUSTSYMFMTS;DELIM)0:x;JUSTSYMHDRS xcol JUSTSYMDEFN[]0: x]}]file;.tmp.jsc}
@@ -156,7 +148,7 @@ JUSTSYM:{[file] .tmp.jsc:0;fs2[{.tmp.jsc+:count .Q.en[SAVEDB]POSTLOAD$[NOHEADER 
 / q xxx.q FILENAME -js -savedb foo / to just save the symbols from FILENAME to directory foo (allow parallel load+save thereafter)
 / q xxx.q FILENAME -bs -savedb foo -saveptn 2006.12.25 / to bulksave FILENAME to directory foo in the 2006.12.25 date partition
 / q xxx.q ... -exit / exit on completion of commands (only makes sense with -bs and -js)
-savescript:{refresh[];f:`$":",(string LOADNAME),".load.q";f 1:"";hs:neg hopen f;
+savescript:{f:`$":",(string LOADNAME),".load.q";f 1:"";hs:neg hopen f;
 	hs"/ ",(string .z.z)," ",(string .z.h)," ",(string .z.u);
 	hs"/ q ",(string LOADNAME),".load.q FILE [-bl|bulkload] [-bs|bulksave] [-js|justsym] [-exit] [-savedb SAVEDB] [-saveptn SAVEPTN] ";
 	hs"/ q ",(string LOADNAME),".load.q FILE";

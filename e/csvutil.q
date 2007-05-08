@@ -18,7 +18,7 @@
 \d .csv
 DELIM:","
 ZAPHDRS:0b / lowercase and remove _ from colhdrs (junk characters are always removed)
-WIDTHHDR:1000 / number of characters read to get the header
+WIDTHHDR:25000 / number of characters read to get the header
 READLINES:100 / number of lines read and used to guess the types
 SYMMAXWIDTH:11 / character columns narrower than this are stored as symbols
 FORCECHARWIDTH:30 / every field (of any type) with values this wide or more is forced to character "*"
@@ -32,25 +32,25 @@ read:{[file]data[file;info[file]]}
 read10:{[file]data10[file;info[file]]}  
 
 colhdrs:{[file]
-	`$nameltrim DELIM vs cleanhdrs first read0(file;0;1+first where"\n"=read1(file;0;WIDTHHDR))}
+	`$nameltrim DELIM vs cleanhdrs first read0(file;0;1+first where 0xa=read1(file;0;WIDTHHDR))}
 data:{[file;info]
 	(exec c from info where not t=" ")xcol(exec t from info;enlist DELIM)0:file}
 data10:{[file;info]
-	data[;info](file;0;1+last 11#where"\n"=read1(file;0;15*WIDTHHDR))}
+	data[;info](file;0;1+last 11#where 0xa=read1(file;0;15*WIDTHHDR))}
 info0:{[file;onlycols]
-	colhdrs:`$nameltrim DELIM vs cleanhdrs first head:read0(file;0;1+last where"\n"=read1(file;0;WIDTHHDR));
+	colhdrs:`$nameltrim DELIM vs cleanhdrs first head:read0(file;0;1+last where 0xa=read1(file;0;WIDTHHDR));
 	loadfmts:(count colhdrs)#"S";if[count onlycols;loadfmts[where not colhdrs in onlycols]:"C"];
-	breaks:where"\n"=read1(file;0;floor(10+READLINES)*WIDTHHDR%count head);
+	breaks:where 0xa=read1(file;0;floor(10+READLINES)*WIDTHHDR%count head);
 	as:colhdrs xcol(loadfmts;enlist DELIM)0:(file;0;1+last((1+READLINES)&count breaks)#breaks);
 	info:([]c:key flip as;v:value flip as);as:();
 	info:update res:c in key`.q from info;
-	info:update ci:i,t:"?",mdot:0,mw:0,rule:0,ipa:0b,maybe:0b from info;
+	info:update ci:i,t:"?",mdot:0,mw:0,rule:0,ipa:0b,maybe:0b,empty:0b from info;
 	info:update ci:`s#ci from info;
 	if[count onlycols;info:update t:" ",rule:1 from info where not c in onlycols];
 	info:update sdv:{string(distinct x)except`}peach v from info where t="?"; 
 	info:update mw:{max count each x}peach sdv from info where t="?",0<count each sdv;
 	info:update t:"*",rule:2 from info where t="?",mw>.csv.FORCECHARWIDTH; / long values
-	info:update t:"C "[.csv.DISCARDEMPTY],rule:3 from info where t="?",mw=0; / empty columns
+	info:update t:"C "[.csv.DISCARDEMPTY],rule:3,empty:0b from info where t="?",mw=0; / empty columns
 	info:update dchar:{asc distinct raze x}peach sdv from info where t="?";
 	info:update mdot:{max sum each"."=x}peach sdv from info where t="?",{"."in x}each dchar;
 	info:update t:"n",rule:4 from info where t="?",{$[any x in"0123456789";all x in".:/-+eE0123456789";0b]}each dchar; / vaguely numeric..
@@ -75,14 +75,14 @@ info0:{[file;onlycols]
 	info:update t:"Z",rule:22,maybe:0b from info where t in"n?",mw within 11 24,mdot<4,{$[all x in"0123456789.:ABCDEFGJLMNOPRSTUVYabcdefgjlmnoprstuvy/- ";1<sum".:/ -T"in x;0b]}each dchar,.csv.cancast["Z"]peach sdv;
 	info:update t:"?",rule:23,maybe:0b from info where t="n"; / reset remaining maybe numeric
 	info:update t:"C",rule:24,maybe:0b from info where t="?",mw=1; / char
-	info:update t:"B",rule:25,maybe:0b from info where t in"?IHC",mw=1,mdot=0,{$[all x in" 01tTfFyYnN";(any" 0fFnN"in x)and any"1tTyY"in x;0b]}each dchar; / boolean
-	info:update t:"B",rule:26,maybe:1b from info where t in"?IHC",mw=1,mdot=0,{all x in"01tTfFyYnN"}each dchar;
+	info:update t:"B",rule:25,maybe:0b from info where t in"?IHC",mw=1,mdot=0,{$[all x in"01tTfFyYnN";(any"0fFnN"in x)and any"1tTyY"in x;0b]}each dchar; / boolean
+	info:update t:"B",rule:26,maybe:1b from info where t in"?IHC",mw=1,mdot=0,{$[all x in"01tTfFyYnN";(1=count x)and all x in"1tTyY";0b]}each dchar; / boolean
 	info:update t:"X",rule:27,maybe:0b from info where t="?",mw=2,{$[all x in"0123456789ABCDEF";(any .Q.n in x)and any"ABCDEF"in x;0b]}each dchar; /hex
 	info:update t:"S",rule:28,maybe:1b from info where t="?",mw<.csv.SYMMAXWIDTH,mw>1; / symbols (max width permitting)
 	info:update t:"*",rule:29,maybe:0b from info where t="?"; / the rest as strings
 	info:update maybe:1b from info where mw>4,not t="D",(lower c)like"*date*";
 	info:update maybe:1b from info where mw>1,not t in"TUV",(lower c)like"*time*";
-	select c,ci,t,maybe,res,ipa,mw,rule,dchar from info}
+	select c,ci,t,maybe,empty,res,ipa,mw,rule,dchar from info}
 info:info0[;()] / by default don't restrict columns
 infolike:{[file;pattern] info0[file;{x where x like y}[colhdrs[file];pattern]]} / .csv.infolike[file;"*time"]
 
