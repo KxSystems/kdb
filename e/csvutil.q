@@ -75,8 +75,8 @@ info0:{[file;onlycols]
 	info:update t:"Z",rule:22,maybe:0b from info where t in"n?",mw within 11 24,mdot<4,{$[all x in"0123456789.:ABCDEFGJLMNOPRSTUVYabcdefgjlmnoprstuvy/- ";1<sum".:/ -T"in x;0b]}each dchar,.csv.cancast["Z"]peach sdv;
 	info:update t:"?",rule:23,maybe:0b from info where t="n"; / reset remaining maybe numeric
 	info:update t:"C",rule:24,maybe:0b from info where t="?",mw=1; / char
-	info:update t:"B",rule:25,maybe:0b from info where t in"?IHC",mw=1,mdot=0,{$[all x in"01tTfFyYnN";(any"0fFnN"in x)and any"1tTyY"in x;0b]}each dchar; / boolean
-	info:update t:"B",rule:26,maybe:1b from info where t in"?IHC",mw=1,mdot=0,{$[all x in"01tTfFyYnN";(1=count x)and all x in"1tTyY";0b]}each dchar; / boolean
+	info:update t:"B",rule:25,maybe:0b from info where t in"?IHC",mw=1,mdot=0,{$[all x in" 01tTfFyYnN";(any" 0fFnN"in x)and any"1tTyY"in x;0b]}each dchar; / boolean 
+	info:update t:"B",rule:26,maybe:1b from info where t in"?IHC",mw=1,mdot=0,{all x in"01tTfFyYnN"}each dchar; 
 	info:update t:"X",rule:27,maybe:0b from info where t="?",mw=2,{$[all x in"0123456789ABCDEF";(any .Q.n in x)and any"ABCDEF"in x;0b]}each dchar; /hex
 	info:update t:"S",rule:28,maybe:1b from info where t="?",mw<.csv.SYMMAXWIDTH,mw>1; / symbols (max width permitting)
 	info:update t:"*",rule:29,maybe:0b from info where t="?"; / the rest as strings
