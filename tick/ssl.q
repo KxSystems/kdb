@@ -1,5 +1,4 @@
 / 2005.05.12  x@&"6"=x[;3] /updates (image is 340)
-/ kdb+ 2005.02.01 "F"$"+12 3/8"
 / q tick/ssl.q {sym|taq|fx|dj30|sp500} [host]:port[:usr:pwd]
 / modify this file for your feeds and schemas
 / 100,000 triarch/ssl records per second
@@ -12,7 +11,7 @@ if[not count@[sub each;sym:`$read0`$"tick/",d,".txt";()];sub:{x};
  x:{@[x;(where 0x1e=x),-1+count x;:;"\n"]}each read0`:/ssl/ssl.dat`:/ssl/l2.txt d~"lvl2"]
 
 / callbacks
-close:0#`;stt:{[r;s]if[s in 7 8;close,:r]};dis:{-1"disconnect"};rec:{-1"reconnect"}
+close:0#`;stt:{[r;e;s]if[s in 7 8;close,:r];-1 e;};dis:{-1"disconnect"};rec:{-1"reconnect"}
 
 g:(!).("I*";0x1f)0:  / (fids!values) from string   note: ask 0(means 0w)
 / fid funcs: price bid ask size bsize asize ttime qtime price buysell
@@ -50,7 +49,7 @@ tj:first ti;tf:fi ti;qf:fi qi
 \
 
 / maintain previous bid/ask state and fill if necessary
-bid:ask:()!()
+bid:ask:()!`float$()
 as:{[s;x]$[null x;ask s;ask[s]:x]}
 bs:{[s;x]$[null x;bid s;bid[s]:x]}
 k:{s:`$sf x:g x;
