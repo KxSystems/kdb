@@ -1,11 +1,12 @@
 / guess a reasonable loadstring for a csv file (kdb+ 2.3 or greater)
+/ 2007.07.13 POSTLOADALL
 / 2007.05.08 0xa= and empty
 / 2007.03.27 explicit refresh[] of derived vars
 / 2007.03.02 fix invalid JUSTSYMHDRS in savescript when no sym fields
 / 2007.03.01 more bizarre Z possibilities
 / 2007.01.25 -tab
 / 2006.12.25 JUSTSYM
-/ 2006.09.17 PRESAVE,POSTLOAD, add saveptn  
+/ 2006.09.17 PRESAVEEACH,POSTLOADEACH, add saveptn  
 / 2006.09.14 add incremental save option
 / 2006.08.30 add comment on how to save in generated script, allow short MM/DD/YY form rule 16 
 / 2006.08.01 fix saveinfo 
@@ -46,8 +47,9 @@ FORCECHARWIDTH:30 / width beyond which we just set a column to be text and finis
 CHUNKSIZE:25000000 / chunksize read when bulk load/save
 SAVEDB:`:csvdb / database top level, where things like `:sym live
 SAVEPTN:() / individual partition, 2006.12.25 frinstance; () => none
-PRESAVE:{x} / function to be run before each incremental save (delete date field?) 
-POSTLOAD:{x} / function to be run after each incremental load from file
+PRESAVEEACH:{x} / function to be run before each incremental save (delete date field?) 
+POSTLOADEACH:{x} / function to be run after each incremental load from file
+POSTLOADALL:{x} / function to be run after complete load from file (LOAD/BULKLOAD only, not BULKSAVE as never all data in one place)
 @[.:;"\\l csvguess.custom.q";::]; / save your custom settings in csvguess.custom.q to override those set above
 
 if[0=hcount LOADFILE;-2"empty file: ",first .Q.x;exit 1]
@@ -124,7 +126,7 @@ info:select c,ci,t,maybe,empty,res,j10,j12,ipa,mw,mdot,rule,gr,ndv,dchar from in
 k)fs2:{[f;s]((-7!s)>){[f;s;x]i:1+last@&0xa=r:1:(s;x;CHUNKSIZE);f@`\:i#r;x+i}[f;s]/0j} / .Q.fs with bigger chunks
 
 LOADNAME:`${x where((first x)in .Q.a),1_ x in .Q.an}lower first"."vs last"/"vs 1_string LOADFILE
-SAVE:{(` sv SAVEDB,SAVEPTN,LOADNAME,`)set PRESAVE .Q.en[SAVEDB] x}
+SAVE:{(` sv SAVEDB,SAVEPTN,LOADNAME,`)set PRESAVEEACH .Q.en[SAVEDB] x}
 DATA:() / delete from`DATA
 
 refresh:{ / rebuild globals from <info>
@@ -138,12 +140,12 @@ refresh[]
 LOADDEFN:{(LOADFMTS;$[NOHEADER;DELIM;enlist DELIM])}
 JUSTSYMDEFN:{(JUSTSYMFMTS;$[NOHEADER;DELIM;enlist DELIM])}
 / DATA:LOAD LOADFILE / for files loadable in one go
-LOAD:{[file] POSTLOAD$[NOHEADER;flip LOADHDRS!LOADDEFN[]0:;LOADHDRS xcol LOADDEFN[]0:]file}
+LOAD:{[file] POSTLOADALL POSTLOADEACH$[NOHEADER;flip LOADHDRS!LOADDEFN[]0:;LOADHDRS xcol LOADDEFN[]0:]file}
 / (10#DATA):LOAD10 LOADFILE / load just the first 10 rows, convenient when debugging column types
 LOAD10:{[file] LOAD(file;0;1+last(11-NOHEADER)#where 0xa=read1(file;0;20000))}
-BULKLOAD:{[file] fs2[{`DATA insert POSTLOAD$[NOHEADER or count DATA;flip LOADHDRS!(LOADFMTS;DELIM)0:x;LOADHDRS xcol LOADDEFN[]0: x]}file];count DATA}
-BULKSAVE:{[file] .tmp.bsc:0;fs2[{.[` sv SAVEDB,SAVEPTN,LOADNAME,`;();,;]PRESAVE t:.Q.en[SAVEDB]POSTLOAD$[NOHEADER or .tmp.bsc;flip LOADHDRS!(LOADFMTS;DELIM)0:x;LOADHDRS xcol LOADDEFN[]0: x];.tmp.bsc+:count t}]file;.tmp.bsc}
-JUSTSYM:{[file] .tmp.jsc:0;fs2[{.tmp.jsc+:count .Q.en[SAVEDB]POSTLOAD$[NOHEADER or .tmp.jsc;flip JUSTSYMHDRS!(JUSTSYMFMTS;DELIM)0:x;JUSTSYMHDRS xcol JUSTSYMDEFN[]0: x]}]file;.tmp.jsc}
+BULKLOAD:{[file] POSTLOADALL fs2[{`DATA insert POSTLOADEACH$[NOHEADER or count DATA;flip LOADHDRS!(LOADFMTS;DELIM)0:x;LOADHDRS xcol LOADDEFN[]0: x]}file];count DATA}
+BULKSAVE:{[file] .tmp.bsc:0;fs2[{.[` sv SAVEDB,SAVEPTN,LOADNAME,`;();,;]PRESAVEEACH t:.Q.en[SAVEDB]POSTLOADEACH$[NOHEADER or .tmp.bsc;flip LOADHDRS!(LOADFMTS;DELIM)0:x;LOADHDRS xcol LOADDEFN[]0: x];.tmp.bsc+:count t}]file;.tmp.bsc}
+JUSTSYM:{[file] .tmp.jsc:0;fs2[{.tmp.jsc+:count .Q.en[SAVEDB]POSTLOADEACH$[NOHEADER or .tmp.jsc;flip JUSTSYMHDRS!(JUSTSYMFMTS;DELIM)0:x;JUSTSYMHDRS xcol JUSTSYMDEFN[]0: x]}]file;.tmp.jsc}
 
 / create a standalone load script - savescript[]
 / call it with:
@@ -170,12 +172,12 @@ savescript:{refresh[];f:`$":",(string LOADNAME),".load.q";f 1:"";hs:neg hopen f;
 	hs"NOHEADER:",-3!NOHEADER;hs"DELIM:",-3!DELIM;
 	hs"\\z ",(string system"z")," / D date format 0 => mm/dd/yyyy or 1 => dd/mm/yyyy (yyyy.mm.dd is always ok)";
 	hs"LOADNAME:",-3!LOADNAME;hs"LOADFMTS:\"",LOADFMTS,"\"";hs"LOADHDRS:",raze"`",'string LOADHDRS;
-	hs"LOADDEFN:",-3!LOADDEFN;hs"POSTLOAD:",-3!POSTLOAD;hs"LOAD:",-3!LOAD;hs"LOAD10:",(-3!LOAD10)," / just load first 10 records";
+	hs"LOADDEFN:",-3!LOADDEFN;hs"POSTLOADEACH:",-3!POSTLOADEACH;hs"POSTLOADALL:",-3!POSTLOADALL;hs"LOAD:",-3!LOAD;hs"LOAD10:",(-3!LOAD10)," / just load first 10 records";
 	hs"JUSTSYMFMTS:\"",JUSTSYMFMTS,"\"";hs"JUSTSYMHDRS:",$[0=count JUSTSYMHDRS;"0#`";raze"`",'string JUSTSYMHDRS];
 	hs"JUSTSYMDEFN:",-3!JUSTSYMDEFN;
 	hs"CHUNKSIZE:",string CHUNKSIZE;hs"DATA:()";
 	hs"k)fs2:",2_ last value fs2;
-	hs"BULKLOAD:",-3!BULKLOAD;hs"PRESAVE:",-3!PRESAVE;hs"SAVE:",-3!SAVE;hs"BULKSAVE:",-3!BULKSAVE;hs"JUSTSYM:",-3!JUSTSYM;
+	hs"BULKLOAD:",-3!BULKLOAD;hs"PRESAVEEACH:",-3!PRESAVEEACH;hs"SAVE:",-3!SAVE;hs"BULKSAVE:",-3!BULKSAVE;hs"JUSTSYM:",-3!JUSTSYM;
 	hs"if[any`js`justsym in key o;-1(string`second$.z.z),\" saving `sym for \",(1_string FILE),\" to directory \",1_string SAVEDB;.tmp.st:`time$.z.z;.tmp.rc:JUSTSYM FILE;.tmp.et:`time$.z.z;.tmp.fs:hcount FILE;-1(string`second$.z.z),\" done (\",(string .tmp.rc),\" records; \",(string floor .tmp.rc%1e-3*.tmp.et-.tmp.st),\" records/sec; \",(string floor 0.5+.tmp.fs%1e3*.tmp.et-.tmp.st),\" MB/sec)\"]";
 	hs"if[any`bs`bulksave in key o;-1(string`second$.z.z),\" saving \",(1_string FILE),\" to directory \",1_string` sv SAVEDB,SAVEPTN,LOADNAME;.tmp.st:`time$.z.z;.tmp.rc:BULKSAVE FILE;.tmp.et:`time$.z.z;.tmp.fs:hcount FILE;-1(string`second$.z.z),\" done (\",(string .tmp.rc),\" records; \",(string floor .tmp.rc%1e-3*.tmp.et-.tmp.st),\" records/sec; \",(string floor 0.5+.tmp.fs%1e3*.tmp.et-.tmp.st),\" MB/sec)\"]";
 	hs"if[any`bl`bulkload in key o;-1(string`second$.z.z),\" loading \",(1_string FILE),\" to variable DATA\";.tmp.st:`time$.z.z;BULKLOAD FILE;.tmp.et:`time$.z.z;.tmp.rc:count DATA;.tmp.fs:hcount FILE;-1(string`second$.z.z),\" done (\",(string .tmp.rc),\" records; \",(string floor .tmp.rc%1e-3*.tmp.et-.tmp.st),\" records/sec; \",(string floor 0.5+.tmp.fs%1e3*.tmp.et-.tmp.st),\" MB/sec)\"]";
