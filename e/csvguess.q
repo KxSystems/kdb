@@ -204,7 +204,7 @@ readinfo:{(INFOFMTS;enlist",")0:INFOFILE}
 saveinfo:{savedinfo:$[@[hcount;INFOFILE;0j];(INFOFMTS;enlist",")0:INFOFILE;()];
 	if[count savedinfo;savedinfo:delete from savedinfo where tbl=LOADNAME];
 	savedinfo,:select tbl:LOADNAME,c,ci,t,maybe,res,mw,j10,j12,ipa,gr,`$dchar from info;
-	(`$(string INFOFILE),".load.q")1:"info:(",(-3!INFOFMTS),";enlist\",\")0:`$\"",(string INFOFILE),"\"\ndups:`c xasc select from info where c in exec c from select from(select count i by c from info)where x>1\ninconsistent:select from dups where c in exec c from(select count i by c,t from dups)where x=1\n";
+	(`$(string INFOFILE),".load.q")1:"info:(",(-3!INFOFMTS),";enlist\",\")0:`$\"",(string INFOFILE),"\"\ndups:`c`t xasc select from info where c in exec c from select from(select count i by c from info)where x>1\ninconsistent:select from dups where c in exec c from(select count i by c from distinct select c,t from dups)where x>1\n";
 	INFOFILE 0:.h.cd`tbl`c xasc savedinfo;INFOFILE}
 if[SAVEINFO;-1"* saveinfo file ",(1_string saveinfo[])," updated"]
 if[EXIT;exit 0]
