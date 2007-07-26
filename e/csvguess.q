@@ -1,4 +1,6 @@
 / guess a reasonable loadstring for a csv file (kdb+ 2.3 or greater)
+"kdb+csvguess 0.34 2007.07.24"
+/ 2007.07.24 allow hhmmss.mmm <-> T
 / 2007.07.13 POSTLOADALL
 / 2007.05.08 0xa= and empty
 / 2007.03.27 explicit refresh[] of derived vars
@@ -12,7 +14,6 @@
 / 2006.08.01 fix saveinfo 
 / 2006.01.28 put back maybe flag 
 / 2006.01.26 add load stats if -bl is used
-"kdb+csvguess 0.33 2007.05.08"
 o:.Q.opt .z.x;if[1>count .Q.x;-2">q ",(string .z.f)," CSVFILE [-noheader|nh] [-discardempty|de] [-semicolon|sc] [-tab|tb] [-zaphdrs|zh] [-savescript|ss] [-saveinfo|si] [-exit]";exit 1]
 / -noheader|nh - the csv file doesn't have headers, so create some (c00..)
 / -discardempty|de - if a column is empty don't bother to load it 
@@ -75,39 +76,40 @@ info:update ci:`s#ci from info
 info:update sdv:{string(distinct x)except`}peach v from info where t="?"
 info:update ndv:count each sdv from info where t="?"
 info:update gr:floor 0.5+100*ndv%nas,mw:{max count each x}peach sdv from info where t="?",0<ndv
-/ rule:1 only in csvutil.q 
-info:update t:"*",rule:2 from info where t="?",mw>FORCECHARWIDTH / long values
-info:update t:"C "[DISCARDEMPTY],rule:3,empty:1b from info where t="?",mw=0 / empty columns
+/ rule:10 only in csvutil.q 
+info:update t:"*",rule:20 from info where t="?",mw>FORCECHARWIDTH / long values
+info:update t:"C "[DISCARDEMPTY],rule:30,empty:1b from info where t="?",mw=0 / empty columns
 info:update dchar:{asc distinct raze x}peach sdv from info where t="?"
 info:update mdot:{max sum each"."=x}peach sdv from info where t="?",{"."in x}each dchar
-info:update t:"n",rule:4 from info where t="?",{$[any x in"0123456789";all x in".:/-+eE0123456789";0b]}each dchar / vaguely numeric..
-info:update t:"I",rule:5,ipa:1b from info where t="n",mw within 7 15,mdot=3,{all x in".0123456789"}each dchar / ip-address
-info:update t:"J",rule:6 from info where t="n",mdot=0,{all x in"+-0123456789"}each dchar,cancast["J"]peach sdv
-info:update t:"I",rule:7 from info where t="J",mw<10
-info:update t:"H",rule:8 from info where t="I",mw<5
-info:update t:"M",rule:9,maybe:1b from info where t="I",mw=6,cancast["M"]peach sdv / 200506, YYYYMM is less likely than [H]HMMSS so do that first 
-info:update t:"V",rule:10,maybe:1b from info where t="I",mw in 5 6,7<count each dchar,{all x like"*[0-9][0-5][0-9][0-5][0-9]"}peach sdv / 235959 12345        
-info:update t:"U",rule:11,maybe:1b from info where t="H",mw in 3 4,7<count each dchar,{all x like"*[0-9][0-5][0-9]"}peach sdv /2359
-info:update t:"F",rule:12,maybe:0b from info where t="n",mdot<2,mw>1,{all x in".+-eE0123456789"}each dchar,cancast["F"]peach sdv
-info:update t:"E",rule:13,maybe:0b from info where t="F",mw<8,cancast["E"]peach sdv / need to check for "1e40" etc
-info:update t:"M",rule:14,maybe:1b from info where t="E",mw=7,cancast["M"]peach sdv / 2005.06 
-info:update t:"M",rule:15,maybe:0b from info where t="n",mw=7,mdot=0,cancast["M"]peach sdv / 2005/06 2005-06
-info:update t:"D",rule:16,maybe:0b from info where t="n",mw in 6 7 8 10,mdot in 0 2,cancast["D"]peach sdv / 2005.06.07 2005/06/07 2005-06-07
-info:update t:"D",rule:17,maybe:1b from info where t="I",mw=8,cancast["D"]peach sdv / 20050607
-info:update t:"D",rule:18,maybe:0b from info where t="?",mw in 7 9 11,mdot in 0 2,cancast["D"]peach sdv / 29oct2005 29oct05 etc
-info:update t:"U",rule:19,maybe:0b from info where t="n",mw in 4 5,mdot=0,{all x like"*[0-9]:[0-5][0-9]"}peach sdv
-info:update t:"T",rule:20,maybe:0b from info where t="n",mw within 7 12,mdot<2,{all x like"*[0-9]:[0-5][0-9]:[0-5][0-9]*"}peach sdv
-info:update t:"V",rule:21,maybe:0b from info where t="T",mw in 7 8,mdot=0
-/ info:update t:"Z",rule:22,maybe:0b from info where t="n",mw within 19 23,mdot<4,{$[all x in"0123456789.:T- ";2<sum".:T -"in x;0b]}each dchar,cancast["Z"]peach sdv
-info:update t:"Z",rule:22,maybe:0b from info where t in"n?",mw within 11 24,mdot<4,{$[all x in"0123456789.:ABCDEFGJLMNOPRSTUVYabcdefgjlmnoprstuvy/- ";1<sum".:/ T-"in x;0b]}each dchar,cancast["Z"]peach sdv
-info:update t:"?",rule:23,maybe:0b from info where t="n" / reset remaining maybe numeric
-info:update t:"C",rule:24,maybe:0b from info where t="?",mw=1 / char
-info:update t:"B",rule:25,maybe:0b from info where t in"?IHC",mw=1,mdot=0,{$[all x in"01tTfFyYnN";(any"0fFnN"in x)and any"1tTyY"in x;0b]}each dchar / boolean
-info:update t:"B",rule:26,maybe:1b from info where t in"?IHC",mw=1,mdot=0,{all x in"01tTfFyYnN"}each dchar / boolean
+info:update t:"n",rule:40 from info where t="?",{$[any x in"0123456789";all x in".:/-+eE0123456789";0b]}each dchar / vaguely numeric..
+info:update t:"I",rule:50,ipa:1b from info where t="n",mw within 7 15,mdot=3,{all x in".0123456789"}each dchar / ip-address
+info:update t:"J",rule:60 from info where t="n",mdot=0,{all x in"+-0123456789"}each dchar,cancast["J"]peach sdv
+info:update t:"I",rule:70 from info where t="J",mw<10
+info:update t:"H",rule:80 from info where t="I",mw<5
+info:update t:"M",rule:90,maybe:1b from info where t="I",mw=6,cancast["M"]peach sdv / 200506, YYYYMM is less likely than [H]HMMSS so do that first 
+info:update t:"V",rule:100,maybe:1b from info where t="I",mw in 5 6,7<count each dchar,{all x like"*[0-9][0-5][0-9][0-5][0-9]"}peach sdv / 235959 12345        
+info:update t:"U",rule:110,maybe:1b from info where t="H",mw in 3 4,7<count each dchar,{all x like"*[0-9][0-5][0-9]"}peach sdv /2359
+info:update t:"F",rule:120,maybe:0b from info where t="n",mdot<2,mw>1,{all x in".+-eE0123456789"}each dchar,cancast["F"]peach sdv
+info:update t:"E",rule:130,maybe:0b from info where t="F",mw<8,cancast["E"]peach sdv / need to check for "1e40" etc
+info:update t:"M",rule:140,maybe:1b from info where t="E",mw=7,cancast["M"]peach sdv / 2005.06 
+info:update t:"M",rule:150,maybe:0b from info where t="n",mw=7,mdot=0,cancast["M"]peach sdv / 2005/06 2005-06
+info:update t:"D",rule:160,maybe:0b from info where t="n",mw in 6 7 8 10,mdot in 0 2,cancast["D"]peach sdv / 2005.06.07 2005/06/07 2005-06-07
+info:update t:"D",rule:170,maybe:1b from info where t="I",mw=8,cancast["D"]peach sdv / 20050607
+info:update t:"D",rule:180,maybe:0b from info where t="?",mw in 7 9 11,mdot in 0 2,cancast["D"]peach sdv / 29oct2005 29oct05 etc
+info:update t:"U",rule:190,maybe:0b from info where t="n",mw in 4 5,mdot=0,{all x like"*[0-9]:[0-5][0-9]"}peach sdv
+info:update t:"T",rule:200,maybe:0b from info where t="n",mw within 7 12,mdot<2,{all x like"*[0-9]:[0-5][0-9]:[0-5][0-9]*"}peach sdv
+info:update t:"T",rule:201,maybe:1b from info where t="n",mw within 7 10,mdot=1,{all x like"*[0-9][0-5][0-9][0-5][0-9].*"}peach sdv
+info:update t:"V",rule:210,maybe:0b from info where t="T",mw in 7 8,mdot=0
+/ info:update t:"Z",rule:220,maybe:0b from info where t="n",mw within 19 23,mdot<4,{$[all x in"0123456789.:T- ";2<sum".:T -"in x;0b]}each dchar,cancast["Z"]peach sdv
+info:update t:"Z",rule:220,maybe:0b from info where t in"n?",mw within 11 24,mdot<4,{$[all x in"0123456789.:ABCDEFGJLMNOPRSTUVYabcdefgjlmnoprstuvy/- ";1<sum".:/ T-"in x;0b]}each dchar,cancast["Z"]peach sdv
+info:update t:"?",rule:230,maybe:0b from info where t="n" / reset remaining maybe numeric
+info:update t:"C",rule:240,maybe:0b from info where t="?",mw=1 / char
+info:update t:"B",rule:250,maybe:0b from info where t in"?IHC",mw=1,mdot=0,{$[all x in"01tTfFyYnN";(any"0fFnN"in x)and any"1tTyY"in x;0b]}each dchar / boolean
+info:update t:"B",rule:260,maybe:1b from info where t in"?IHC",mw=1,mdot=0,{all x in"01tTfFyYnN"}each dchar / boolean
 / info:update t:"B",rule:126,maybe:ndv<2 from info where t="H",all each dchar in"01",{all(value each x)in 0 1}each sdv / boolean
-info:update t:"X",rule:27,maybe:0b from info where t="?",mw=2,{$[all x in"0123456789ABCDEF";(any .Q.n in x)and any"ABCDEF"in x;0b]}each dchar /hex
-info:update t:"S",rule:28,maybe:1b from info where t="?",mw<SYMMAXWIDTH,mw>1,gr<SYMMAXGR / symbols (max width permitting)
-info:update t:"*",rule:29,maybe:0b from info where t="?" / the rest as strings
+info:update t:"X",rule:270,maybe:0b from info where t="?",mw=2,{$[all x in"0123456789ABCDEF";(any .Q.n in x)and any"ABCDEF"in x;0b]}each dchar /hex
+info:update t:"S",rule:280,maybe:1b from info where t="?",mw<SYMMAXWIDTH,mw>1,gr<SYMMAXGR / symbols (max width permitting)
+info:update t:"*",rule:290,maybe:0b from info where t="?" / the rest as strings
 info:update maybe:1b from info where mw>4,not t="D",(lower c)like"*date*"
 info:update maybe:1b from info where mw>1,not t in"TUV",(lower c)like"*time*"
 / flag those S/* columns which could be encoded to integers (.Q.j10/x10/j12/x12) to avoid symbols
@@ -202,7 +204,7 @@ readinfo:{(INFOFMTS;enlist",")0:INFOFILE}
 saveinfo:{savedinfo:$[@[hcount;INFOFILE;0j];(INFOFMTS;enlist",")0:INFOFILE;()];
 	if[count savedinfo;savedinfo:delete from savedinfo where tbl=LOADNAME];
 	savedinfo,:select tbl:LOADNAME,c,ci,t,maybe,res,mw,j10,j12,ipa,gr,`$dchar from info;
-	(`$(string INFOFILE),".load.q")1:"info:(",(-3!INFOFMTS),";enlist\",\")0:`$\"",(string INFOFILE),"\"\n";
+	(`$(string INFOFILE),".load.q")1:"info:(",(-3!INFOFMTS),";enlist\",\")0:`$\"",(string INFOFILE),"\"\ndups:`c xasc select from info where c in exec c from select from(select count i by c from info)where x>1\ninconsistent:select from dups where c in exec c from(select count i by c,t from dups)where x=1\n";
 	INFOFILE 0:.h.cd`tbl`c xasc savedinfo;INFOFILE}
 if[SAVEINFO;-1"* saveinfo file ",(1_string saveinfo[])," updated"]
 if[EXIT;exit 0]
