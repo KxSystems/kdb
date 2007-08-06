@@ -1,6 +1,6 @@
 //2007.04.20 c.java sql.date/time/timestamp
-//jar cf jdbc.jar *.class   url(jdbc:q:host:port) isql(new service resources jdbc.jar) 
-import java.io.*;import java.math.*;import java.sql.*;import java.net.URL;import java.util.Calendar;import java.util.Map;import java.util.Properties;
+//jar cf jdbc.jar *.class   url(jdbc:q:host:port) isql(new service resources jdbc.jar)
+import kx.*;import java.io.*;import java.math.*;import java.sql.*;import java.net.URL;import java.util.Calendar;import java.util.Map;import java.util.Properties;
 public class jdbc implements Driver{static int V=2,v=0;static void O(String s){System.out.println(s);}
 public int getMajorVersion(){return V;}public int getMinorVersion(){return v;}public boolean jdbcCompliant(){return false;}
 public boolean acceptsURL(String s){return s.startsWith("jdbc:q:");}
