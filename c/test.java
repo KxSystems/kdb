@@ -16,8 +16,9 @@ public class test{public static void main(String args[]){
 
   ResultSet r = e.executeQuery("select * from t");
   ResultSetMetaData m=r.getMetaData();
-  int n=m.getColumnCount(); //for(int i=0;i<n;)c.O(m.getColumnName(++i));
-  while(r.next())for(int i=0;i<n;)c.O(r.getObject(++i));
+  int n=m.getColumnCount();
+  for(int i=0;i<n;)System.out.println(m.getColumnName(++i));
+  while(r.next())for(int i=0;i<n;)System.out.println(r.getObject(++i));
 
   h.close();}
   catch(Exception e){System.out.println(e.getMessage());}
