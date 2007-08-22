@@ -1,1 +1,1 @@
-quote:([]time;sym;mm;bid;ask;bsize;asize)
+quote:([]time:`time$();sym:`symbol$();mm:`symbol$();bid:`float$();ask:`float$();bsize:`int$();asize:`int$())
