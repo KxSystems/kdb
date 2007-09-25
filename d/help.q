@@ -290,3 +290,12 @@ trap dmend(:+-*%&|,)";
  )
 DIR,:(enlist`verbs)!enlist`$"verbs/functions"
 .q.help:.help.display
+like C;sC ss sC";
+ "{sqrt log exp sin cos tan asin acos atan}f";
+ "last sum prd min max avg wsum wavg xbar";
+ "exit getenv";
+ "";
+ "dependency::expression (when not in function definition)"
+ )
+DIR,:(enlist`verbs)!enlist`$"verbs/functions"
+.q.help:.help.display
