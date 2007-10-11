@@ -1,4 +1,4 @@
-/ help.q 2006.10.25T19:05:13.484
+/ help.q 2007.10.11T07:57:21.239
 \d .help
 DIR:TXT:()!()
 display:{if[not 10h=abs type x;x:string x];$[1=count i:where(key DIR)like x,"*";-1 each TXT[(key DIR)[i]];show DIR];}
@@ -28,18 +28,20 @@ TXT,:(enlist`attributes)!enlist(
  )
 DIR,:(enlist`attributes)!enlist`$"data attributes"
 TXT,:(enlist`cmdline)!enlist(
- "q [f] [-c h w] [-C h w] [-l|L] [-o N] [-p N] [-P N] [-r|R :H:P] [-s N] [-t N]";
- "      [-T N] [-u|U F] [-w N] [-W N] [-z 0|1]";
+ "q [f] [-b] [-c r c] [-C r c][-l] [-o N] [-p N] [-P N] [-q] [-r|R :H:P] ";
+ "      [-s N] [-t N] [-T N] [-u|U F] [-w N] [-W N] [-z 0|1]";
  "";
  "f load script (*.q, *.k, *.s), file or directory";
  "";
- "-c height width  console x and y, default 23 79";
- "-C height width  webbrowser x and y, default 36 2000";
+ "-b               block client write access ";
+ "-c r c           console maxRows maxCols";
+ "-C r c           http display maxRows maxCols ";
  "-l               log updates to filesystem ";
- "-L               as -l, but sync";
  "-o N             offset hours (from GMT: affects .z.Z)";
  "-p N             port kdbc(/jdbc/odbc) http(html xml txt csv)";
+ "-p -N            port multithreaded kdbc";
  "-P N             printdigits, default 7, 0=>all";
+ "-q               quiet, no startup banner text";
  "-r :H:P          replicate from :host:port ";
  "-R :H:P          as -r, but sync";
  "-s N             slaves for parallel execution";
@@ -86,6 +88,8 @@ TXT,:(enlist`data)!enlist(
  "           111                f\\:";
  "           112                dynamic load";
  "";
+ "the nested types are 77+t (e.g. 78 is boolean. 96 is time.)";
+ "";
  "`char$data `CHAR$string";
  "";
  "The int, float, char and symbol literal nulls are: 0N 0n \" \" `.";
@@ -130,9 +134,11 @@ DIR,:(enlist`define)!enlist`$"assign, define, control and debug"
 TXT,:(enlist`dotz)!enlist(
  ".z.a       ip-address ";
  ".z.b       dependencies (more information than \\b)";
+ ".z.d       gmt date";
+ ".z.D       local date";
  ".z.f       startup file";
  ".z.h       hostname";
- ".z.i       process pid ";
+ ".z.i       pid";
  ".z.k       kdb+ releasedate ";
  ".z.K       kdb+ major version";
  ".z.l       license information (;expirydate;updatedate;;;)";
@@ -146,6 +152,8 @@ TXT,:(enlist`dotz)!enlist(
  ".z.ps[x]   set";
  ".z.pw[u;p] validate user and password";
  ".z.s       self, current function definition";
+ ".z.t       gmt time";
+ ".z.T       local time";
  ".z.ts[x]   timer expression (called every \\t)";
  ".z.u       userid ";
  ".z.vs[v;i] value set";
@@ -163,21 +171,25 @@ TXT,:(enlist`errors)!enlist(
  "conn                     too many incoming connections (1022 max)";
  "domain       !-1         out of domain";
  "glim                     `g# limit, kdb+ currently limited to 99 concurrent `g#'s ";
+ "hwr                      handle write error, can't write inside a peach";
  "length       ()+!1       incompatible lengths";
  "limit        0W#2        tried to generate a list longer than 2,000,000,000           ";
  "loop         a::a        dependency loop";
  "mismatch                 columns that can't be aligned for R,R or K,K ";
  "Mlim                     more than 999 nested columns in splayed tables";
  "nyi                      not yet implemented";
+ "noamend                  can't change global state inside an amend";
  "os                       operating system error";
  "pl                       peach can't handle parallel lambda's (2.3 only)";
  "Q7                       nyi op on file nested array";
  "rank         +[2;3;4]    invalid rank or valence";
+ "s-fail       `s#2 1      cannot apply `s# to data (not ascending values) ";
  "splay                    nyi op on splayed table";
  "stack        {.z.s[]}[]  ran out of stack space";
  "stop        \t         user interrupt(ctrl-c) or time limit (-T)";
  "stype        '42         invalid type used to signal";
  "type         til 2.2     wrong type";
+ "u-fail       `u#1 1      cannot apply `u# to data (not unique values)";
  "value                    no value";
  "vd1                      attempted multithread update";
  "wsfull                   malloc failed. ran out of swap (or addressability on 32bit). or hit -w limit.";
@@ -219,6 +231,8 @@ TXT,:(enlist`save)!enlist(
  )
 DIR,:(enlist`save)!enlist`$"save/load tables"
 TXT,:(enlist`syscmd)!enlist(
+ "\\1 filename  redirect stdout";
+ "\\2 filename  redirect stderr";
  "\\a           tables";
  "\\b           views (see also .z.b)";
  "\\B           invalid dependencies";
@@ -228,6 +242,7 @@ TXT,:(enlist`syscmd)!enlist(
  "\\e [0|1]     error trap clients";
  "\\f [d]       functions [directory]";
  "\\l [f]       load script (or dir:files splays parts scripts)";
+ "\\m old new   unix mv ";
  "\\o [0N]      offset from gmt";
  "\\p [i]       port (0 turns off)";
  "\\P [7]       print digits(0-all)";
@@ -235,12 +250,12 @@ TXT,:(enlist`syscmd)!enlist(
  "\\S [-314159] seed";
  "\\t [i]       timer [x] milliseconds (1st fire after delay)";
  "\\t expr      time expression ";
- "\\T [i]       timeout [x] seconds";
- "\\u           reload -u/-U user/pswd file  ";
+ "\\T [i]       timeout [x] seconds ";
  "\\v [d]       variables [directory]";
  "\\w           workspace(used allocated max mapped)";
  "             (max set by -w, 0 => unlimited)";
  "\\W [2]       week offset(sat..fri)";
+ "\\x .z.p?     expunge .z.p? value (ie reset to default)";
  "\\z [0]       \"D\"$ uses mm/dd/yyyy or dd/mm/yyyy";
  "\\cd [d]      O/S directory [go to]";
  "\\[other]     O/S execute";
@@ -272,25 +287,6 @@ TXT,:(enlist`verbs)!enlist(
  "x@i  at   s@  @x type          trap amend(:+-*%&|,)";
  "x.l  dot  s.  .d value    .sCL trap dmend(:+-*%&|,)";
  "A bin a;a in A;a within(a;a);sC like C;sC ss sC";
- "{sqrt log exp sin cos tan asin acos atan}f";
- "last sum prd min max avg wsum wavg xbar";
- "exit getenv";
- "";
- "dependency::expression (when not in function definition)"
- )
-DIR,:(enlist`verbs)!enlist`$"verbs/functions"
-.q.help:.help.display
-trap dmend(:+-*%&|,)";
- "A bin a;a in A;a within(a;a);sC like C;sC ss sC";
- "{sqrt log exp sin cos tan asin acos atan}f";
- "last sum prd min max avg wsum wavg xbar";
- "exit getenv";
- "";
- "dependency::expression (when not in function definition)"
- )
-DIR,:(enlist`verbs)!enlist`$"verbs/functions"
-.q.help:.help.display
-like C;sC ss sC";
  "{sqrt log exp sin cos tan asin acos atan}f";
  "last sum prd min max avg wsum wavg xbar";
  "exit getenv";
