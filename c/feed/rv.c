@@ -16,7 +16,7 @@ ZK qf(){K x;I t=f.type;R t==3?kz((j9*(f.data.date.sec-o)+f.data.date.nsec)/8.64e
 ZI fq(K x){ZS s;I a=xt<0,t=a?-xt:xt;J j;f.count=1,f.size=nt[t],f.type=rt[t];SW(xt){CS(-KB,f.data.boolean=xg)
  CS(-KZ,j=8.64e13*xf;f.data.date.sec=j/j9+o;f.data.date.nsec=j%j9)CS(-KS,f.size=strlen(f.data.str=xs)+1)
  CS(KC,if(s)free(s);f.data.str=s=(S)malloc(f.size=xn+1);memcpy(s,xG,xn);s[xn]=0)
- CD:U(t>3&&t<10)if(a)f.data.i64=xj;else f.count=xn,f.type+=20,f.data.array=xG;}R 1;}
+ CD:U(t>=KG&&t<=KF)if(a)f.data.i64=xj;else f.count=xn,f.type+=20,f.data.array=xG;}R 1;}
 Z K qm(M m){S s;K x,y;I n;tibrvMsg_GetNumFields(m,&n),x=ktn(KS,n),y=ktn(0,n);
  DO(n,tibrvMsg_GetFieldByIndex(m,&f,i);s=(S)f.name;xS[i]=s?ss(s):0;kK(y)[i]=f.type==1?qm(f.data.msg):qf(f))
  R y=k(0,"k)::'",y,(K)0),xn&&*xS?xD(x,y):(r0(x),y);}
