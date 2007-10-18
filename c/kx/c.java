@@ -1,20 +1,22 @@
-package kx; //2007.08.06 package  2007.04.20 sql.{Date|Time|Timestamp}
+package kx; //2007.10.18 2007.08.06 package  2007.04.20 sql.{Date|Time|Timestamp}
 import java.net.*;import java.io.*;import java.sql.*;import java.lang.reflect.Array;import java.text.*;
 public class c{public static void main(String[]args){try{ //s.setSoTimeout(ms);
 //c c=new c(new ServerSocket(5010));while(true)c.w(2,c.k());
 //c c=new c("",5010);Object[]x={"GE",new Double(2.5),new Integer(23)};c.k(".u.upd","trade",x);
-c c=new c("",5001,"qwer");  //Object[]x={"asd",new char[0]};c.k("insert","t",x);
+c c=new c("",5001);  //Object[]x={"asd",new char[0]};c.k("insert","t",x);
+//c.tz=java.util.TimeZone.getTimeZone("GMT");
 c.k("0N!",O(new Time(t())));
 //Object[]x={new Time(t()),"xx",new Double(93.5),new Integer(300)};for(int i=0;i<1000;++i)c.ks("upsert","trade",x);c.k("");
 //Flip t=td(c.k("select sum size by sym from trade"));O(n(t.x));O(n(t.y[0]));O(at(t.y[0],0)); //cols rows data
  c.close();
  }catch(Exception e){e.printStackTrace();}}
 
-static long o(long x){return java.util.TimeZone.getDefault().getOffset(x);}
-static long lg(long x){return x+o(x);}static long gl(long x){return x-o(x-o(x));}static long k=86400000L*10957;
+public java.util.TimeZone tz=java.util.TimeZone.getDefault();
+long o(long x){return tz.getOffset(x);}long lg(long x){return x+o(x);}long gl(long x){return x-o(x-o(x));}static long k=86400000L*10957;
 void w(java.util.Date z){long l=z.getTime();w(l==nj?nf:(lg(l)-k)/8.64e7);}Timestamp rz(){double f=rf();return new Timestamp(Double.isNaN(f)?nj:gl(k+(long)(8.64e7*f)));}
 void w(Time t){long l=t.getTime();w(l==nj?ni:(int)(lg(l)%86400000));}     Time rt(){int i=ri();return new Time(i==ni?nj:gl(i));}
 void w(Date d){long l=d.getTime();w(l==nj?ni:(int)((lg(l)-k)/86400000));} Date rd(){int i=ri();return new Date(i==ni?nj:gl(k+86400000L*i));}
+
 public Socket s;DataInputStream i;OutputStream o;byte[]b,B;int j,J;boolean a;
 void io(Socket x)throws IOException{s=x;i=new DataInputStream(s.getInputStream());o=s.getOutputStream();}
 public void close()throws IOException{s.close();i.close();o.close();}
@@ -50,7 +52,6 @@ public static void set(Object x,int i,Object y){Array.set(x,i,null==y?NULL[t(x)]
 public static int n(Object x){return x instanceof Dict?n(((Dict)x).x):x instanceof Flip?n(((Flip)x).y[0]):Array.getLength(x);}
 public static int nx(Object x){int i=0,n,t=t(x),j;if(t==99)return 1+nx(((Dict)x).x)+nx(((Dict)x).y);if(t==98)return 3+nx(((Flip)x).x)+nx(((Flip)x).y);
  if(t<0)return t==-11?2+ns((String)x):1+nt[-t];j=6;n=n(x);if(t==0||t==11)for(;i<n;++i)j+=t==0?nx(((Object[])x)[i]):1+ns(((String[])x)[i]);else j+=n*nt[t];return j;}
-
 void w(byte x){B[J++]=x;}void w(boolean x){w((byte)(x?1:0));}void w(short h){w((byte)(h>>8));w((byte)h);}
 void w(int i){w((short)(i>>16));w((short)i);}void w(long j){w((int)(j>>32));w((int)j);}
 void w(float e){w(Float.floatToIntBits(e));}void w(double f){w(Double.doubleToLongBits(f));}
