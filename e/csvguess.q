@@ -1,5 +1,6 @@
-/ guess a reasonable loadstring for a csv file (kdb+ 2.3 or greater)
-"kdb+csvguess 0.37 2007.10.18"
+/ guess a reasonable loadstring for a csv file (kdb+ 2.4 or greater)
+"kdb+csvguess 0.38 2007.10.20"
+/ 2007.10.20 catch 0W etc when cancast_ing, don't try and create E  
 / 2007.10.17 cleanup D+M support for 2.4, add -z1
 / 2007.09.13 use .Q.res 
 / 2007.07.24 allow hhmmss.mmm <-> T
@@ -49,7 +50,7 @@ readwidth:floor(10+READLINES)*WIDTHHDR%count head
 nas:count as:((1+sum DELIM=first head)#"S";enlist DELIM)0:(LOADFILE;0;1+last where 0xa=read1(LOADFILE;0;readwidth))
 if[0=nas;-2"empty file: ",first .Q.x;exit 1]
 
-cancast:{nl:x$"";$[not nl in x$(11&count y)#y;$[11<count y;not nl in x$y;1b];0b]}
+cancast:{nw:x$"";if[not x in"BXCS";nw:(min 0#;max 0#;::)@\:nw];$[not any nw in x$(11&count y)#y;$[11<count y;not any nw in x$y;1b];0b]}
 k)nameltrim:{$[~@x;.z.s'x;~(*x)in aA:.Q.a,.Q.A;(+/&\~x in aA)_x;x]}
 
 info:([]c:key flip as;v:value flip as);as:()
@@ -59,8 +60,8 @@ info:update c:zh0 c from info
 zh1:{$[(count distinct r)=count r:`$"}"vs 1_x[where(x:raze"}",'string lower x)in"}",.Q.an except"_"];r;'`zaphdrs.not.distinct]} / lowercase and remove underscores
 if[ZAPHDRS;info:update c:zh1 c from info]
 / check for reserved words used as colnames
-info:update res:c in key`.q from info
-info:update res:1b from info where c in .Q.res
+reserved:key`.q;reserved,:.Q.res;reserved,:`i
+info:update res:c in reserved from info
 info:update ci:i,t:"?",ipa:0b,mdot:0,mw:0,rule:0,gr:0,ndv:0,maybe:0b,empty:0b from info
 info:update ci:`s#ci from info
 info:update sdv:{string(distinct x)except`}peach v from info where t="?"
@@ -74,17 +75,17 @@ info:update mdot:{max sum each"."=x}peach sdv from info where t="?",{"."in x}eac
 info:update t:"n",rule:40 from info where t="?",{$[any x in"0123456789";all x in".-+eE0123456789/: ";0b]}each dchar / vaguely numeric..
 info:update t:"I",rule:50,ipa:1b from info where t="n",mw within 7 15,mdot=3,{all x in".0123456789"}each dchar / ip-address
 info:update t:"J",rule:60 from info where t="n",mdot=0,{all x in"+-0123456789"}each dchar,cancast["J"]peach sdv
-info:update t:"I",rule:70 from info where t="J",mw<10
-info:update t:"H",rule:80 from info where t="I",mw<5
+info:update t:"I",rule:70 from info where t="J",mw<12,cancast["I"]peach sdv
+info:update t:"H",rule:80 from info where t="I",mw<7,cancast["H"]peach sdv
 info:update t:"F",rule:90,maybe:0b from info where t="n",mdot<2,mw>1,cancast["F"]peach sdv
-info:update t:"E",rule:100,maybe:0b from info where t="F",mw<8,cancast["E"]peach sdv / need to check for "1e40" etc
+info:update t:"E",rule:100,maybe:0b from info where t="F",mw<9,{all x in".+-0123456789"}each dchar
 / M [yy]yymm yyyy[?]mm
 info:update t:"M",rule:110,maybe:1b from info where t="I",mw=6,cancast["M"]peach sdv / 200506, YYYYMM is less likely than [H]HMMSS so do that first 
 info:update t:"M",rule:120,maybe:1b from info where t="H",mw=4,cancast["M"]peach sdv,{not all(value each x)within 1960 2035}peach sdv / 0506, YYMM is less likely than [H]HMM so do that first, discard obvious years_only 
 info:update t:"M",rule:130,maybe:0b from info where t in"?n",mw=7,{all x like"[12][0-9][0-9][0-9]?[01][0-9]"}peach sdv,cancast["M"]peach sdv / 2005?06, YYYY?MM 
-info:update t:"M",rule:140,maybe:1b from info where t="E",mw=7,{all x like"[12][0-9][0-9][0-9].[01][0-9]"}peach sdv,cancast["M"]peach sdv / 2005.06, YYYY.MM 
+info:update t:"M",rule:140,maybe:1b from info where t in"EF",mw=7,{all x like"[12][0-9][0-9][0-9].[01][0-9]"}peach sdv,cancast["M"]peach sdv / 2005.06, YYYY.MM 
 info:update t:"V",rule:150,maybe:1b from info where t="I",mw in 5 6,7<count each dchar,{all x like"*[0-9][0-5][0-9][0-5][0-9]"}peach sdv,cancast["V"]peach sdv / 235959 12345        
-info:update t:"U",rule:160,maybe:1b from info where t="H",mw in 3 4,7<count each dchar,{all x like"*[0-9][0-5][0-9]"}peach sdv,cancast["U"]peach sdv /2359
+info:update t:"U",rule:160,maybe:1b from info where t="H",mw in 3 4,7<count each dchar,{all x like"*[0-9][0-5][0-9]"}peach sdv,{not all(value each x)within 2000 2035}peach sdv,cancast["U"]peach sdv /2359
 / D [yy]yymmdd ddMMM[yy]yy yyyy/[mm|MMM]/dd [mm|MMM]/dd/[yy]yy \z 0 dd/[mm|MMM]/[yy]yy \z 1
 info:update t:"D",rule:170,maybe:0b from info where t="n",mw in 8 10,mdot in 0 2,cancast["D"]peach sdv / 2005.06.07 2005/06/07 2005-06-07
 info:update t:"D",rule:180,maybe:1b from info where t="I",mw in 6 8,cancast["D"]peach sdv / 20050607
@@ -93,14 +94,12 @@ info:update t:"U",rule:200,maybe:0b from info where t="n",mw in 4 5,mdot=0,{all 
 info:update t:"T",rule:210,maybe:0b from info where t="n",mw within 7 12,mdot<2,{all x like"*[0-9]:[0-5][0-9]:[0-5][0-9]*"}peach sdv,cancast["T"]peach sdv
 info:update t:"V",rule:220,maybe:0b from info where t="T",mw in 7 8,mdot=0,cancast["V"]peach sdv
 info:update t:"T",rule:230,maybe:1b from info where t="F",mw within 7 10,mdot=1,{all x like"*[0-9][0-5][0-9][0-5][0-9].*"}peach sdv,cancast["T"]peach sdv
-/ info:update t:"Z",rule:220,maybe:0b from info where t="n",mw within 19 23,mdot<4,{$[all x in"0123456789.:T- ";2<sum".:T -"in x;0b]}each dchar,cancast["Z"]peach sdv
 info:update t:"Z",rule:240,maybe:0b from info where t in"n?",mw within 11 24,mdot<4,{$[all x in"0123456789.:ABCDEFGJLMNOPRSTUVYabcdefgjlmnoprstuvy/- ";1<sum".:/ T-"in x;0b]}each dchar,cancast["Z"]peach sdv
 info:update t:"?",rule:250,maybe:0b from info where t="n" / reset remaining maybe numeric
 info:update t:"C",rule:260,maybe:0b from info where t="?",mw=1 / char
 info:update t:"B",rule:270,maybe:0b from info where t in"HC",mw=1,mdot=0,{$[all x in"01tTfFyYnN";(any"0fFnN"in x)and any"1tTyY"in x;0b]}each dchar / boolean
 info:update t:"B",rule:280,maybe:1b from info where t in"HC",mw=1,mdot=0,{all x in"01tTfFyYnN"}each dchar / boolean
-/ info:update t:"B",rule:126,maybe:ndv<2 from info where t="H",all each dchar in"01",{all(value each x)in 0 1}each sdv / boolean
-info:update t:"X",rule:290,maybe:0b from info where t="?",mw=2,{$[all x in"0123456789ABCDEF";(any .Q.n in x)and any"ABCDEF"in x;0b]}each dchar /hex
+info:update t:"X",rule:290,maybe:0b from info where t="?",mw=2,{$[all x in"0123456789abcdefABCDEF";(any .Q.n in x)and any"abcdefABCDEF"in x;0b]}each dchar /hex
 info:update t:"S",rule:300,maybe:1b from info where t="?",mw<SYMMAXWIDTH,mw>1,gr<SYMMAXGR / symbols (max width permitting)
 info:update t:"*",rule:310,maybe:0b from info where t="?" / the rest as strings
 info:update maybe:1b from info where mw>4,not t="D",(lower c)like"*date*"
@@ -130,7 +129,12 @@ refresh:{ / rebuild globals from <info>
 	LOADHDRS::exec c from`ci xasc select ci,c from info where not t=" ";
 	JUSTSYMHDRS::LOADHDRS where LOADFMTS="S";}
 	
-refresh[]
+status:{ / loadability..
+	-1"FILE:`",(string FILE),"; SAVEDB:`",(string SAVEDB),"; SAVEPTN:`",(string SAVEPTN),"; \\z ",(string system"z"),"; DELIM:\"",DELIM,"\"";
+	-1"* ",(string count info)," column(s); ",(string exec count i from info where maybe)," flagged maybe; ",(string exec count i from info where empty)," empty; ",(string exec count i from info where res)," with reserved names";	
+	}
+
+status refresh[]
 
 LOADDEFN:{(LOADFMTS;$[NOHEADER;DELIM;enlist DELIM])}
 JUSTSYMDEFN:{(JUSTSYMFMTS;$[NOHEADER;DELIM;enlist DELIM])}
@@ -199,12 +203,13 @@ readinfo:{(INFOFMTS;enlist",")0:INFOFILE}
 saveinfo:{savedinfo:$[@[hcount;INFOFILE;0j];(INFOFMTS;enlist",")0:INFOFILE;()];
 	if[count savedinfo;savedinfo:delete from savedinfo where tbl=LOADNAME];
 	savedinfo,:select tbl:LOADNAME,c,ci,t,maybe,res,mw,j10,j12,ipa,gr,`$dchar from info;
-	(`$(string INFOFILE),".load.q")1:"info:(",(-3!INFOFMTS),";enlist\",\")0:`$\"",(string INFOFILE),"\"\ndups:`c`t xasc select from info where c in exec c from select from(select count i by c from info)where x>1\ninconsistent:select from dups where c in exec c from(select count i by c from distinct select c,t from dups)where x>1\n";
+	(`$(string INFOFILE),".load.q")1:"info:(",(-3!INFOFMTS),";enlist\",\")0:`$\"",(string INFOFILE),"\"\ndups::`c`t xasc select from info where c in exec c from select from(select count i by c from info)where x>1\ninconsistent::select from dups where c in exec c from(select count i by c from distinct select c,t from dups)where x>1\n";
 	INFOFILE 0:.h.cd`tbl`c xasc savedinfo;INFOFILE}
 if[SAVEINFO;-1"* saveinfo file ",(1_string saveinfo[])," updated"]
 if[EXIT;exit 0]
 
 sba:{update before:(({x[where not x=" "]:"*";x}LOADFMTS;DELIM)0:sample),after:(LOADFMTS;DELIM)0:sample from select c,t from info} / show before+after
+forceS:{update t:"S" from`info where t="*"} / no string cols 
 \
 delete dv from info
 first LOAD10 FILE

@@ -1,5 +1,5 @@
 / utilities to quickly load a csv file - for more exhaustive analysis of the csv contents see csvguess.q
-/ 2007.10.18 - updated to match latest csvguess.q 
+/ 2007.10.20 - updated to match latest csvguess.q 
 
 / .csv.colhdrs[file] - return a list of colhdrs from file
 / info:.csv.info[file] - return a table of information about the file
@@ -29,7 +29,7 @@ DISCARDEMPTY:0b / completely ignore empty columns if true else set them to "C"
 
 k)nameltrim:{$[~@x;.z.s'x;~(*x)in aA:.Q.a,.Q.A;(+/&\~x in aA)_x;x]}
 cleanhdrs:{{$[ZAPHDRS;lower x except"_";x]}x where x in DELIM,.Q.an}
-cancast:{nl:x$"";$[not nl in x$(11&count y)#y;$[11<count y;not nl in x$y;1b];0b]}
+cancast:{nw:x$"";if[not x in"BXCS";nw:(min 0#;max 0#;::)@\:nw];$[not any nw in x$(11&count y)#y;$[11<count y;not any nw in x$y;1b];0b]}
 
 read:{[file]data[file;info[file]]}  
 read10:{[file]data10[file;info[file]]}  
@@ -46,8 +46,8 @@ info0:{[file;onlycols]
 	breaks:where 0xa=read1(file;0;floor(10+READLINES)*WIDTHHDR%count head);
 	nas:count as:colhdrs xcol(loadfmts;enlist DELIM)0:(file;0;1+last((1+READLINES)&count breaks)#breaks);
 	info:([]c:key flip as;v:value flip as);as:();
-	info:update res:c in key`.q from info;
-	info:update res:1b from info where c in .Q.res;
+	reserved:key`.q;reserved,:.Q.res;reserved,:`i;
+	info:update res:c in reserved from info;
 	info:update ci:i,t:"?",ipa:0b,mdot:0,mw:0,rule:0,gr:0,ndv:0,maybe:0b,empty:0b from info;
 	info:update ci:`s#ci from info;
 	if[count onlycols;info:update t:" ",rule:10 from info where not c in onlycols];
@@ -61,17 +61,17 @@ info0:{[file;onlycols]
 	info:update t:"n",rule:40 from info where t="?",{$[any x in"0123456789";all x in".-+eE0123456789/: ";0b]}each dchar; / vaguely numeric..
 	info:update t:"I",rule:50,ipa:1b from info where t="n",mw within 7 15,mdot=3,{all x in".0123456789"}each dchar; / ip-address
 	info:update t:"J",rule:60 from info where t="n",mdot=0,{all x in"+-0123456789"}each dchar,.csv.cancast["J"]peach sdv;
-	info:update t:"I",rule:70 from info where t="J",mw<10;
-	info:update t:"H",rule:80 from info where t="I",mw<5;
+	info:update t:"I",rule:70 from info where t="J",mw<12,.csv.cancast["I"]peach sdv;
+	info:update t:"H",rule:80 from info where t="I",mw<7,.csv.cancast["H"]peach sdv;
 	info:update t:"F",rule:90,maybe:0b from info where t="n",mdot<2,mw>1,.csv.cancast["F"]peach sdv;
-	info:update t:"E",rule:100,maybe:0b from info where t="F",mw<8,.csv.cancast["E"]peach sdv; / need to check for "1e40" etc
+	info:update t:"E",rule:100,maybe:0b from info where t="F",mw<9,{all x in".+-0123456789"}each dchar;
 	/ M [yy]yymm yyyy[?]mm
 	info:update t:"M",rule:110,maybe:1b from info where t="I",mw=6,.csv.cancast["M"]peach sdv; / 200506, YYYYMM is less likely than [H]HMMSS so do that first 
 	info:update t:"M",rule:120,maybe:1b from info where t="H",mw=4,.csv.cancast["M"]peach sdv,{not all(value each x)within 1960 2035}peach sdv; / 0506, YYMM is less likely than [H]HMM so do that first 
 	info:update t:"M",rule:130,maybe:0b from info where t in"?n",mw=7,{all x like"[12][0-9][0-9][0-9]?[01][0-9]"}peach sdv,.csv.cancast["M"]peach sdv; / 2005?06, YYYY?MM 
-	info:update t:"M",rule:140,maybe:1b from info where t="E",mw=7,{all x like"[12][0-9][0-9][0-9].[01][0-9]"}peach sdv,.csv.cancast["M"]peach sdv; / 2005.06, YYYY.MM 
+	info:update t:"M",rule:140,maybe:1b from info where t in"EF",mw=7,{all x like"[12][0-9][0-9][0-9].[01][0-9]"}peach sdv,.csv.cancast["M"]peach sdv; / 2005.06, YYYY.MM 
 	info:update t:"V",rule:150,maybe:1b from info where t="I",mw in 5 6,7<count each dchar,{all x like"*[0-9][0-5][0-9][0-5][0-9]"}peach sdv,.csv.cancast["V"]peach sdv; / 235959 12345        
-	info:update t:"U",rule:160,maybe:1b from info where t="H",mw in 3 4,7<count each dchar,{all x like"*[0-9][0-5][0-9]"}peach sdv,.csv.cancast["U"]peach sdv; /2359
+	info:update t:"U",rule:160,maybe:1b from info where t="H",mw in 3 4,7<count each dchar,{all x like"*[0-9][0-5][0-9]"}peach sdv,{not all(value each x)within 2000 2035}peach sdv,.csv.cancast["U"]peach sdv; /2359
 	/ D [yy]yymmdd ddMMM[yy]yy yyyy/[mm|MMM]/dd [mm|MMM]/dd/[yy]yy \z 0 dd/[mm|MMM]/[yy]yy \z 1
 	info:update t:"D",rule:170,maybe:0b from info where t="n",mw in 8 10,mdot in 0 2,.csv.cancast["D"]peach sdv; / 2005.06.07 2005/06/07 2005-06-07
 	info:update t:"D",rule:180,maybe:1b from info where t="I",mw in 6 8,.csv.cancast["D"]peach sdv; / 20050607
@@ -80,13 +80,10 @@ info0:{[file;onlycols]
 	info:update t:"T",rule:210,maybe:0b from info where t="n",mw within 7 12,mdot<2,{all x like"*[0-9]:[0-5][0-9]:[0-5][0-9]*"}peach sdv,.csv.cancast["T"]peach sdv;
 	info:update t:"V",rule:220,maybe:0b from info where t="T",mw in 7 8,mdot=0,.csv.cancast["V"]peach sdv;
 	info:update t:"T",rule:230,maybe:1b from info where t="F",mw within 7 10,mdot=1,{all x like"*[0-9][0-5][0-9][0-5][0-9].*"}peach sdv,.csv.cancast["T"]peach sdv;
-	/   info:update t:"Z",rule:220,maybe:0b from info where t="n",mw within 19 23,mdot<4,{$[all x in"0123456789.:T- ";2<sum".:T -"in x;0b]}each dchar,.csv.cancast["Z"]peach sdv
 	info:update t:"Z",rule:240,maybe:0b from info where t in"n?",mw within 11 24,mdot<4,{$[all x in"0123456789.:ABCDEFGJLMNOPRSTUVYabcdefgjlmnoprstuvy/- ";1<sum".:/ T-"in x;0b]}each dchar,.csv.cancast["Z"]peach sdv;
 	info:update t:"?",rule:250,maybe:0b from info where t="n"; / reset remaining maybe numeric
 	info:update t:"C",rule:260,maybe:0b from info where t="?",mw=1; / char
-	info:update t:"B",rule:270,maybe:0b from info where t in"HC",mw=1,mdot=0,{$[all x in"01tTfFyYnN";(any"0fFnN"in x)and any"1tTyY"in x;0b]}each dchar; / boolean
-	info:update t:"B",rule:280,maybe:1b from info where t in"HC",mw=1,mdot=0,{all x in"01tTfFyYnN"}each dchar; / boolean
-	/   info:update t:"B",rule:126,maybe:ndv<2 from info where t="H",all each dchar in"01",{all(value each x)in 0 1}each sdv / boolean
+	info:update t:"B",rule:270,maybe:0b from info where t in"HC",mw=1,mdot=0,{$[all x in"01tTfFyYnN";(any"0fFnN"in x)and any"1tTyY"in x;0b]}each dchar; 	info:update t:"B",rule:280,maybe:1b from info where t in"HC",mw=1,mdot=0,{all x in"01tTfFyYnN"}each dchar; / boolean
 	info:update t:"X",rule:290,maybe:0b from info where t="?",mw=2,{$[all x in"0123456789ABCDEF";(any .Q.n in x)and any"ABCDEF"in x;0b]}each dchar; /hex
 	info:update t:"S",rule:300,maybe:1b from info where t="?",mw<.csv.SYMMAXWIDTH,mw>1,gr<.csv.SYMMAXGR; / symbols (max width permitting)
 	info:update t:"*",rule:310,maybe:0b from info where t="?"; / the rest as strings
