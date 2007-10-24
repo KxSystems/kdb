@@ -1,4 +1,4 @@
-package kx; //2007.10.18 2007.08.06 package  2007.04.20 sql.{Date|Time|Timestamp}
+package kx; //jar cf c.jar kx/*.class //2007.10.18 2007.08.06 package  2007.04.20 sql.{Date|Time|Timestamp}
 import java.net.*;import java.io.*;import java.sql.*;import java.lang.reflect.Array;import java.text.*;
 public class c{public static void main(String[]args){try{ //s.setSoTimeout(ms);
 //c c=new c(new ServerSocket(5010));while(true)c.w(2,c.k());
