@@ -7,15 +7,14 @@
 
 <xmp>Type           Synonym
 ----------------------
+unsigned char  G      
 16 bit int     H      
 32 bit int     I      
 64 bit int     J      
-unsigned char* A      
-unsigned char* S      
-unsigned char  G      
-unsigned char  C      
 32 bit float   E      
 64 bit double  F      
+unsigned char  C      
+unsigned char* S      
 void           V      
 </xmp>
 <p>With this basic knowledge we can now tackle the types available in Kdb+ and their matching C types and accessor functions provided in the C interface. We will see shortly how the accessor functions are used in practice. </p>
@@ -122,6 +121,7 @@ r = k(c,"b:til 100",(K)0);         // Synchronously set b to be a list up to 100
  Create a float     |  K kf(F); 
  Create a char      |  K kc(I); 
  Create a symbol    |  K ks(S); 
+ Create a date      |  K kd(I); 
  Create a time      |  K kt(I); 
  Create a datetime  |  K kz(I); 
 </xmp>
@@ -139,7 +139,7 @@ r = k(c,"b:til 100",(K)0);         // Synchronously set b to be a list up to 100
 
 <xmp>knk(2,kf(2.3),ktn(KI,10));
 </xmp>
-<p>As we've noted, the type of a mixed list is 0, and the elements are pointers to other K objects. The knk function can take up to 8 arguments.</p>
+<p>As we've noted, the type of a mixed list is 0, and the elements are pointers to other K objects. </p>
 <p>To append to ("join") lists we use the following:</p>
 
 <xmp> Join an atom to a list            |  K ja(K*,V*); 
