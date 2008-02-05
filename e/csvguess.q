@@ -42,7 +42,9 @@ SAVEDB:`:csvdb / database top level, where things like `:sym live
 SAVEPTN:` / individual partition, 2006.12.25 frinstance; ` => none
 PRESAVEEACH:{x} / function to be run before each incremental save (delete date field?) 
 POSTLOADEACH:{x} / function to be run after each incremental load from file
+/ POSTLOADALL:{update `p#sym from`sym`time xasc x}
 POSTLOADALL:{x} / function to be run after complete load from file (LOAD/BULKLOAD only, not BULKSAVE as never all data in one place)
+/ POSTSAVEALL:{@[`sym`time xasc x;`sym;`p#]}
 POSTSAVEALL:{x} / function to be run after all saved, to set `p# on `sym for example: {@[x;`sym;`p#]} or sort by sym {`sym xasc x}
 @[.:;"\\l csvguess.custom.q";::]; / save your custom settings in csvguess.custom.q to override those set above
 

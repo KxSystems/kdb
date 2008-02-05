@@ -1,9 +1,7 @@
-/ can have -u, no client end-of-day
-/ q chainedtick.k :5010 -p 5110 </dev/null >foo 2>&1 & 
+/ can have -u; no end-of-day, no logfile, connect to master tickerplant
+/ q chainedtick.k :5010 -p 5110 -t 1000 </dev/null >foo 2>&1 & 
 
-/ 2008.02.02 first
-
-/q chainedtick.k MASTER [-p 5110]
+/ q chainedtick.k [host]:port[:usr:pwd] [-p 5110] [-t N]
 
 if[~."\\p";."\\p 5110"]
 
@@ -23,17 +21,4 @@ if[~."\\t"
 .u.rep:{(.[;();:;].)'x;}
 
 / connect to ticker plant for schema
-.u.init .u.rep (<`$":",.u.x 0)".u.sub[`;`]"
-
-\
-/test
->q tick.k
->q tick/ssl.q
->q chainedtick.k 
-
-/run
->q tick.k sym  .   -p 5010       /tick
->q tick/r.k :5010 -p 5011       /rdb
->q sym             -p 5012       /hdb
->q tick/ssl.q sym :5010          /feed
->q chainedtick.k :5010 -p 5110     /chained tick 
+.u.init .u.rep(.u.m:<`$":",.u.x 0)".u.sub[`;`]"
