@@ -1,3 +1,4 @@
+//2008.03.24 load "" instead of () for null text
 //2007.05.04 fix null charstrings;read bool and byte as smallint
 //2007.03.28  KB null->0  KS(>8)->0
 //cl -DWIN32  /LD /Oy odbc.c odbc.def q.lib odbc32.lib user32.lib
@@ -35,7 +36,7 @@ K2(eval){K*k;S*b,s;SQLINTEGER*nb,*wb,w;H*tb,u,t,j,p,m;F f;C c[128];I n=xj<0;D d=
 Q(t<-11||t>12,xS[i])wb[i]=ut[tb[i]=t=t>0?t:12-t]==KS?w+1:wt[t];if(ut[t]==KS&&(n||wb[i]>9))tb[i]=13)
  DO(j,kK(y)[i]=ktn(ut[t=tb[i]],0);if(w=wb[i])Q1(SQLBindCol(d,(H)(i+1),ct[t],b[i]=malloc(w),w,nb+i)))
  for(;!SQLFetch(d);)DO(j,k=kK(y)+i;u=ut[t=tb[i]];s=b[i];n=SQL_NULL_DATA==nb[i];
-if(!u)jk(k,n?ktn(0,0):wb[i]?kp(s):gb(d,(H)(i+1),t));
+if(!u)jk(k,n?ktn(ct[t]?KC:KG,0):wb[i]?kp(s):gb(d,(H)(i+1),t));
 else ja(k,n?nu(u):u==KH&&wb[i]==1?(t=(H)*s,(S)&t):u==KS?(s=dtb(s,nb[i]),(S)&s):u<KD?s:u==KZ?(f=ds(s)+(vs(s+6)+*(I*)(s+12)/1e9)/8.64e4,(S)&f):(w=u==KD?ds(s):vs(s),(S)&w))) 
  if(!SQLMoreResults(d))O("more\n");DO(j,if(wb[i])free(b[i]))R free(b),free(tb),free(wb),free(nb),d0(d),xT(xD(x,y));}
 /*

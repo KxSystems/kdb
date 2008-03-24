@@ -18,7 +18,7 @@ typedef unsigned char*S,C,G;typedef short H;typedef float E;typedef double F;typ
 typedef struct k0{I r;H t,u;union{G g;H h;I i;J j;E e;F f;S s;struct k0*k;struct{I n;G G0[1];};};}*K;
 typedef V*D;typedef unsigned short UH;
 #include<sqlext.h>
-//#include<odbcinst.h>
+#include<odbcinst.h>
 #define S0 SQL_NTS
 #define S1 SQL_NO_DATA_FOUND
 #define A SQLRETURN SQL_API
