@@ -92,6 +92,7 @@ Object r(){int i=0,n,t=b[j++];if(t<0)switch(t){case-1:return new Boolean(rb());c
  case 18:Second[]V=new Second[n];for(;i<n;i++)V[i]=rv();return V;case 19:Time[]T=new Time[n];for(;i<n;i++)T[i]=rt();return T;}return null;}
 
 void w(int i,Object x)throws IOException{int n=nx(x)+8;synchronized(o){B=new byte[n];B[0]=0;B[1]=(byte)i;J=4;w(n);w(x);o.write(B);}}
+public void ks(Object x){w(0,x);}
 public void ks(String s)throws IOException{w(0,cs(s));} char[]cs(String s){return s.toCharArray();}
 public void ks(String s,Object x)throws IOException{Object[]a={cs(s),x};w(0,a);}
 public void ks(String s,Object x,Object y)throws IOException{Object[]a={cs(s),x,y};w(0,a);}
