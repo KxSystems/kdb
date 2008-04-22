@@ -1,0 +1,166 @@
+Interfacing Kdb+ with C/C++
+
+.Introduction
+The best way to understand the underpinnings of KDB+, and to interact with it from C is to start with the header file available from http://kx.com/q/c/c . This is the file you will need to include in your C or C++ code in order to interact with Kdb+ from a low-level. Lets explore the basic types and their synonyms that you'll commonly encounter when programming at this level. First though, it is worth noting the size of data types in 32 versus 64 bit operating systems to avoid common mistake. 
+64 bit Linux is an "LP64" operating system. This means that an int is 32 bits, while long, long long and pointers are 64 bits. The same is true for Solaris, AIX, HP-UX, and Mac OS X. Microsoft Windows on the EM64T and AMD64 architectures use a different model, LLP64. This is an attempt to maintain better compatibility with existing 32-bit source code, which assumes long will be exactly 32 bits. In the LLP64 model, int and long are 32 bit while long long and pointers are 64 bit. Single precision floating point and double precision are always 32 and 64 bits respectively in all the data type models (ignoring extended or non-standard floating point formats on certain architectures). 
+To provide succinct names, the Kdb+ header defines synonyms for the common types as in the following table:
+ Type	Synonym
+ -
+ unsigned char	G 
+ 16 bit int	H 
+ 32 bit int	I 
+ 64 bit int	J 
+ 32 bit float	E 
+ 64 bit double	F 
+ unsigned char	C 
+ unsigned char*	S 
+ void	V
+With this basic knowledge we can now tackle the types available in Kdb+ and their matching C types and accessor functions provided in the C interface. We will see shortly how the accessor functions are used in practice. 
+ Kdb+ name      | type number | type name | C type    | Size          | accessor
+ -
+ list           |  0          |  -        |  K        |  pointer      |  kK
+ boolean        |  1          |  KB       |  char     |  1            |  kG 
+ byte           |  4          |  KG       |  char     |  1            |  kG 
+ short          |  5          |  KH       |  short    |  2            |  kH 
+ int            |  6          |  KI       |  int      |  4            |  kI 
+ long           |  7          |  KJ       |  int64_t  |  8            |  kJ 
+ real           |  8          |  KE       |  float    |  4            |  kE 
+ float          |  9          |  KF       |  double   |  8            |  kF 
+ char           |  10         |  KC       |  char     |  1            |  kC
+ symbol         |  11         |  KS       |  char*    |  pointer      |  kS
+ month          |  13         |  KM       |  int      |  4            |  kI
+ date           |  14         |  KD       |  int      |  4            |  kI (days from 2000.01.01) 
+ datetime       |  15         |  KZ       |  double   |  8            |  kF (days from 2000.01.01) 
+ minute         |  17         |  KU       |  int      |  4            |  kI
+ second         |  18         |  KV       |  int      |  4            |  kI
+ time           |  19         |  KT       |  int      |  4            |  kI (milliseconds) 
+ table          |  98         |  XT       |  -        |  -            |  x->k 
+ dict           |  99         |  XD       |  -        |  -            |  kK(x)[0]!kK(x)[1]
+Note that the type numbers given are for vectors of that type. For example, 9 for vectors of the Kdb+ type float. By convention, the negative value is a scalar: -9 is the type of a scalar float value.
+.The K object structure
+The Kdb+ types are all encapsulated at the C level as "K objects". Recall that k is the low-level language underlying the q language in Kdb+. K objects are all instances of the following structure (note this is technically defining K objects as pointers to the k0 structure but we'll conflate the terms and refer to K objects as the actual instance). 
+ typedef struct k0 {
+  I r;                   // The object's reference count 
+  H t, u;                // The object's type and attribute flags
+  union {                // The data payload is contained within this union.
+     // The scalars are held in the following members:
+     G g;
+     H h;
+     I i;
+     J j;
+     E e;
+     F f;
+     S s;
+     // The following members are used for more complex data.
+     struct k0*k;
+     struct {
+       I n;
+       G G0[1];
+     };
+  };
+ }*K;
+As an exercise, it is instructive to count the minimum and maximum number of bytes a K object can use on your system taking into account any padding or alignment constraints. So, given a K object x, we can use the accessors noted in the table above to access elements of the object. For example, given a K object containing a vector of floats, we can access kF(x)[42] to get the 42nd element of the vector. For accessing scalars, use the following accessors:
+  byte    |  x->g
+  short   |  x->h 
+  int     |  x->i 
+  long    |  x->j 
+  real    |  x->e 
+  float   |  x->f 
+  symbol  |  x->s 
+
+.Examining K Objects
+If you are in a situation where you do know beforehand the type of the K objects, or you use to write a function that works over numerous types, it is useful to dispatch based on the type lag x->t for some K object x. If x->t is negative then the object is a scalar and we should use the scalar accessors noted above. If x->t is greater than zero then we use the vector accessors as all the elements are of that type (egg. x->t == 9 for a vector of Kdb+ floats). A more interesting case is where x->t is exactly zero. This means that the K object contains a mixed list of other K objects. Each element in the list is a pointer to another K object. To access each element of the object x we use the kK object accessor. For example:
+ kK(x)[42] 
+to access the 42nd element of the mixed list. 
+.Nulls and Infinities 
+The next table provides the null and infinite immediate values for the Kdb+ types. 
+  Type   |  Null                |  Infinity
+  short  |  0xFFFF8000          |  0x7FFF
+  int    |  0x80000000          |  0x7FFFFFFF 
+  long   |  0x8000000000000000  |  0x7FFFFFFFFFFFFFFF 
+  float  |  NaN                 |  Inf
+
+Note: "NaN" is log(-1.0) on Windows or (0/0.0) on Linux. "Inf" is -log(0.0) in Windows or (1/0.0) on Linux.
+
+.Connecting to a Kdb+ server
+We use the function:
+ int khp(host, port);
+to connect to a Kdb+ server. Note you must call khp before generating any K data. For example: 
+ int c = khp("localhost", 1234); // Connect to a Kdb+ server on the localhost port 1234.
+ k(-c,"a:2+2",(K)0);                  // Asynchronously set a to be 4 on the server.
+ r = k(c,"b:til 100",(K)0);         // Synchronously set b to be a list up to 100.
+.Managing memory
+Although in Kdb+ memory is automatically managed for the programmer, when interfacing from C or C++ we must (as traditional in those languages) manually manage memory. The following functions are provided to interface with the Kdb+ memory manager: 
+  Increment the object's reference count  |  r1(x) 
+  Decrement the object's reference count  |  r0(x) 
+It is absolutely vital to increment and decrement when adding or removing references to values that should be managed by the Kdb+ runtime in order to avoid memory leaks or access faults due to double frees.
+.Creating scalar values
+To create scalar values the following functions are available: 
+  Create a boolean   |  K kb(I); 
+  Create a byte      |  K kg(I); 
+  Create a short     |  K kh(I); 
+  Create an int      |  K ki(I); 
+  Create a long      |  K kj(J); 
+  Create a real      |  K ke(F); 
+  Create a float     |  K kf(F); 
+  Create a char      |  K kc(I); 
+  Create a symbol    |  K ks(S); 
+  Create a date      |  K kd(I); 
+  Create a time      |  K kt(I); 
+  Create a datetime  |  K kz(I); 
+.Creating lists
+To create lists use the following functions: 
+  Create a simple list  |  K ktn(type, length); 
+  Create a mixed list   |  K knk(n,x,y,z); 
+For example to create an integer list of 5 we say 
+ ktn(KI,5);
+whereas to create a mixed list containing a float and another integer list of 10 we say 
+ knk(2,kf(2.3),ktn(KI,10));
+As we've noted, the type of a mixed list is 0, and the elements are pointers to other K objects. 
+To append to ("join") lists we use the following:
+  Join an atom to a list            |  K ja(K*,V*); 
+  Join a string to a list           |  K js(K*,S); 
+  Join another K object to a list   |  K jk(K*,K); 
+.Strings
+Strings are a special case: 
+  Create a string                         |  K kp(string); 
+  Create an empty strong of length n      |  K kpn(string, n); 
+  Intern a string                         |  S ss(string); 
+
+What's the difference between a symbol and a char vector? A symbol is a pointer to a location in an internal map of strings; that is symbols are interned zero terminated strings. On the other hand, a char vector is similar to an int vector and is instead a counted K vector as usual. In order to create a symbol we must intern a string, using ss, and then use the resulting pointer in further expressions. 
+ K some_symbol = ks(ss("some symbol"));
+.DateTime
+  Encode a year/month/day as an int       |  I ymd(year,month,day);
+
+Recall that a UNIX time is the number of seconds since 1970.01.01T00:00:00 while a Kdb+ datetime is a 64 bit float number of days since 2000.01.01, e.g.
+
+ double zu(int u){return u/8.64e4-10957;}   // kdb+ from unix
+ int uz(double f){return 86400*(f+10957);}  // unix from kdb+
+
+.Creating dictionaries and tables
+We can create dictionaries and tables from C using the following functions: 
+  Create a dict                              |  K xD(K,K); 
+  Create a table from a dict                 |  K xT(K); 
+  Create a simple table from a keyed table   |  K ktd(K); 
+Recall that a dictionary is a K object of type 99. It contains a list of two K objects; the keys and the values. We can use kK(x)[0] and kK(x)[1] to get these contained data. Also recall that a simple table (a "flip") is a K object of type 98. In terms of the K object, this is an atom that points to a dictionary. This means that to access the columns we can use the xK(x->k)[0] accessor and the xK(x->k)[1] for the values. A table with primary keys is a dictionary that maps a simple table to another simple table. Although we can thus access the data using the already introduced accessors, you many find it easier to first convert it to a simple table before manipulating it in C. 
+ //   Get a keyed table by executing a query.
+ K x = k(h, "select sum size by sym from trade where date=2006.09.25", (K)0);
+
+ /* 
+   Convert the result to a simple table.
+   NB. x is no longer valid and has been deallocated.
+ */
+ K y=ktd(x);   
+
+ /* 
+   Note that if the ktd conversion fails for any reason, 
+   it returns 0 and x is not freed.
+ */
+ if (0 == y) 
+    (void) puts ("x is still a keyed table because the conversion failed.");
+ else
+    (void) puts ("y is a simple table and x has been deallocated.");
+.Signaling an error in C code
+Use the function 
+ krr(S);
+to signal an error from your C code. A convenience function orr(S) can be used to signal system errors. It is similar to krr(S), but it appends a system error message to the user provided string before passing it to krr.

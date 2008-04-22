@@ -1,0 +1,1407 @@
+Kdb+ Database and Language Primer
+Dennis Shasha (shasha@cs.nyu.edu)
+
+.Overview
+Arthur Whitney has designed and personally built several languages. In every case, his avowed purpose has been to make the language as concise and expressive as possible. Except for the fact that q has English words for some primitives, q is perhaps the most concise and the most powerful yet. Whereas I don't share Arthur's love for brevity, I am a power addict.  The fact that this language allows programmers to mix very powerful database primitives with a powerful programming language (including interprocess communication) and to execute at high speed makes it a wonderful achievement. Arthur, however, may be most proud of the fact that the executable is only 100 kilobytes. The guy is pretty awesome.
+This primer is aimed at two audiences: K programmers who want to benefit from the large-scale data manipulation facilities of q; and new developers who seek high performance, expressability, and a powerful SQL dialect.
+This primer was written by Dennis Shasha but freely plagiarizes http://kx.com/q/d/kdb+.htm the notes that Arthur Whitney has prepared and http://kx.com/q/d/q1.htm the Q manual</a> written by Don Orth. In addition, Tom Ferguson and Ed Bierly have provided some very helpful example scripts.
+I attempt to present the essential features of q through simple examples, so please read the examples and surrounding commentary carefully. Try to execute the queries in your head as you read. I relegate interprocess communication, file input/output, interaction with other languages, performance issues, and a few other topics to the appendix. You can do lots of cool things with this language.
+
+.Getting Started
+Once you download q, you should be able to start the environment by typing the single letter q on a line by itself and hitting return.
+
+.Data Types
+Atoms are single entities, e.g. a single number, a single character,a symbol. (The full set is boolean, byte, short, int, long, real, float, char, symbol, month, date, datetime, minute, second, and time as we will see those in examples.) A list is a sequence of atoms or other types including lists.
+
+ Examples A: Atom and List Formation 
+
+ / Note that comments begin with a slash "/" and cause the parser
+ / to ignore everything up to the end of the line. 
+ / (The / operator is overloaded
+ / however and has a different meaning if it follows a two argument operator.
+ / We will see how.)
+
+ x: `abc / x is the symbol `abc (a symbol is represented internally as a number).
+
+ y: (`aaa; `bbbdef; `c) / a list of three symbols
+
+ y1: `aaa`bbbdef`c / another way to represent this list (no blanks between symbols)
+
+ y2: (`$"symbols may have interior blanks";`really;`$"truly!")
+ 
+ y[0] / returns `aaa
+
+ y 0 / juxtaposition eliminates the need for brackets 
+     / This also returns `aaa
+
+ y 0 2 / returns `aaa `c as does y[0 2] 
+
+ z: (`abc; 10 20 30; (`a; `b); 50 60 61) / lists can be complex
+
+ z 2 0 / returns (`a`b;`abc) because z[2] is `a`b and z[0] is `abc
+
+ z[2;1] / returns `b
+        / The second element of z[2]
+
+ z[2;0] / returns `a
+        / The first element of z[2]
+
+ x: "palo alto" / a list of characters
+
+ x 2 3 / gives "lo"
+
+.Dictionaries
+Now that you have an idea of atoms and lists, let's advance to dictionaries. Recall from elementary algebra that a mathematical function has a domain and a range, where each element in the domain has a single corresponding element in the range. So, f(x) = x*x is a function because for every domain element (i.e., x value) there is a single f(x) value. Lists can be viewed as functions where the domain is a set of locations 0, 1, 2, ... and the range of a location is the list element at that location.
+In q,  the notion of function brings unity to many situations. As we just mentioned, list indexing is function application; user-defined functions (e.g. f:{[x] x*x} can be applied in the same way; dictionaries are a kind of function; and so are keyed tables. Here are the details.
+Dictionaries are very much like lists except that the domain may be any set of unique elements rather than indexes. Create the dictionary by writing the domain then an exclamation point and then the range.
+
+ Examples B: Dictionary Formation and Access
+
+ fruitcolor: `cherry`plum`tomato!`brightred`violet`brightred
+
+ fruitcolor `plum / gives `violet
+
+ stringfruit: ("cherry"; "plum"; "tomato") !`brightred`violet`brightred
+ / so the domain can be a list of lists 
+
+ stringfruit "tomato" / returns `brightred
+ 
+ / Dictionaries are combined using "upsert" semantics.
+ / An upsert will do an update if the keys match and otherwise
+ / will do an insert.
+
+ fruitcolor2:`grannysmith`plum`prune!`green`reddish`black
+
+ fruitcolor,fruitcolor2
+ `cherry`plum`tomato`grannysmith`prune!`brightred`reddish`brightred`green`black
+
+ / You notice that plum has simply had its color updated, but
+ / the other entries from fruitcolor2 are new.
+ 
+.Tables from Dictionaries
+A dictionary can be viewed as having a domain column and a range column. Pictorially, the domain is to the left of the range. For example,
+ 13	`brightred
+ `plum	"violet"
+ "tomato"	"brightred"
+Because the range need not be a singleton, we could imagine a dictionary having list elements in the range, e.g., 
+ `name	`tom`dick`harry
+ `salary	30 30 35
+The domain is `name and `salary. The list `tom`dick`harry is the range element corresponding to `name. The list 30 30 35 is the range element corresponding to `salary
+A table is just a list of similar dictionaries but is stored as - and sometimes created from - a flipped dictionary of lists. Since the dictionaries all have the same keys the keys are just shown once at the top:
+
+ `name		`salary
+ `tom		30
+ `dick		30
+ `harry		35
+
+To convert from a dictionary of lists to a table, use the unary (single argument) verb "flip".
+Note: Understand the word flip as suggesting the swapping of columns for rows in the geometrical sense described here. If you like linear algebra, think matrix transposition. The reason this "flipped" representation is convenient is that we can index the table as if were an array. There are other advantages as well.
+In addition, tables may have some columns (also known as fields) which are "key fields". These again form a domain for the non-key fields. So, these keyed tables are again dictionaries. In this case there is a functional relationship from key fields to non-key fields. Given this pictorial understanding, we can now explore the syntax through examples.
+
+ Examples C: Table Formation and Access
+ / I have a dictionary where the left column is the key
+ / and the right column is a list of two vectors (each having three elements)
+ d:`name`salary! (`tom`dick`harry;30 30 35) 
+
+ / This returns (if we look through the http browser, see appendix)
+ / name    ..
+ / salary  ..
+
+ e: flip d / list of dicts instead of dict of lists
+
+ / Again looking through the http browser:
+ / name   salary
+ / -------------
+ / tom        30
+ / dick       30
+ / harry      35
+
+ e[1] / returns `name`salary!(`dick;30) the second row of the table.
+
+ / Now try:
+ select name from e
+
+ select sum salary from e 
+
+ / Now let's look at the implications of having a key field.
+
+ e2: e
+ `name xkey `e2 / creates a key.
+ / (Note that salary cannot be a key because 30 appears twice.)
+
+ keys e2 / returns ,`name
+
+ cols e2 / returns `name`salary
+
+ edouble: e2+e2 / returns
+ edouble / (+(,`name)!,`tom`dick`harry)!+(,`salary)!,60 60 70
+ / Note that all fields are updated.
+
+ d3:`name`salary!(`bob`alice`dick`ted;130 15 235 11) 
+ e3: flip  d3
+ `name xkey `e3
+
+ ecombine: e3-e2
+ ecombine / returns
+ / (+(,`name)!,`bob`alice`dick`ted`tom`harry)!+(,`salary)!,130 15 205 11 -30 -35
+
+ / Now let us say that we append information to e and to e2.
+
+ `e insert(`ann;50)
+
+ e / +`name`salary!(`tom`dick`harry`ann;30 30 35 50)
+
+ / Tables can be formed directly as well.
+ / We will start with non-keyed tables (thus the []).
+
+ mytab:([]x: 1 2 3; y: 10 20 30)
+
+ mytab / returns +`x`y!(1 2 3;10 20 30) where the + here means flip
+
+ mytab.x / returns 1 2 3
+
+ mytab.y / returns 10 20 30
+
+ select x from mytab where y = 20 / returns +(,`x)!,,2
+
+ select x,y from mytab where y < 21 / returns +`x`y!(1 2;10 20)
+
+ / These last two return tables, single and double column.
+ / Sometimes we don't want to return a table, but some simpler type.
+ / In that case, we use the verb exec 
+
+ exec x from mytab where y < 21 / returns 1 2 directly
+
+ / Here are two create table statements.
+ / Both have columns a and b as keys, as indicated by the brackets.
+ / The closing right bracket omits the need for a 
+ / semi-colon.
+
+ t:([a:2 3 4 5; b:30 40 30 40] c:10 20 30 40)
+ u:([a:2 3 2 3; b:30 30 40 40] c:4 2 8 9)
+
+ / t returns (+`a`b!(2 3 4 5;30 40 30 40))!+(,`c)!,10 20 30 40
+ / Thus it's like two tables with the left one being the domain.
+
+ t-u / returns 
+ / (+`a`b!(2 3 4 5 3 2;30 40 30 40 30 40))!+(,`c)!,6 11 30 40 -2 -8
+ / The first entry in the result of substracting 10-4.
+ / The second is 20-9. In both cases the keys match.
+ / The next two entries (4;30) and (5;40) are present only in t.
+ / The last two are present only in u.
+
+ z: 0!t / eliminates the keys from t. This is sometimes useful.
+
+.Operations
+
+Now that we know about how to form and access the basic data types, it's time to do things with them. Part of the beauty of q is that you can use the appropriate tool for the appropriate problem. If data and complex querying is your problem then you use tables, but when you need to do complex calculations, you take the data out and manipulate it using very powerful primitives on atoms, lists, and dictionaries. You might think there is nothing new in this. After all, Java + SQL is also a Turing complete system so can do the same. In principle.
+In practice though, q has three advantages:
+
+1. All these data types coexist in the same process, so there is no overhead in going from one to the other.
+
+2. The non-table primitives in q apply to atoms as well as entire lists and dictionaries, so the code is much shorter. In contrast, Java primitives apply to atoms.
+
+3. Arthur is a speed freak so the code is very fast, often by orders of magnitude.
+
+Let's start with the operations on atoms and lists. The first set of examples shows that many operations apply to two atoms, an atom and a list, or two lists of the same length.
+
+ Examples D: Operations on Atoms and Lists
+ x: 5
+ x / returns 5
+
+ y: 6
+
+ x+y / returns 11
+
+ x,: 9 2 -4 / returns a type error because x is not a list so concatentation
+            / is not well defined.
+
+ x: enlist x
+
+ x / returns ,5 which means the list having the single element 5
+
+ x,: 9 2 -4  / now it works
+
+ x / returns 5 9 2 -4 (we don't need the initial comma because
+   / any entity having several elements must be a list.
+
+ x+y / returns 11 15 8 2 (result of adding 6 to each element here)
+
+ z: x*y / form the product
+ z / returns 30 54 12 -24
+
+ z + 3 2 4 1 / gives 33 56 16 -23 by element by element addition
+
+ / Operations are processed in right to left order. 
+ / Others think of operations as being evaluated in left OF right
+ / order (by analogy to sum of f(x)).
+ / Whichever way you think of it, there is no operator precedence,
+ / only position precedence. Thus,
+
+ 5 * 4 - 4 / returns 0, first do 4 - 4 and then multiply that result by 5.
+
+Here are some other binary operations that can apply to atoms or lists in the same set (atom op atom; atom op list; list op atom; list op list if the same length).
+
+ a+b     Plus          
+ a-b     Minus         
+ a*b     Times         
+ a%b     Divide        
+ a=b     Equal         
+ a>b     More          
+ a<b     Less          
+ a|b     Or (Max) 
+ a&b     And (Min)
+
+Note that division is a percent sign. (The reason is that / is reserved for other purposes.) Here are some unary operators:
+
+ neg b   Negate (render negative) 
+ not b   (equal zero)  
+ abs b   Absolute Value
+ null b  (equal null)		
+ floor b (integer part)
+
+ Examples E: Mostly Boolean Operators
+
+ zz: (0%0; 4 % 0; 4; 0; -3 % 0)
+
+ zz / returns (0n;0w;4;0;-0w) where 0n is for 0 divided by 0,
+    / 0w is positive infinity and -0w is negative infinityo
+
+ null zz / returns 10000b because positive and negative infinity are fine values
+
+ floor 3.2 / returns 3
+ floor -3.2 / returns -4
+
+ x: 3 2 6 3
+ y: 7 1 4 6
+
+ x < y / returns 1001b because 3 < 7 (first positions of 
+       / x compared to first of y)
+       / 2 < 1 is false, 6 < 4 is false and 3 < 6 is true
+       / So true is 1b and false is 0b.
+
+ x: "algebras"
+ y: "calculus"
+
+ x > y / returns 01010100b because "a" > "c" is false, "l" > "a" is true etc.
+
+ / The | gives the maximum no matter what the domain, so
+ x | y / returns "clleurus"
+ x & y / returns "aagcblas"
+ / The max and min also apply to boolean results, e.g.
+ (x > y) | (x < y) / returns 11111110b
+ (x > y) & (x < y) / returns 00000000b
+
+Other operators deserve special mention. The function "in" determines whether each item of the left argument list is among the items of the right argument list. It returns a boolean array. The function "where" finds the positions in a boolean array where the boolean value is 1. ("where" has other purposes, but this is the main one.)
+
+ Examples F: in, where, indexing 
+
+ x: 6 8 7 2 4 13 6
+ y: 3 5 6 7 8
+
+ x in y / returns 1110001b, because 6, 8, 7 and then 6 are in y.
+
+ where x in y / returns 0 1 2 6, the indexes of the x elements that are in y.
+
+ / Now we can explicitly find the elements of x that are in y:
+ x where x in y / 6 8 7 6
+ / This is a form of set intersection. In fact we may not want any duplicates.
+
+ distinct x where x in y / returns 6 8 7
+
+As we are starting to develop some expressions of non-trivial length, it is time to show how to define procedures that embody those expressions. Forming a procedure is like assigning an expression(in programming language terminology, a "lambda expression") to a variable. Because set manipulation occurs all over most application, we define set primitives first.
+
+ Examples G: Procedures
+
+ / the [x;y] indicates the name of the arguments (the formal parameters)
+ / The unary operator distinct removes duplicates from a list.
+ intersect:{[x;y] distinct x where x in y}
+
+ a: 4 2 6 4 3 5 1
+ b: 3 5 4 6 7 2 8 9
+
+ intersect[a;b] / returns 4 2 6 3 5
+
+ / Next we define a function that determines whether one list
+ / is a subset of the next.
+ / The function min returns the minimum element of a vector.
+ / If a boolean vector, then min will return 1 only if all boolean
+ / elements are 1.
+ subset:{[x;y] min x in y}
+
+ subset[a;b] / returns 0b
+
+ subset[a;a] / returns 1b
+
+ c: `a`b`a`b`d`e / remember no spaces in symbol lists
+ d: `b`d`a`e`f
+
+ subset[c;d] / returns 1b
+
+ subset[d;c] / returns 0b
+
+ / Set difference is the discovery of all elements in a first list
+ / that are not in a second.
+ / This function produces a boolean vector of the elements in x
+ / that are in y (x in y).
+ / Flips the bits so 1 goes to 0 and 0 goes to 1 (not x in y).
+ / Then it finds the locations of those bits (where not x in y).
+ / Finally, it indexes x with those locations.
+ difference:{[x;y] x where not x in y}
+
+ difference[c;d] /returns  0#` because there is no such element
+ difference[d;c] / returns ,`f because f alone is in d but not in c.
+
+Now we resume our exploration of other functionality. Suppose we want to create a basic set of statistical procedures: average, variance, standard deviation, and correlation.
+
+ Examples H: Statistical functions
+
+ var:{[x] (avg[x*x]) - (avg[x])*(avg[x])}
+
+ std:{[x] sqrt[var[x]]}
+
+ a: 4 3 6 13 1 32 8
+
+ std[a] / returns 9.839529
+
+The built in primitives avg and sqrt are joined by other familiar ones:
+ log exp count sum prd min max
+There are also two nice string operators: 
+ like ss 
+The operator like determines whether a string matches a pattern. The operator ss finds the positions of a pattern.
+
+ Examples I: String Identification
+
+ a: "We the people of the United States"
+
+ a like "people" / returns 0b because people doesn't match the whole string
+
+ a like "*people*" / returns 1b because the * is a wildcard.
+
+ a ss "the" / returns 3 17 which are the positions where the word "the" starts
+
+There are a number of other important unary functions:
+ string first reverse key group
+The string function converts atoms (incl. symbols) to strings. The first function returns the first element of a list (or the first value of a dictionary or the first row of a table). The reverse function reverses a list. The til function is a way to generate a sequence of numbers. The group function on a vector returns a dictionary whose domain is the list of unique elements in the vector and whose range is a list of their positions.
+
+ Examples J: Important unary functions
+
+ string `ILoveNY / returns "ILoveNY"
+
+ reverse string `ILoveNY / returns "YNevoLI"
+
+ til 15 / returns 0 1 2 3 4 5 6 7 8 9 10 11 12 13 14
+
+ reverse til 15 / returns 14 13 12 11 10 9 8 7 6 5 4 3 2 1 0
+
+ z: 50+ til 5
+ z / returns 50 51 52 53 54
+
+ zdup: z, reverse z / Note that the comma is concatenation.
+ zdup / returns 50 51 52 53 54 54 53 52 51 50
+
+ group zdup / returns a dictionary with the unique elements
+ / of zdup in  the domain and their positions in the range
+ / 50 51 52 53 54!(0 9;1 8;2 7;3 6;4 5) 
+
+ d:`name`salary! (`tom`dick`harry; 30 30 35) 
+
+ first d / returns `tom`dick`harry
+
+ key d / returns `name`salary
+
+ e: flip d / names are domains and values are column
+
+ first e / returns `name`salary!(`tom;30)
+
+ `name xkey `e
+
+ key e / returns +(,`name)!,`tom`dick`harry
+
+There are also a few other very common binary operators (you may have noticed that only the unary operators are English words; the binary ones are normally just keyboard characters).
+ ~  asks whether two entities have the same contents.
+ ,  concatenates two lists.
+ _  drops elements of a list.
+ #  selects elements of a list.
+ ?  finds the positions of elements of a list. 
+ ?  is overloaded to generate random numbers.
+ bin  supports binary search.
+
+ Examples K: Binary operators
+
+ x: 2 4 3 5
+ y: 2 5 3 4
+
+ x = y / returns a boolean vector 1010b
+
+ x ~ y / returns 0b because these are not identical
+
+ z: 2 4 3 5
+ x ~ z / returns 1b because contents are identical
+
+ z,z,y,z / returns 2 4 3 5 2 4 3 5 2 5 3 4 2 4 3 5 the concatenation
+
+ w: z, (2*z), (3*y)
+ w / returns 2 4 3 5 4 8 6 10 6 15 9 12
+ 5 _ w / returns 8 6 10 6 15 9 12 dropping the first 5 numbers
+
+ -5 _ w / returns 2 4 3 5 4 8 6 having dropped the last 5 numbers
+
+ a: "We the people of the United States"
+
+ a = " " / returns 0010001000000100100010000001000000b
+
+ ii: where a = " " / finds the positions of the blanks
+	/ Note that the where operator finds the positions where there is 1b.
+ ii _ a / returns (" the";" people";" of";" the";" United";" States")
+  / That is a list where each element is the part of the list between
+  / one blank and the next.
+
+ 5 # a / returns "We th"
+
+ -5 # a / returns "tates" (the last 5)
+
+ 7 # "abc" / returns "abcabca"
+
+ a ? "p" / returns 7 which is the first position with a "p"
+
+ a ? "ptb" / returns 7 3 34 because 7 is the first position of "p"
+           / 3 is the first position of "t"
+           / and "b" is never present so its position is the length of the string
+           / which is 34.
+
+ / When the left object is a scalar and the right number is a scalar
+ / we can generate random numbers that can be float:
+
+ 7 ? 5.2 / generates 7 numbers between 0 and 5.2
+ / returns 0.9677783 4.321816 3.661838 2.394824 2.102985 0.9226833 2.556388
+
+ / or whole numbers
+ 9 ? 18  / returns 15 1 1 8 6 11 10 8 9
+
+ / without replacement
+ -9 ? 18  / returns 13 9 10 2 3 0 15 1 7
+
+ / Permutations
+ -15 ? 15 / 13 0 1 3 7 10 6 4 14 11 9 8 2 5 12
+ 
+ 7 ? `cain`abel`job`isaac
+ / returns `job`job`abel`abel`job`cain`isaac
+
+ evens: 2 * til 20
+ evens / returns 0 2 4 6 8 10 12 14 16 18 20 22 24 26 28 30 32 34 36 38
+
+ evens bin 4 / returns 2 because 4 is at position 2
+
+ evens bin 5 / also returns 2 because 5 < 6 which is at the next position
+
+.Operations on Dictionaries
+
+When discussing the binary operations so far, we've concentrated on what could be done with atoms and lists. Now let's see what can be done with dictionaries and tables. The basic idea is that for every domain element the dictionaries have in common, "atomic" binary operators apply to the corresponding range lists. (An atomic binary operator applies to two atoms, to an atom and a list, and element-by-element on two lists of equal length. Arithmetic operations are atomic in q.) Other domain elements are present in the result but are otherwise unchanged.
+
+ Examples L: Some Binary Operations on Dictionaries 
+
+ schoolfriends: `bob`ted`carol`alice ! 23 28 30 24
+ rockfriends: `sue`steve`alice`bob`allan ! 19 19 24 23 34
+
+ / multiplication applies to each element of the domain
+ 2*rockfriends / returns sue`steve`alice`bob`allan!38 38 48 46 68
+
+ / for each common element in the domain, the range parts are added.
+ schoolfriends+schoolfriends / returns `bob`ted`carol`alice!46 56 60 48
+
+ / Same as above and in addition there is a union of the domains.
+ / So bob and alice are doubled, but everyone else goes in as they were
+ / in the base dictionaries.
+ schoolfriends+rockfriends 
+ / returns `bob`ted`carol`alice`sue`steve`allan!46 28 30 48 19 19 34
+
+ schoolfriends = rockfriends 
+ / returns `bob`ted`carol`alice`sue`steve`allan!1001000b
+ / Note that in spite of the fact that bob and alice
+ / are in different positions in the two dictionaries, the fact that
+ / they have the same value is recognized.
+
+.Adverbs
+
+Just as English has a notion of verb (e.g. "run") and a modifier to a verb ("quickly") known as an adverb, so does q. Every vector language needs adverbs because one doesn't always want list op list to mean element-by-element application of op (for atomic functions) or whole list op whole list (for non-atomic ones). There are three adverbs: each, eachleft and eachright.
+
+ Examples M: Adverbs
+
+ x: 10 30 20 40
+ y: 13 34 25 46
+
+ x,y / returns 10 30 20 40 13 34 25 46
+
+ x,'y / (each) returns (10 13;30 34;20 25;40 46) that is, a list of pairs
+
+ x,\: y / (each left) returns a list of each element from x with all of y.
+ / (10 13 34 25 46;30 13 34 25 46;20 13 34 25 46;40 13 34 25 46)
+
+ x,/: y / (each right) returns a list of all the x with each element of y
+ / (10 30 20 40 13;10 30 20 40 34;10 30 20 40 25;10 30 20 40 46)
+
+ x: 1 _ x / drops the first element
+ x / returns 30 20 40
+
+ y: -2 _ y / drops the last two elements
+ y / returns 13 34
+
+ / Combine each left and each right to be a cross-product (cartesian product)
+ x,/:\:y / returns ((30 13;30 34);(20 13;20 34);(40 13;40 34))
+ / So a cross-product combines each element from x with each from y
+
+ / Because the above format may not be convenient there is a special
+ / unary operator that undoes a level of nesting: "raze"
+ raze x,/:\:y / returns (30 13;30 34;20 13;20 34;40 13;40 34)
+
+ / Sometimes a function is meant to be applied to each element of a list.
+ / That is, it is unary with respect to each element of the list.
+
+ reverse (1 2 3 4;"abc")      / reverses the two elements of this list:
+ / returns ("abc";1 2 3 4)
+
+ each[reverse](1 2 3 4;"abc") / reverses each list within this pair
+ / returns (4 3 2 1;"cba")
+
+ reverse each (1 2 3 4;"abc") / returns the same (4 3 2 1;"cba")
+
+ / Here is an example that shows how you can use your function with this.
+ / Suppose we want to compute a random selection of the elements
+ rockroll: `i`love`rockandroll 
+ / for each element of a numerical list, e.g.
+ numlist: 4 7 3 2
+
+ / We define a function
+ myrand:{[n] n ? rockroll}
+
+ / Then we can apply myrand to each element of numlist.
+ myrand each numlist
+ / one output: (`rockandroll`rockandroll`love`rockandroll;`i`i`love`love`i ...
+ / The point is that it creates a list for each element in numlist.
+ / The fact that this function performs on each element is why this is 
+ / called each.
+
+.Table Operations: the SQL dialect
+
+Whereas q is an improvement over K in several ways (e.g. the unary operators are no longer overloaded thus reducing ambiguity), its major benefit is that it gives tight integration with table functionality. This section assumes you have some some familiarity with SQL. Q provides a powerful dialect of SQL that is currently missing some features but has other unique and powerful ones. Note that the first line of SQL statements must be outdented and the rest must be indented.
+
+The basic syntax is:
+
+ select ..
+  by ..
+  from ..
+  where ..
+
+As of this writing (July 2004), the from clause contains only one table, but this does not prevent joins from happening, provided they are foreign key joins. To understand foreign keys, please consider the following example. A publisher has many authors. It holds author information in one table: author(author, name, address) where author is the key. Each author may have several books in print. bookauthor(book, author, ...) where book and author together are a key (so that we can handle the case that a book has several authors and that an author has written several books). Now, the publisher wants to send notices, checks, reviews and other good news about a book to its authors. For this to be possible, every author in the book table must have an entry in the author table. We say that "book.author is a foreign key for author". It's foreign because it's in another table and it's a key because author is a key of the author table (i.e. no two rows can have the same authorid). With that understanding, we can present the following script:
+
+ Examples N: Key tables
+
+ / This example must be loaded as a file.
+ / So copy it to a file, say foo.q.
+ / Be careful to keep the indentations.
+ / First line must not be indented; others must be.;
+ / Then type 
+ / q foo.q 
+ / Reason: indents don't work within the interactive window as of July 2004.
+
+ / Remember that keys are surrounded by brackets
+ author:([author:`king`hemingway`flaubert`lazere`shasha]
+  address: `maine`expat`france`mamaroneck`newyork;
+  area: `horror`suffering`psychology`journalism`puzzles)
+
+ book:([book:`forwhomthebelltolls`oldmanandthesea`shining`secretwindow`clouds`madambovary`salambo`outoftheirminds]
+  language: `english`english`english`english`english`french`french`english;
+  numprintings: 3 5 4 2 2 8 9 2)
+
+ / Here we indicate that the author field is a foreign key to the table 
+ / author and book to the table book.
+ / If we wished, we could also surround the two fields author and book
+ / by brackets to indicate that they are keys. 
+ bookauthor:([]
+  author:`author$`hemingway`hemingway`king`king`king`flaubert`flaubert`shasha`lazere;
+  book:`book$`forwhomthebelltolls`oldmanandthesea`shining`secretwindow`clouds`madambovary`salambo`outoftheirminds`outoftheirminds;
+  numfansinmillions: 20 20 50 50 30 60 30 0.02 0.02)
+
+ / SQL 92: select * from bookauthor
+ select from bookauthor
+
+ / SQL 92: identical to this except that we use the symbol notation
+ select numfansinmillions from bookauthor where book=`forwhomthebelltolls
+
+ select author,numfansinmillions from bookauthor where book=`forwhomthebelltolls
+
+ / Implicit join via the foreign key. 
+ / SQL92:
+ / select bookauthor.author, book.language
+ / from bookauthor, book
+ / where book.book = bookauthor.book
+ / and numfansinmillions< 30
+ select author,book.language from bookauthor where numfansinmillions< 30
+
+ / Same idea, but note the outdented first line followed 
+ / by the indented later lines.
+ / SQL92:
+ / select bookauthor.author, book.language, author.address
+ / from bookauthor, book, author
+ / where book.book = bookauthor.book
+ / and author.author = bookauthor.author
+ / and author.area = "psychology"
+ select author,book.language,author.address
+  from bookauthor
+  where author.area = `psychology
+
+ / SQL92:
+ / select distinct bookauthor.author, book.language, author.address
+ / from bookauthor, book author
+ / where book.book = bookauthor.book
+ / and author.author = bookauthor.author
+ / and author.area = "psychology"
+ select distinct author,book.language,author.address
+  from bookauthor
+  where author.area = `psychology
+
+ / Here we are doing implicit joins and also an implicit groupby
+ / SQL92:
+ / select book.language, sum(numfansinmillions)
+ / from bookauthor, book
+ / where bookauthor.book = book.book
+ / group by book.language
+ select sum numfansinmillions by book.language from bookauthor
+
+.Q's Semantic Extensions to SQL
+
+Q views tables as a set of named columns having order. (Because their data representation resembles arrays and their use of named columns suggests tables, I like to describe them using the neologism <i>arrables</i>, but I'll use table in the rest of this primer.) The order allows a class of very useful aggregates that are unavailable to the relational database programmer without the cumbersome and poorly performing temporal extensions.
+
+Note:
+In these examples, we make use of <i>uniform</i> functions, both built-in (deltas and mins) and user-created (myavgs). A uniform function applies to one or more lists of the same length L. The output list has length L. The arithmetic plus operator is uniform. <i>Atomic</i> operators like plus are special because the element at each position p of the output depends on the elements of the inputs at position p and on them alone. Uniform functions don't make that restriction. For example, consider the running minimum function the value of the running minimum function (mins) at position p depends on all elements of the input up to position p. Here is a table of the built-in uniform (and non-atomic operators in q) slightly simplified from Don Orth's manual:
+
+ Func	Example	Result                       
+ -
+ sums	sums 1 2 3 -4 5	1 3 6 2 7    
+ deltas	deltas 1 2 3 -4 5	1 1 1 -7 9                   
+ prds	prds 1 2 3 -4 5	1 2 6 -24 -120
+ ratios	ratios 1 2 3 -4 5	1.00 2.00 1.50 -1.33 -1.25   
+ mins	mins 1 2 3 -4 5	1 1 1 -4 -4                  
+ maxs	maxs 1 2 3 -4 5	1 2 3 3 5     
+
+Copy the following to a file (e.g. frenchtrade.q) keeping indentations as is.  Then invoke q on that file (e.g. q frenchtrade.q).
+
+ Examples O
+ / Create a list of French stocks where name is the key.
+ stock:([name:`Alcatel`Alstom`AirFrance`FranceTelecom`Snecma`Supra]
+  industry:`telecom`engineering`aviation`telecom`aviation`consulting)
+
+ / get a list of distinct stocks are there?
+ stocks: distinct exec name from stock
+
+ ns: count stocks
+
+ n:10000
+ / stock is a foreign key foreign key. 
+ / We are taking n stocks at random.
+ / Then n prices up to 100.0 at random, then n random amounts 
+ / then n random dates.
+ trade:([]stock:`stock$n?stocks;
+ price:n?100.0;amount:100*10+n?20;exchange:5+n?2.0;date:2004.01.01+n?449)
+
+ / Sort these in ascending order by date.
+ / We will need this to make the following queries meaningful.
+ `date xasc `trade
+
+ / Now find the dates when the price of Snecma went up 
+ / regardless of time of day.
+ / The deltas function subtracts the previous value in a column with
+ / the current one.
+ select date from trade where stock=`Snecma, 0 < deltas price
+
+ / Find the average price by day. 
+ aa: select aprice: avg price by date from trade where stock=`Snecma
+
+ / An aside: Find the weighted average price by day where prices associated with
+ / bigger trades have more weight.
+ / wavg is a binary function that takes two columns as arguments:
+ select wavg[amount;price] by date from trade where stock=`Snecma
+
+ / Here is an infix form giving the same result.
+ select amount wavg price by date from trade where stock=`Snecma
+
+ / Find the dates when the average price went up
+ / compared with the previous day.
+ select date, aprice from aa where 0 < deltas aprice
+
+ / Suppose we wanted to do the above but for every stock.
+ / Basically we replace the where stock= part by putting stock
+ / into the by clause.
+ / First we get the average price for each stock and date.
+ aaall: select aprice: avg price by stock, date from trade 
+
+ / Now find dates having rising prices for each stock 
+ / Note that stock is the key of each row and there is a vector
+ / of dates and aprice associated with each stock. 
+ xx: select date, aprice by stock from aaall where 0 < deltas aprice
+
+ / See which are those dates for Snecma (same as before)
+ select date from xx where stock = `Snecma
+
+ / See which are those dates for Alcatel
+ select date from xx where stock = `Alcatel
+
+ / Suppose that we do this on a monthly basis.
+ / Note that the date arithmetic is very flexible and
+ / that a field is created called month by default from the by clause.
+ aaallmon: select aprice: avg price by stock, date.month from trade 
+
+ xxmon: select month, aprice by stock from aaallmon where 0 < deltas aprice
+
+ select month from xxmon where stock = `Snecma
+
+ / Here we do a compound statement.
+ / The idea is to find the profit of the ideal transactions for each stock.
+ / An ideal transaction is a buy on a day x followed by a sell on day y (x < y)
+ / such that the sell - buy price is maximal.
+ / To do this, we want to find the time when the difference between
+ / the actual price and the minimum of all previous prices is greatest.
+ / Read this as follows: compute the running minimum of prices.
+ / This gives a vector v1 of non-increasing numbers.
+ / Then consider the vector of prices v2.
+ / Find the value where v2-v1 is maximum.
+ bestprofit: select best: max price - mins price by stock from trade 
+
+ / One of the very powerful features of q (shared with KSQL) is that
+ / a programmer can add his own procedures to the SQL and things just work.
+ / Let's start with something simple:
+ mydouble:{[x] 2*x}
+
+ select mydouble price from trade where stock = `Alcatel
+
+ / Some functions can take several arguments. Suppose that we were 
+ / interested in the moving average of double the prices.
+
+ myavg:{[x] (sum x) % (count x)}
+
+ / Therefore, I invent a binary operator myavg and then take
+ / the running averages ending at each point in the vector.
+ / The vector is prefilled with n 0s.
+ / Reasonable people may disagree about this initialization strategy.
+ myavgs:{[n;vec] x: (n # 0), vec; each[myavg]x[n+(til (count vec)) -\: til n]}
+
+ select myavgs[3; mydouble price] from trade where stock = `Alcatel
+
+ / Or we could do this for every stock.
+ select myavgs[3; mydouble price] by stock from trade 
+
+ / Even better, these procedures can go into any clause.
+
+ select date by stock from trade where 70 < myavgs[3; mydouble price] 
+
+ select date by stock, myavgs[3; mydouble price] from trade 
+
+ / Functions can contain sql. The only limitation is that you
+ / may not include field names in an argument.
+
+ f:{[mytable] count select from mytable}
+
+ f[stock] / returns 6
+
+ f[trade] / returns 10000
+
+ / The last feature we want to introduce is the fact that q
+ / can store a vector in a field of a row.
+ / This non-first normal form capability can contribute to performance.
+
+ t: select date, price, amount by stock from trade
+
+ / In the browser window this gives:
+ / stock          date  price  amount
+ / ----------------------------------
+ / Alcatel        ..    ..     ..    
+ / Alstom         ..    ..     ..    
+ / AirFrance      ..    ..     ..    
+ / FranceTelecom  ..    ..     ..    
+ / Snecma         ..    ..     ..    
+ / Supra          ..    ..     ..    
+
+ / This means that we get a vector of dates for Alcatel as well
+ / as a vector of prices and amounts.
+ / Now unary functions work using each meaning for each row.
+
+ select stock, each[first] price from t
+ select stock, first each price from t / these two are equivalent
+
+ / Now suppose that for each stock, we want the volume weighted price.
+ / That is a binary operator so the each becomes a '
+
+ select stock, amount wavg' price from t
+ select stock, wavg'[amount;price] from t / these two are equivalent
+
+ / We can go to higher level of valences by using the second syntax.
+
+ f:{[x;y;z] (avg x)*y-z}
+ select stock, f'[price; amount; price] from t
+
+.Modifying Tables
+
+We've already seen how to build tables from dictionaries or from direct statements. SQL 92-style inserts, updates and deletes are also possible. Q adds the notion of upserts as mentioned above.
+
+ Examples P
+ 
+ book:([book: ()] language: (); numprintings: ())
+
+ insert[`book](`forwhomthebelltolls; `english; 3)
+ insert[`book](`salambo; `french; 9)
+
+ book: update language:`French from book where book=`salambo
+
+ book2:([book: ()] language: (); numprintings: ())
+
+ / An alternate insert notation
+ `book2 insert (`secretwindow; `english; 4)
+ `book2 insert (`salambo; `Fch; 9)
+
+ / go back to the classic insert, just for fun
+ insert[`book2](`shining; `english; 2)
+
+ book3: book, book2 / book2 adds all rows where the key field is 
+ / new and replaces values where the keyfield is not present.
+ / These upsert semantics (insert rows having new keys and replace
+ / range values of exsiting keys) are due to the fact that book
+ / and book2 are both keyed tables.
+
+ select language from book3 where book=`salambo 
+ / Returns +(,`language)!,,`Fch
+
+ count select from book3 / returns 4 because book has two rows, book2 has 3
+ / rows but one of those rows has the key `salambo.
+
+ book3: delete from book3 where book=`secretwindow
+
+ count select from book3 / return 3
+
+.Appendices
+
+These appendices are mostly plagiarized (and abridged) from Don Orth's manual.
+
+..Installation
+
+Put q into the directory $HOME/q.
+Put the license there too.
+All scripts should end in .q.
+
+..Temporal Primitives
+
+Q has very rich temporal primitives and keeps track of all those pesky leap years and the base 60 operations on seconds and minutes that we have inherited from the Babylonians.
+
+ Examples: Temporal Arithmetic
+
+ x: .z.z / greenwich mean time e.g. 2004.07.03T16:35:24.980
+
+ / Try these (your dates will be different from mine of course)
+
+ x.month / e.g. 2004.07m
+ x.year / e.g. 2004
+ x.minute / e.g. 16:35
+ x.second / e.g. 16:35:24
+ x.time / e.g. 16:35:24.980
+
+ x.date - 12 / e.g. 2004.06.21
+
+ x.second + 84 / e.g. 16:36:48
+
+..Execution Control
+Every programming language since Algol has offered if-then, if-then-else, and while. Q is no exception, though good q programmers tend not to need these functions (especially looping functions) as much as programmers in scalar languages.
+
+ / $[condexp1;truexp1;...;condexpn;truexpn;falsexp]  
+ / if then-else. The expressions can be surrounded by []
+ / to connote a block.
+
+ val: 35
+ $[val > 60; val; val < 30; 0; [x: neg val; 2*x]] / returns -70
+
+ / This can be rendered by several if statements.
+ / Personally, I like these because they make the assumptions clear.
+
+ if[val > 60; out: val]
+ if[val < 30; out: 0]
+ if[not (val > 60) | (val < 30); out: 2 * neg val]
+ out / returns -70
+
+ / compute the square of each number up to n then subtract 1
+ squareminusone:{[n] out: (); i: 0; while[i < n; out,: (i*i)-1; i:i+1]; out}
+
+ squareminusone[5] / -1 0 3 8 15
+
+ / The same can be done without a loop
+ / This will normally be faster.
+ squareminusonealt:{[n] ((til n) * (til n)) - 1}
+
+ squareminusonealt[5] / returns -1 0 3 8 15
+
+..Input/Output to Files
+
+Files are identified as symbols beginning with a colon:
+
+ `:[path]name
+The path need not be specified if the file is in the current directory.
+
+Files are text, byte or q data. Let us start by reading and writing to text files:
+
+ myfile: `:foofile
+
+ / can write directly to the file
+ myfile 0: ("i love";"rock and roll")
+
+ / Can append to files, by opening the file and then talking to the file.
+ h: hopen myfile
+ h "But rock concerts are too loud."
+
+ / The function read0 reads the file
+ newlist: read0 myfile
+ newlist / returns ("i love";"rock and roll";"But rock concerts are too loud.")
+
+Byte files are for non-string data. For such data we use 1: instead of 0:.
+
+ mybinfile: `:foofilebin
+
+ mybinfile 1: 0x6768
+
+ / To append, we open as before.
+ 
+ h2: hopen mybinfile
+ h2 0x6364
+ read1 mybinfile / returns 0x67686364
+
+Q files are for q data.
+
+ myfile:`:tmpfoo
+
+ .[myfile;();:;`a`b`c]	/ set
+
+ .[myfile;();,;`d`e`f]	/ append
+
+ value`:tmpfoo	/ returns `a`b`c`d`e`f
+
+Very often we want to parse data that we get from external text files. Sometimes that data comes in fixed format. Suppose for example we have the file fooin with implicit schema employeeid, name, salary, age.
+
+ 312 smith    3563.45 24
+ 23  john     5821.19 32
+ 9   curtiss  9821.19 51
+
+(Note: no blank line at the end.)
+We notice that we have a 4 character integer (including the trailing blank), a 9 character name, a 8 character float and a 2 digit integer. So we use the following table to get the types (from Don Orth's manual):
+
+ 0 1   Type        Data(1) Text(0)                             
+ --------------------------------------------------------------
+ blank skip                                                    
+ B b   boolea      1       [1tTyY]                             
+ X x   byte        1                                           
+ H h   short       2       [0-9a-fA-F][0-9a-fA-F]              
+ I i   int         4                                           
+ J j   long        8                                           
+ E e   real        4                                           
+ F f   float       8                                           
+ C c   char        1                                           
+ S s   symbol      n                                           
+ M m   month       4       [yy]yy[?]mm                         
+ D d   date        4       [yy]yy[?]mm[?]dd or [m]m/[d]d/[yy]yy
+ Z z   datetime    8       date?time                           
+ U u   minute      4       hh[:]mm                             
+ V v   second      4       hh[:]mm[:]ss                        
+ T t   time        4       hh[:]mm[:]ss[[.]ddd]                
+ *     as is chars                                             
+
+We can then bring this data in as 
+ myfooin: `:fooin
+
+ x: ("ISFI"; 4 9 8 2) 0: myfooin
+ x
+ returns (312 23 9;`smith`john`curtiss;3563.45 5821.19 9821.19;24 32 51)
+
+ / Now can create a dictionary
+ d: `id`name`salary`age!x
+
+ / And then a table
+ myemp: flip d
+
+ select name from myemp where salary > 5000 / returns +(,`name)!,`john`curtiss
+
+ We can write entire tables and databases to disk.
+
+ / We write the stock table as follows
+ .[`:stock;();:;stock]
+
+ / We read the table back with
+ value `:stock
+
+..Interprocess Communication
+
+When running a q script, you can specify a port and then clients can talk to that port. Let's start with the script trade.q:
+
+ / Create a list of French stocks where name is the key.
+ stock:([name:`Alcatel`Alstom`AirFrance`FranceTelecom`Snecma`Supra]
+  industry:`telecom`engineering`aviation`telecom`aviation`consulting)
+
+ / get a list of distinct stocks are there?
+ stocks: distinct exec name from stock
+
+ ns: count stocks
+
+ n:10000
+ / stock is a foreign key foreign key. 
+ / We are taking n stocks at random.
+ / Then n prices up to 100.0 at random, then amounts then dates.
+ trade:([]stock:`stock$n?stocks;
+  price:n?100.0;amount:100*10+n?20;exchange:5+n?2.0;date:1998.01.01+n?449)
+
+ `date xasc`trade
+
+ / An example function.
+
+ f:{[mytable] count select from mytable}
+
+ f[stock]
+
+ f[trade]
+
+ / A somewhat less trivial function does volume-weighted
+ / rollups by week (an abridged example from Tom Ferguson)
+ / over a certain time period.
+ weekrollup:{[daterange]
+  select first date, last date, amount wavg price by stock, date.week
+   from trade where date within daterange }
+
+ weekrollup[2004.02.31 2004.03.31]
+
+ / In the browser, the first few rows are (with my random generation)
+ stock          week        date        date           price
+ -----------------------------------------------------------
+ Alcatel        2004.03.01  2004.03.02  2004.03.07  47.35833
+ Alcatel        2004.03.08  2004.03.08  2004.03.14  52.90358
+ Alcatel        2004.03.15  2004.03.15  2004.03.21  45.02117
+ Alcatel        2004.03.22  2004.03.22  2004.03.28  48.47076
+ Alcatel        2004.03.29  2004.03.29  2004.03.31  55.88028
+ Alstom         2004.03.01  2004.03.02  2004.03.07  54.75892
+ Alstom         2004.03.08  2004.03.08  2004.03.14  46.97044
+ Alstom         2004.03.15  2004.03.15  2004.03.21  46.22599
+ Alstom         2004.03.22  2004.03.22  2004.03.28  45.22842
+ Alstom         2004.03.29  2004.03.29  2004.03.31  44.11812
+ AirFrance      2004.03.01  2004.03.02  2004.03.07  49.62135
+ AirFrance      2004.03.08  2004.03.08  2004.03.14  61.13775
+ AirFrance      2004.03.15  2004.03.15  2004.03.21  50.15903
+ AirFrance      2004.03.22  2004.03.22  2004.03.28  48.55051
+ AirFrance      2004.03.29  2004.03.29  2004.03.31  67.37883
+ FranceTelecom  2004.03.01  2004.03.02  2004.03.07  44.48418
+ FranceTelecom  2004.03.08  2004.03.08  2004.03.14  62.79708
+
+Let's run trade.q at some port, here 5001.
+
+ q trade.q -p 5001
+
+The process now running is the server. It is waiting for commands as we will see.
+Now open up a new window on the same machine (or a different one) and type simply q. This is the client.
+The client then connects to this server by opening the connection, communicating, and then closing the connection.
+
+ / If client on same machine, then please type in the console window for client:
+ h: hopen`::5001 / open a connection to a process on the local machine.
+
+ / If client on different machine and server on machine foobar
+ / then please type in the client console window:
+ h: hopen`:foobar:5001 
+
+ / Please type in the client console:
+ h"select avg price by stock from trade" / send a message as a string
+ / and gets a result.
+
+ / Define in the server.
+ / Please type in the server console:
+ myfunc:{[x] 3*x}
+
+ / Then the client can send a message to this function.
+ / Please type this in the client console:
+ h"myfunc[4]" / and get the result 12
+
+ / Alternatively, please type this in the client console:
+ h"n: 4; myfunc[n]" / returns 12
+ / Also n is now defined as 4 in the server.
+
+ / Alternatively, please type this in the client console:
+ h"z: 4"
+ h"myfunc[z]"
+
+ / Sometimes the server chooses to allow certain operations to be 
+ / executed on its site, so uses a message filter.
+ / There are two: .z.pg for synchronous and .z.ps for asynchronous messages
+ / We are dealing with synchronous only for now.
+
+ / Suppose we define the function .z.pg to count the number of characters.
+ / Please type this in the server console:
+ .z.pg:{[x] count x}
+
+ / Please type in the client console:
+ h"myfunc[z]" / returns 9 (because there are 9 characters)
+
+Note that you can talk to this process from other places as well. For example, from a browser you can type. (Note however: it is very very important that you refresh from time to time if you think you have changed your data.)
+
+ http://localhost:5001/?select avg price by stock from trade
+ / if server is local
+
+ http://hogwarts:5001/?select avg price by stock from trade
+ /if server is on machine hogwarts
+
+There are also hooks from excel, perl, java, and C but please check the documentation elsewhere on the kx site for those.
+
+..Protected Evaluation
+
+In a critical application, especially an internet-accessible one, a bad argument may cause a function to fail badly. Instead of allowing this to halt execution, we can trap the error.
+
+ / In the above example, we could define .z.pg less trivially by
+ / allowing it to execute whatever the client asks for provided
+ / there is no error.
+
+ / So, redefine .z.pg in the server.
+ / Please type in the server console:
+ .z.pg:{[x] value x}
+
+ / In this case, please type in the client console:
+ h"myfunc[4]" / returns 12 again
+
+ / What about an erroneous input?
+ / Please type in the client console:
+ h"myfunc[silly]" / returns an error to the client.
+ / As an alterntive, we could redefine .z.pg as follows:
+
+ .z.pg:{[x] @[value;x;`$"The only legal argument is a number"]}
+
+ / Now
+ h"myfunc[silly]" / returns `The only legal argument is a number
+ / Arguably this is more informative.
+
+..Type and Cast
+
+The operator type determines the type of a q object.
+
+ type 100    / returns -6h
+
+ type 100 99 88 / returns 6h (in general lists of type T are positive
+ / whereas a scalar of type T is the same negative value).
+
+ type 1.2 3.1 / returns 9h
+
+The cast operator (a$b) converts the atom b to the type specified by the atom a. The left argument a is one of the values in the following table taken from Don Orth.
+
+ Name     Example             Char Type Size Null  
+ --------------------------------------------------
+ boolean  1b                  b    1    1    0b    
+ byte     0xff                x    4    1    0x00  
+ short    23h                 h    5    2    0Nh   
+ int      23                  i    6    4    0N    
+ long     23j                 j    7    8    0Nj   
+ real     2.3e                e    8    4    0Ne   
+ float    2.3                 f    9    8    0n    
+ char     "a"                 c    10   1    " "   
+ symbol   `ab                 s    11   *    `     
+ month    2003.03m            m    13   4    0Nm   
+ date     2003.03.23          d    14   4    0Nd   
+ datetime 2003.03.23T08:31:53 z    15   8    0Nz   
+ minute   08:31               u    17   4    0Nu   
+ second   08:31:53            v    18   4    0Nv   
+ time     09:10:35.000        t    19   4    0Nt   
+ enum     `s$`b, where s:`a`b *    20.. 4    `s$.. 
+
+Here are some examples:
+
+ "x"$97                  / cast the int 97 using the datatype name x for a byte
+ / returns 0x61
+ / representation of 97 in hex
+
+ "x"$"a"                 / cast a char to a byte                               
+ / return 0x61
+ / "a" also happens to be encoded in hex 97
+
+ "c"$0x41                / cast a byte to a char                               
+ / returns "A"
+
+ "d"$2003.03.23T08:31:53 / extract the date from a datetime value              
+ / returns 2003.03.23
+ / the year.month.day value
+
+ "t"$2003.03.23T08:31:53
+ / returns 08:31:53.000
+
+Casting to and from strings is special. There one should use the upper case character corresponding to the type. Here are some examples.
+
+ "I"$"67" / returns 67
+
+ "S"$"abc 012" / returns `abc 012
+
+ "D"$"2003.03.23" / returns 2003.03.23
+ "D"$"2003-03-23"
+ "D"$"03/23/2003"
+
+ / We have a means to create text from data too:
+
+ string "D"$"03/23/2003" / returns "2003.03.23"
+
+..Infinities
+The IEEE arithmetic NaN (not-a-number) for floats is a float denoted by 0n. Plus-infinity and Minus-infinity for floats are denoted by 0w and -0w . For example:
+
+  0%0 
+ 0n    
+  1%0 
+ 0w    
+  -1%0
+ -0w   
+
+ 0w> 99999999 / returns 1b
+
+..Debugging
+
+One of the joys of writing in any interpreted language is that debugging is far easier than in a compiled language. The reason is simple: an error stops execution and allows you to discover the values of variables and to go up the procedure calling stack.
+
+ / Here is a recursive factorial program.
+ myfact:{[n] $[n < 1; 1; n*myfact n-1 ]}
+
+ myfact 6  / returns 720
+ myfact `q  / signals ..
+ 'type	/ a type error
+ <	/ the function
+ `q	/ the first arg
+ 1	/ the second arg
+ q))n	/ inspect n
+ q))\	/ abort
+
+..Null Values
+
+Null values often represent missing values. Two functions manipulate nulls: null determines which elements of a list are null and fill (represented by the circumflex character) replaces nulls by other values.
+
+ null 1 2 -5 0N 10 0N  / returns 000101b
+
+ / Suppose we have a sales vector and some days have an unknown number of sales.
+ / We could fill in those unknown days with 0s:
+
+ sales: 45 21 0N 13 0N 11 34
+
+ adjsales: 0^sales
+
+ adjsales / returns 45 21 0 13 0 11 34
+
+ / Or we could choose to fill in with the non-null values:
+ x: avg sales where not null sales
+ adjsales2: x ^ sales
+ adjsales2 / returns 45 21 24.8 13 24.8 11 34
+
+..Workspaces and Directories
+
+As in Unix or Windows, the q namespace is divided into directories (also known as contexts). One indicates the path in such directories by use of dots. For example,
+
+ b:3    / default directory
+ c:4    / default directory
+ .cx.b:5 / directory .cx
+ .cx.c:6 / directory .cx
+ .cx.d:17 / directory .cx
+
+ key`.cx / returns `b`c`d
+ key`. / returns `b`c 
+ / contents of default directory
+
+ / If you're in a directory, you can see the function names by typing
+ \f
+
+ / You can retrieve these into a variable
+ x: value"\\f"
+
+ / You can see the variable names by tping  
+ \v
+
+ \d .cx / enter directory .cx
+
+ \d . / return to default context
+
+ \d / tell me which directory I'm in
+
+ / Two interesting directories are .q and .Q
+ / .q has the basic functions and these are available without qualification.
+ / .Q has built-in functions used by the system (utilities, parallel, webserver, documentation, ..)
+
+..Performance Notes
+
+Q makes such good use of the CPU that one CPU can keep several disks busy if the data dwarfs the memory size(as will often be the case for large time series applications for example). In that case, Arthur suggests a CPU with two gigabytes of RAM at least and two SCSI RAiD 5 disk arrays. The worst configuration is many CPUs sharing the same set of remote disks unless the database fits comfortably in RAM. For big databases (in the terabyte range), you should consider using partitioned tables. That is, the tables are partitioned over several machines. Sometimes you will want to partition over several different attributes.
+For any recoverable application, you may want to log update operations. To do this, you simply invoke your database with a -l:
+
+ >q d -l  / loads d.q(functions) d.qdb(state) q.log(update operations)
+
+Recovery is the same as start -- see http://kx.com/q/d/kdb+.htm Logs
+
+In programming q, you should be aware that the compiler does just what you say. The operators are implemented very efficiently but if you choose a poor sequence of operators, your application will be slower than it needs to be. As of now, there is no super-optimizer that will rearrange programs to make them more efficient.
+Put the following in a .q file and load it.
+
+ stock:([name:`Alcatel`Alstom`AirFrance`FranceTelecom`Snecma`Supra]
+  industry:`telecom`engineering`aviation`telecom`aviation`consulting)
+
+ / get a list of distinct stocks
+ stocks: distinct exec name from stock
+
+ n:100000
+
+ trade:([]stock:n?stocks;
+  price:n?100.0;amount:100*10+n?20;exchange:5+n?2.0;date:1998.01.01+n?449)
+
+ `date xasc`trade
+
+ / The order of selections matters.
+ \t select date from trade where stock=`Snecma, 0 < deltas price
+ / returns 10 milliseconds
+
+ \t select date from trade where  0 < deltas price, stock=`Snecma
+ / returns 30 milliseconds
+
+Another performance improvement is one I'm proud of because I discovered the need for it (and Steve Apter provided the first decent implementation of it) a few years ago. Suppose we have to apply an expensive function f to every element of a vector and the vector has repeats. It's better to apply f to every unique element of the vector and then to copy those results to the whole vector. This has been raised to the status of an operator.
+
+ n: 100000
+ vec: n ? 30 / long vectors with few different values
+
+ f:{[x] exp (x*x)} / e raised to x*x
+
+ \t y: f each vec
+ / returns 270 (milliseconds)
+
+ \t y2: .Q.fu[f] vec
+ / returns 10 (milliseconds)
+
+ y ~ y2 / returns 1b, the outputs are equal
+
+..A Gallery of Functions
+
+A good place to look for interesting functions is q.k which you can find in the same directory as the q executable. In fact when you load this, those functions are executed, booted from K. This gives a gallery of other functions.
+
+ x: 7
+ reciprocal x / returns 0.1428571
+ xexp[2;5] / returns 32f (2 to the power 5)
+ xexp[5;2] / returns 25f (5 to the power 2)
+ mod[26;5] / returns 1 (26 mod 5)
+ x: 3 4 5
+ y: `a`b`c`d
+ cross[x;y] / returns (in the browser) the cartesian product:
+ / 3  a
+ / 3  b
+ / 3  c
+ / 3  d
+ / 4  a
+ / 4  b
+ / 4  c
+ / 4  d
+ / 5  a
+ / 5  b
+ / 5  c
+ / 5  d
+ z:`a`b`c`d`e`f`g`h`i
+ rotate[4;z] / returns the rotaion `e`f`g`h`i`a`b`c`d
+ sublist[3 5;z] / returns elements starting at 3 and 5 long from z:
+ / `d`e`f`g`h
+
+..References
+
+Don Orth's excellent manuals http://kx.com/q/d/kdb+1.htm http://kx.com/q/d/q1.htm 
+Arthur Whitney's characteristically terse http://kx.com/q/d/q.htm http://kx.com/q/d/kdb+.htm
+A complex but suggestive financial example http://kx.com/q/taq/taq.q
+A nice data warehousing benchmark example http://kx.com/q/e/tpcd.q

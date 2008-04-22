@@ -1,0 +1,443 @@
+Abridged Q Language Manual
+Arthur Whitney
+
+.Summary
+q is a general purpose programming language and an RDBMS: http://kx.com/q/d/kdb+.htm
+q has atoms, lists, dicts, tables and functions. It includes file, socket and webserver subsystems as well as a superset of sql with timeseries extensions. It is fast and expressive.
+[kdb+ is actually a platform for several languages. The bootstrap language is a compact form of q called k.]
+
+.Install and Run
+
+Kdb+ installs in	$HOME/q (or $QHOME)	. The executable is	q	. Scripts are	*.q	.
+
+ >q [script.q] [-p port]
+
+.System Options
+ >q [f] [-p p] [-s s] [-t t] [-T T] [-o o] [-u u] [-w w] [-r r] [-l]
+  f load script (*.q), file or directory
+ -p port kdbc(/jdbc/odbc) http(html xml txt csv)
+ -s slaves for parallel execution
+ -t timer milliseconds
+ -T timeout seconds
+ -o offset hours(from GMT: affects .z.Z)
+ -u usr:pwd file (-U allow file operations)
+ -w workspace MB limit (e.g. 2*RAM)
+ -r replicate from :host:port (-R sync)
+ -l log updates to filesystem (-L sync)
+
+ -z [0]	"D"$ uses mm/dd/yyyy or dd/mm/yyyy
+ -P [7]	printdigits(0:all)
+ -W [2]	week offset(0:sat)
+
+.Atom and List
+ (boolean byte short int long real float char symbol month date datetime minute second time enum*)
+ atom:(0b;0x00;0h;0;0j;0e;0.0;" ";`;2000.01m;2000.01.01;..T..;00:00;00:00:00;00:00:00.000;*)
+ list:(01b;0x00ff;2 3h;2 3;2 3j;2 3e;2 3.0;"ab";`a`b;..)  null:(0Nh;0N;0Nj;0Ne;0n;' ';`;.0Nm..0Nt)
+NB: there is no notation for singleton lists -- they must be built, e.g.	enlist"a"
+
+.Dict and Table
+Dictionaries are maps of lists to lists. A table is a list of similar dicts(records).
+ d:`x`y!(`a;2)	/ a dict is a map from a list to a list
+ f:(d;`x`y!(`b;3))	/ a table is a list of dictionaries
+ f:flip`x`y!(`a`b;2 3)	/ same table as flip of dict of lists
+ ([]x:`a`b;y:2 3)	/ a column notation for the same table
+A keyed table is a dict whose key and value are both tables.
+
+.Insert and Upsert
+To add records to a table:
+ t,:u	/ u is a record(dict) or a table
+If t is a keyed table then this does upserts -- update existing & append new.	insert	is a restricted(no update) case of "," which returns the new record handles. Given,
+ l	list 
+ L	list of l(matrix)
+ r	record/row (S!l)
+ R	list of r(table)
+ K	R!R(keyed table)
+
+ insert: R,:R (also R,:r R,:l R,:L)
+ upsert: K,:K (also K,:r K,:l K,:L K,:R)
+Column names have to line up. Amend and append promote to enum but otherwise types have to match.
+
+.Join
+In q we fully normalize - store least amount of data. i.e. joins are generally faster than reading denormalized data. Joins are functional (many-to-one) or dysfunctional. We can ignore the dysfunctional -- which leaves:
+ joins: (left+inner)*(fkey+adhoc)*(equi+asof)
+The important joins are left joins -- usually with fkeys, e.g. all 50 joins in the tpcd queries are fkey left joins. Left coincides with inner with complete info. Left joins subdivide into fkey and adhoc. The right argument is always keyed. In kdb+, fkey joins use "."'s, e.g.
+ order.customer.nation.region
+Adhoc joins use	lj	, e.g.
+ x lj y
+or	y[([]k);`c]	and	y[([]k:j);`c]	to get just the	y.c	column.
+Fkey joins are 10 to 100 million per second (ram/cache). Adhoc joins are 4 to 40 million per second (ram/cache).
+
+.Adhoc Join
+ given: x:(..a..b..) y:([a;b]..)   
+in sql:
+ select .. from x left join y using(a,b)
+or
+ select .. from x,y where x.a=y.a and x.b=y.b
+in q:
+ select .. from x lj y
+
+.Asof Join
+Given a table of changes
+ map:`s#([cusip;date]sym)  / sorted by [cusip,date]
+and a table of cusips and dates
+ x:([]cusip;date;..)
+how do we find the sym for a cusip on a certain date? In sql the trick is to store the next date by cusip(with self joins) then:
+ select x.cusip,x.date,map.sym from x,map where 
+  x.cusip=map.cusip and x.date>=map.date and x.date<map.nextdate
+In q we don't need nextdate - simply:
+ x lj map	/ leftjoin
+See http://kx.com/q/taq/adj.q for applying corporate actions using asof joins. If the map isn't keyed, e.g.
+ quote:([]sym;time;..)
+then we must use	aj	. The map is often:	([]time;..)	or	([]sym;time;..)	and it is treated as if these fields were key, e.g.
+ aj[`sym`time;trade;quote]
+brings in quotes at the trade times and
+ aj[`sym`time;update time:time-1500 from trade;quote]
+brings in quotes as of 1500 milliseconds before the trade. See http://kx.com/q/taq/taq.q for examples. In the two column case the first column should be either `p# or `g#. Realtime data is grouped(`g#) by sym and sorted by time. Historical data is `p# by sym for better disk access.
+In aj[`sym`time;t;q] the last key must be`time (or other datetime) and q must be sorted by time within the equivalence classes of the other keys, e.g.
+
+ rdb tables are often ([]`s#time;`g#sym;..) / overall time sort
+ hdb tables are often ([]`p#sym;time..) / time sort within sym
+
+q should have `g#sym(rdb) or a `p#sym(hdb). This way the asof join gets a small set of possible records immediately and then does a binary search within those - often several million times faster than without a `g# or `p#.
+t doesn't matter. aj is like lj - the second table needs the fast lookup.
+
+
+.Union Join
+ x uj y
+is a generalization of
+ x,y
+the result has the union of the columns filled with nulls where necessary.
+
+.Date and Time
+
+ z:.z.z / UTC (localtime is .z.Z)
+ z.(year mm dd hh uu ss month date week minute second time)
+ month.(year mm)
+  date.(year mm dd month week)
+ minute.(hh mm)
+ second.(hh mm ss minute)
+   time.(hh mm ss minute second)
+
+Month, date, datetime, minute, second and time are types. Datetime, date and week units are days. 
+Week is rolled to mondays, i.e.	2+7 xbar date-2	. Day of week is	date mod 7	. 0 is saturday. The rest are int fragments, e.g.	12=`hh$12:34:56	. Quarters can be handled as	3 xbar month	.
+
+.Type
+
+ bghi..	/ letters
+ 1 4 5 6h..	/ shorts
+ `boolean`byte`short..	/ names
+ `sym`s`sp..	/ user enum types
+
+.Cast
+
+ "I"$"23"	/ use capital letter for data from string
+ "i"$23.4	/ use small letter for data from data
+ `hh$12:34	/ or use type names (incl. datetime fragments)
+
+ `sym$`a	/ check referential integrity
+ `sym?`a	/ append if necessary
+ `sym!0	/ hardcode reference
+
+.Functions
+Functions are atomic (atom from atom), aggregate (atom from list), uniform (list from list) or other. 
+
+ atomic	not neg null string floor signum exp log sqrt abs
+  infix	+ - * %(dividedby) < > = &(and) |(or) ^(fill) $(cast) mod
+  mixed	in within like @(at) ?(find) bin
+ 
+ aggregate	count sum prd min max first last avg var(variance) dev(deviation)
+  infix	wavg(weighted..) wsum(weighted..) cov(covariance) cor(correlation)
+ 
+ uniform	sums prds mins maxs fills deltas ratios prev next reverse rank
+  infix	mavg rotate
+ 
+ other	get distinct group where enlist flip raze rand type key value
+  infix	set each sv vs union inter except ,(cat) #(take) _(drop) !(xkey) .(dot)
+
+ given L(list) D(dict) i(int) I(list of i) x(atom in domain of D) X(list of x)
+
+ i # L;i # D;X # D	/ take, e.g. -2#2 3 4
+ i _ L;i _ D;X _ D	/ drop, e.g. -2_2 3 4
+ L _ i;D _ x	/ delete, e.g. 2 3 4_1
+ I cut L	/ e.g. 0 2 cut 2 3 4
+
+ f each x	/ apply f to each item in x (list or dict)
+
+ tables`.	/ tables
+  meta`t	/ cols types fkeys attrs ..
+  keys`t	/ fields 
+  cols`t	/ fields
+
+ S xkey`t	/ set keys
+ S xcol t	/ rename cols(preamble)
+ S xcols t	/ rearrange cols(preamble)
+
+ `f`g{xasc|xdesc}{t|`t|`:t}
+     {save|load}`[:../]t[.{csv|txt}]
+Functions execute left OF right, e.g. write	x*1+rate	instead of	x*(1+rate)	. Uniform functions preserve length. They include the atomic functions, integrals	(sums prds ..)	and derivatives	(deltas ratios ..)	. Q has no ambivalence so we must use	neg x (not -x)	.
+
+.Lambdas
+Lambdas are compiled
+ / (bytecode;params(8);locals(24);globals(32)),Constants(96)
+ value {[a;b]c:d:e+f+2+3}
+
+.Rollups
+
+ select last price by        time.minute from trade	/ 1 minute bars
+ select last price by 5 xbar time.minute from trade	/ 5 minute bars
+
+ t:([]date:2000.01.01+til 9;size:til 9)	/ 2000.01.01 is saturday
+ select last size by date.week from t	/ monday week bars
+
+.Programming
+ / define
+ f:{[a;b]	/ parameters
+  c:a+b;	/ c is a local
+  c+d}	/ d is a global
+
+ / call
+ f[2;3]
+
+ / conditional expression
+ $[cond;true;false]	/ $[..;[..;..];[..;..]] for multiple expressions
+ $[cond;true;cond;true;..false]
+
+ / control statements
+ do[n;..];
+ while[cond;..];
+ if[cond;..];
+ if[cond;:..];	/ return
+ if[cond;'..];	/ signal
+ @[f;x;r]	/ trap: f @ x  (return r on error. if r is a func apply r to error string.)
+ .[f;x;r]	/ trap: f . x  (return r on error. if r is a func apply r to error string.)
+
+N.B. statements must be separated with ";"'s.
+
+.Parameters
+Functions can have queries and queries can have functions, e.g. given
+ mid:{[t;s]exec .5*(bid+ask)time bin t from quote where sym=s}
+then
+ f:{[s]select sum price>mid[time;s]by date from trade where sym=s}
+will calculate how many times per day the trade price was higher than the midpoint for sym s.
+
+.Scripts
+Statements in scripts must be outdented, e.g.
+ select ..
+  by ..
+  from ..
+  where ..
+
+ f:{[a;b]
+  a+b
+  }
+/ will comment out the rest of the line. \ will exit the script. Sections of script can be commented out with matching singleton / and \.
+
+.Debug
+Develop code in an editor and run databases from a console with \l(load), cut and paste. When there is an error the following are displayed:
+ [function]
+ 'error
+ primitive
+ arguments
+If inside a function parameters, locals and globals can be inspected and then:
+ q)) \	/ abort
+ q)) '	/ signal
+ q)) :..	/ return
+
+.Handles
+ `v set 2	/ indirect assignment
+    get`v
+
+.Files
+File handles are of the form `:PATH. Kdb+ files can be read and written just like any other variable, e.g.
+ `:f set 2
+     get`:f
+
+Non kdb+ files are data(bytes) or text(lines).
+ h:hopen`:f.dat
+ h 0x2324
+ hclose h
+
+ h:hopen`:f.txt
+ h ` sv("asdf";"qwer")
+ hclose h
+
+.Sockets
+ h:hopen`:host:port
+ h"f[2;3]"	/ execute
+ h(`f;2;3)	/ func args
+ neg[h]"a:2"	/ asynch
+ hclose h	/ close
+ .z.pg	/ get callback(default: value)
+ .z.ps	/ set callback(default: value)
+ .z.w	/ who (socket handle)
+
+NB: hclose and exit flush pending messages. to chase use: h"" 
+
+.Adhoc Database
+ >q sp.q	/ loads script sp.q
+.Logging Database
+ >q d -l	/ loads [d.q and] [d.qdb and] [d.log]
+ q)\l	/ saves d.qdb and truncates d.log
+.Nested Database
+ >q dir / loads [nested] directories.
+ dir/{scripts|tables|{tables/fields}}
+Databases can be spread across a directory. A directory can have a number of tables and scripts (*.?). The scripts are loaded after all the tables are loaded. Functions should be put in	.util	etc.. Tables can be single files or spread across a directory. Keyed indicative tables must be single files. Big fact tables can be splayed across a directory.
+.Parallel Database
+ >q dir / loads parallel database and sets partition variable.
+ dir/{..|{date|month|year|int}/{tables}/{fields}}	
+There is one partition variable	date|month|year|int	 and it is a virtual column in all the partition tables. There can be other	date	columns with different names. New partitions can be added -- then send reset"\\l ."
+
+.Loading Tables
+ \cd SRC
+ x is `file[,offset,length] or G
+
+ t:("BXHIJEFCSMDZUVT* ";,delim)0:x	/ delim text with names in first row
+ L:("BXHIJEFCSMDZUVT* "; delim)0:x	/ delim text
+ L:("BXHIJEFCSMDZUVT* ";widths)0:x	/ fixed text
+ L:("bxhijefcsmdzuvt* ";widths)1:x	/ fixed data
+
+E and F also recognize "+dd dd/ddd"
+D recognizes:
+ [yy]yymmdd	e.g. 991231
+ [yy]yy?mm?dd	e.g. 1999-12-31
+ ddmmmyy[yy]	e.g. 31Dec99
+ dd?mmm?yy[yy]	e.g. 31 Dec 99
+ mm/dd/[yy]yy	e.g. 12/31/99
+ dd/mm/[yy]yy	with \z 1
+
+Syms(S) trim, blank skips and * is character vector. Reverse types and widths to load reverse endian data.
+
+ data: .[`:f[/];();[:,];..] !`:d .`:d/(defermap) stdout: -1".." stderr: -2".."
+ line: f 0:L:read0:f[,i,n] L:d 0:L:("*BXHIJEFCSMDZUVT ";[,]delim)0:{L|f[,i,n]}
+ byte: f 1:G:read1:f[,i,n] G:w 1:L:("*bxhijefcsmdzuvt ";   width)1:{G|f[,i,n]}
+
+.Saving Tables
+Tables can be written as a single file or spread across a directory, e.g.
+ `:trade  set x	/ write as single file
+ `:trade/ set x	/ write across a directory
+ trade:get`:trade	/ read
+ trade:get`:trade/	/ map columns on demand
+Tables splayed across a directory must be fully enumerated(no varchar) and not keyed.
+
+.Load and Save
+ save`[:../]trade	/ `:trade set trade
+ load`[:../]trade	/ trade:get `:trade
+ save`[:../]trade.{txt|csv}	/ delimited text
+Datetime txt and csv are written as:	yyyy-mm-dd hh:mm:ss.ddd
+
+.Exec
+ ?[t;i;x]	/ i(indices) x(parse tree expression)
+ ?[sp;::;(last;`s)]
+
+.Select and Update
+ ?[t;c;b;a] /select
+ ![t;c;b;a] /update
+
+ a	dict of aggrs
+ b	dict of groupbys
+ c	list of constraints
+
+ select max qty,sum qty by s from sp where qty>100,s in`s1`s2
+ ?[sp;((>;`qty;100);(in;`s;enlist`s1`s2));(enlist`s)!enlist`s;`qty`qty1!((max;`qty);(sum;`qty))]
+
+ {select.. update ..} are parsed to @ and ! so there is no speed difference here.
+ ."select a by b from t where c" is slower than ."?[t;c;b;a]"
+ ?[t;c;b;a] allows you to manufacture the c, b and a.
+
+.Parse tree
+ (f;x;y)	/ ,`s for sym constant
+sym constants need to be distinguished from sym references, e.g.
+ x,3 parses to (,;`x;3)
+ x,`y parses to (,;`x;,`y)
+
+.Apply and Amend
+ @[x;y]
+ .[x;y]
+
+ @[x;y;z]	/ x[y]:z'x[y]
+ .[x;y;z]
+
+ @[x;y;z;r]	/ x[y]:x[y]z'r
+ .[x;y;z;r]
+
+ set is .[;();:;]
+
+.Operators
+Operators take functions and produce derived functions.
+ x f'y	/ eachboth
+ x f/:y	/ eachright
+ x f\:y	/ eachleft
+
+.System Commands
+ \w	workspace(used allocated max mapped)
+ \l [f]	load file (or dir:files splays parts scripts)
+ \t [x]	time expression
+ \d [d]	proc directory
+ \v [d]	variables
+ \f [d]	functions
+ \c [23 79]	console x and y
+ \C [36 2000]	webbrowser x and y
+ \cd	file directory
+ \..	o/s commands
+ \\	exit
+
+.System Variables
+ .z. f(file) x(args) a(addr) h(host) u(user) w(who) zZ(gmt/local) k(releasedate)
+ .z. pg[x](get) ps[x](set) po[h](open) pc[h](close) ph[x](http) ts[z](timer)
+We can watch open/close with	.z.po:{0N!x} .z.pc:{0N!neg x}
+
+.Clients
+Connect and make remote function calls, e.g.   (OS is s32|l32|w32)
+ http://kx.com/q/c/c.jar    c c=new c("host",port);c.k(string|{func,args..});
+ http://kx.com/q/c/c.c      int c=khp("host",port);k(c,string|{func,args..},0);
+
+ QHOME/OS>gcc ../c/c.c c.o   (-lsocket)
+ QHOME/OS>cl  ..\c\c.c c.lib
+
+No arguments is a blocking read, e.g.	Object r=c.k(); (or K r=k(c,0);)
+The language is q and location is `. no matter what the server console is doing.
+
+.Dynamic Load
+q calls c, e.g. in QHOME/OS (see c/k.h for generators and accessors)
+ >gcc -G ../c/a.c -o a.so
+ >cl /LD ..\c\a.c a.def q.lib
+ >q
+ ..
+  f:`a 2:(`f;1)
+  g:`a 2:(`g;1)
+  f 2
+  g 3
+c calls q (just like the clients) with handle 0. Also
+ sd1(d,f);	/ set callback f on socket d
+ sd0(d);	/ remove callback and close d
+.Performance
+Bottom line: vector operations are up to 100 times faster per element than scalar operations. Q scalars are similar to java Objects(Integer etc.) and .net boxed elements. Given 400MHZ 64bit bus and 1.6GHZ cpu - about .5 of fastest 2004 cpus - q operation overhead(incl. fn call,each, object create) is about 50 ns. Vector operations are between .5ns(boolean in cache) and 500ns(exp,random access) per element. So a time dominating iterative inner loop may be a candidate for writing in c.
+One technique for maintaining constant(or log) time insert and select is to store nested data, e.g.
+ t:([sym]time,price,size,..)
+ t,:select by sym from x
+ last t[`IBM;`price]
+We look for 10,000 to 100,000 inserts and selects per second.
+.Links
+Suppose f[s;t] calculates a link from table s to table t, e.g. previous quote, next quote, .. Then we can do:
+ select t[f[s;t];`a],t[f[s;t];`b] from s
+or we can precalculate the link: 
+ s:update t:`t!f[s;t]from s
+ select t.a,t.b from s
+So having the link is generally better if it will be used more than once. A link can give us the performance(or better) of denormalization with minimal extra storage.
+.Attributes
+ example		overhead
+ `s#2 2 3	sorted	0
+ `u#2 4 5	unique	16*u
+ `p#2 2 1	parted	(4*u;16*u;4*u+1)
+ `g#2 1 2	grouped	(4*u;16*u;4*u+1;4*n)
+The byte overheads use n(number of elements) and u(number of uniques). These are used by lookups, e.g.
+
+ x?v
+ .. where x = v, ..
+ .. where x in v, ..
+ .. where x within v, ..
+
+`u is for unique lists. `p and `g are for lists with a lot of repetition. `s#table marks the table to use binary search and marks first column sorted. `s#dict(incl. keyed tables) marks the dict to behave as step function. Vector and single-column table lookups run at about 200ns per lookup. 2 column lookups when the first column has an attribute are about 2us per lookup. Put the most distinguishing column first. The attribute flags are descriptive -- not prescriptive. Amends and appends preserve flags if and only if the attribute is preserved, e.g.
+ t:([]a:`s#2 3;b:4 1)
+ t,:3 4 / `s#a preserved
+ t,:2 3 / `s#a lost

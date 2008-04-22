@@ -1,0 +1,2095 @@
+Q Language Reference Manual
+Don Orth
+
+.Introduction
+This manual begins with two sections summarizing kdb+ data and functionality that is covered in this manual. The rest of the manual contains the details. 
+
+.Datatypes Summary
+
+The table below summarizes the types in kdb+. Many of them were introduced in <u>kdb+</u>, but there is more to be said. For example, you will see in the table that there are two ways to designate a type: a char and a short int. Shorts are used to functionally determine the types of objects and cast objects from one type to another. You will also see the null value for each type in the table; see <a href="#More about Nulls">More about Nulls</a> for more information.
+
+ Name	Example	Char	Type	Size	Null
+ -
+ boolean	1b	b	1	1	
+ byte	0xff	x	4	1	
+ short	23h	h	5	2	0Nh
+ int	23	i	6	4	0N
+ long	23j	j	7	8	0Nj
+ real	2.3e	e	8	4	0Ne
+ float	2.3	f	9	8	0n
+ char	"a"	c	10	1	" "
+ varchar	`ab	s	11	*	`
+ month	2003.03m	m	13	4	0Nm	
+ date	2003.03.23	d	14	4	0Nd
+ datetime	2003.03.23T08:31:53	z	15	8	0Nz
+ minute	08:31	u	17	4	0Nu
+ second	08:31:53	v	18	4	0Nv
+ time	09:10:35.000	t	19	4	0Nt
+ enum	`s$`b, where s:`a`b	*	20..	4	`s$..
+
+Varchars are interned in a hash table. An atom has a negative type value, say -n. A simple list of those atoms has type value n. For example,	`abc	is a varchar atom with datatype value	-11h	, and the simple varchar list	`abc`s	has datatype value	11h	. See <u>kdb+s</u> for the forms of other simple lists.
+
+Enumerations are familiar from <u>kdb+</u> as foreign keys. They are like atomic types, in that individual enumerated values can be atoms or simple lists, atoms have negative datatype values, and simple lists have positive values. See <a href="#Enumeration">Enumeration</a> for more.
+
+.Primitive Function Summary
+
+The table below summarizes the primitive functions discussed in this manual. Note the entry for the function Deltas; this function is just one of several defined in <a href="#Uniform Functions">Uniform Functions</a>. Unlike the Datatypes table above, this table does not include the primitive functions defined in the <u>kdb+</u> manual.
+
+Syntactically, q has verbs and functions. Verbs are primitive symbols and names that can be evaluated with infix notation, as in	a+b	. Functionally, verbs are dyadic functions that can be evaluated in the functional form f[a;b], but rarely are. For example,	+[2;3]	. The verb form of dyadic primitives is used below. Monadic primitive functions appear in the juxtaposition form of monadic function evaluation.
+
+A function expression appears more than once below if the expression defines more than one distinct function (depending on the arguments). The examples in the table are representative and do not necessarily indicate the full scope of the definitions.
+
+ Function	Example	Result	Section
+ -
+ type b	type 1 2 3	6h	Type and Cast
+ a$b (Cast)	"f"$101b or 9h$1010b	1 0 1.0	Type and Cast
+ string b	string 1.234	"1.234"	String and More Casting
+ a!b (Xkey)	(`a`b`c!10 20 30)[`b]	20	Xkey and Key
+ key b		Xkey and Key
+ a?b (Find)	`a`Bc`bc`def?`bc	2	Find
+ distinct b	distinct"xyyXyxXw"	"xyXw"	Where and Distinct
+ a^b (Fill)	100^10 0N -3 0N 5	10 100 -3 100 5	Processing Nulls
+ null b	null 10 0N -3 0N 5	01010b	Processing Nulls
+ a?b (Rand)	5?3	2 1 2 1 0	Generating Test Data with Rand
+ where b	where 1011011b	0 2 3 5 6	Where and Distinct
+ flip b	flip (1 2 3;4 5 6)	(1 4;2 5;3 6)	Tables and Flip
+ enlist b	first enlist 1 2 3	1 2 3	Enlist	
+ reverse b	reverse `a`b`c	`c`b`a	Reverse
+ deltas b	deltas 1 3 7 -5 0	1 2 4 -12 5	Uniform Functions
+ a,b (Join)	"abc","de"	"abcde"	Join
+ a#b (Take)	3#2 3 4 5 6	2 3 4	Take, Drop and Cut
+ a_b (Drop)	3_2 3 4 5 6	5 6	Take, Drop and Cut
+ a_b (Cut)	0 3_2 3 4 5 6	(2 3 4;5 6)	Take, Drop and Cut
+ a@b (Apply)	1 2 3@1 0	2 1	Verb Forms of x[...]
+ a . b (Apply)	(1 2;3 4). 1 0	3	Verb Forms of x[...]
+
+.One-Item Lists and Enlist
+
+You may have noticed that the various forms of list notation in <u>kdb+</u> do not provide a way to create a one-item list.  Creating one-item lists comes up from time to time, and there is a monadic primitive function called Enlist that does it. For example,
+
+ enlist 34.5
+
+is a one-item simple float list whose item is 34.5 If you enter this expression in a kdb+ console you will seen the following.
+
+   enlist 34.5
+ ,34.5
+
+As you can see, a one-item list is displayed with a leading comma. In general, Enlist applies to all data objects; the result for any data object is a one-item list whose item is that object. For example,
+
+   enlist(2 5;3.5 10 12)
+ ,(2 5;3.5 10 12)
+
+.Index, Index Assignment, and Amend
+
+These constructs all share the same syntactic form and the same functional form. We'll start with the syntactic form, which is denoted by square brackets ([]). Simple assignment of a value to a name with : has been used since early in the <u>kdb+</u> manual. There is also the matter of both simple assignment and index assignment within defined functions; see <a href="#Localization">Localization</a>.
+
+Indices start at 0. That is, the index of the first item of a list is 0. For example,
+
+   (`8n3;2245;-3.5)[0]	
+ `8n3	
+   A:(`8n3;2245;-3.5)	/ give the list a name for convenience
+   A[1]	
+ 2245	
+   A[2]	
+ -3.5	
+
+Lists of indices produce lists of selected items.
+
+   A[0 2 1 2 0 0]
+ (`8n3;-3.5;2245;-3.5;`8n3;`8n3)
+
+The index 0 is located at the first, fourth and fifth positions of the index list	0 2 1 2 0 0	. The 0-th item of the list A, which is `8n3, is located at the first, fourth and fifth positions of result. Similarly, the index 1 is located at the third position of the index list and A[1], or 2245, is located at the third position of the result. Likewise for the index 2.
+
+We say that the result is congruent to the index. In general, the index and result are conforming lists in the sense of atom functions. That is, the structures of the two match up in certain ways. Congruency means that equal values in the index correspond to equal values in the result (but not necessarily vice versa). 
+
+Congruency applies to any index list, not just to simple lists. For example,
+
+   B:`x`y`z
+   B[(0 1 2;2 2;0 0 1)]
+ (`x`y`z;`z`z;`x`x`y)
+
+The index list	(0 1 2;2 2;0 0 1)	and the result	(`x`y`z;`z`z;`x`x`y)	are congruent, as before.
+
+Index assignment replaces specified items of a list with new values. For example,
+
+   A	/ show A's value (assigned above)
+ (`8n3;2245;-3.5)	
+   A[0]:("asdq";2 3 4)	/ an item can be replaced with any data value
+   _	
+Assignment results are not displayed; the cursor (blinking _) is waiting for the next input.
+   A	/ show A's new value
+ (("asdq";2 3 4);2245;-3.5)	
+   A[2 0]:(`a`b`c;173.45)	/ multiple items can be replaced in any order
+   A	
+ (173.45;2245;`a`b`c)	
+
+Index assignment into simple lists is strict with regard to the type of the new value. The replacement atoms must have the same datatype as those that are replaced. For example,
+
+   v:`x`y`z	
+   v[2 0]:`a`b	
+   v	
+ `b`y`a	
+   w:10 2.5 0 -8.34	
+   w[2]:5	/ replace an item of a simple float list with an int	
+A type error is reported in the console  
+   w[2]:5.0	/ replacing an item with another float atom is permitted 
+   w	
+ 10 2.5 5 -8.3	
+
+Duplicate indices are permitted. For example,
+
+   s:3 -2 5 -6
+   s[0 1 0 2]:10 20 30 40
+   s
+ 30 20 40 -6
+
+The replacement rule for a simple list of indices (0 1 0 2 in this case) is that the indices and corresponding values are used in index order. That is, the following individual steps give the same result as above.
+
+   s:3 -2 5 -6
+   v:10 20 30 40
+   i:0 1 0 2
+   s[i 0]:v[0]	
+   s[i 1]:v[1]
+   s[i 2]:v[2]
+   s[i 3]:v[3]
+   s
+ 30 20 40 -6 
+
+Finally, you can replace multiple items with a single atomic value.
+
+   x:1010101010b
+   x[1 3 5 7 9]:1b
+   x
+ 1111111111b
+
+The result of index assignment is the value to the right of the colon, not the new value of the identifier. For example,
+
+   b:8 -3 5 
+   10+b[2]:7 
+ 17
+
+If the result of the assignment was the new value of b, which is	8 -3 7	, then the result of	10+b[2]:7	 would be  18 7 17	.
+
+..Amend
+Items of a list can be modified with a combination of indexing and index assignment. For example,
+
+   s:3 20 -4 10
+   s[0 2]:s[0 2]+100
+   s
+ 103 20 96 10
+
+This can also be expressed more compactly, and often executed more efficiently, as follows.  
+
+   s:3 20 -4 10
+   s[0 2]+:100
+   s
+ 103 20 96 10
+
+The value of the right does not have to be an atom. The rule is that the value on the right must conform to the index of the left, in the way of atom functions. 
+
+   s:3 20 -4 10
+   s[0 2]+:100 1000
+   s
+ 103 20 996 10
+
+As before, modifying simple lists is strict; the new items must be the same type as the old.
+
+   s:3 20 -4 10	
+   s[0 2]+:100h	/ causes a type error	
+
+Any dyadic primitive atom function can be used in place of +.
+
+..Indexing and Function Evaluation
+
+The syntactic forms for function evaluation use square brackets in the same way as indexing. For example,
+
+   sum[1 2 3 4]
+ 10
+
+Indexing and function evaluation are closely related. In fact, indexing is a form of function evaluation. For example, the following list of three items,
+
+   m:(1 2;`w`y;3.7) 
+
+denotes a function whose range consists of the three items	 1 2	,	`w`y	, and 3.7, and whose domain is the three indices 0, 1 and 2.
+
+The basic form for evaluating a function f with two arguments is	f[a;b]	. Functions with 3 arguments are evaluated by	f[a;b;c]	,etc.
+
+Indexing of the forms	m[i;j]	,	m[i;j;k]	, etc. are also defined, as well as the corresponding forms of Amend. These index forms are often called indexing at depth because they select items of items, or items of items of items, etc. In that regard the form	m[i]	is called item indexing. However, unless it necessary to distinguish indexing at depth from item indexing, both types are simply called indexing. The individual indices such as i and j in	m[i;j]	can be as general as those described above for item indexing.
+
+Functions with no arguments are evaluated by	f[].	Analogously, indexing of the form	m[]	is defined and is identical to the value of m. For example,
+
+   m
+ (1 2;`w`y;3.70)
+   m[]
+ (1 2;`w`y;3.70)  
+
+..Indexing at Depth
+The following list has several levels. Example results may be displayed on multiple lines to aid comparisons with the indices that created them.
+
+   d:((1 2 3;4 5 6 7);(8 9;10;11 12);(13 14;15 16 17 18;19 20))
+You can select a top-level item, as in
+   d[1]		/ select item 1
+ (8 9;10;11 12)
+You can select an item of an item and an item of an item of an item.
+   d[1;2]	/ select item 2 of item 1
+ 11 12
+   d[1;2;0]	/ select item 0 of item 2 of item 1
+ 11
+
+If the indices are lists then the result is a cross-section of d.  
+
+   d[2 0;0 1]	
+ ((13 14	/ item 0 of item 2
+   15 16 17 18)	/ item 1 of item 2
+  (1 2 3	/ item 0 of item 0
+   4 5 6 7))	/ item 1 of item 0
+
+Note that the selected items are arranged in the result in the same order as the atoms in (2 0;0 1). There is no limit on the structure of the indices.
+
+...Elided Indices
+An example of an elided index is the item index expression d[]. There are more interesting situations when indices in an index at depth expression are elided. For example, d[;0] denotes the 0th item of each item of d.
+
+   d[;0]	
+ (1 2 3	/ item 0 of item 0
+  8 9	/ item 0 of item 1
+  13 14)	/ item 0 of item 2
+
+The situation is more complicated when an index other than the top-level index is elided. For example, in d[0 2;;1 0] , the elided index corresponds to 0 1 when indexing d[0], but to 0 1 2 when indexing d[1].
+
+   d[0 2;;1 0]	
+ ((2 1	/ items 1 and 0 of item 0 of item 0 
+   5 4)	/ items 1 and 0 of item 1 of item 0
+  (14 13	/ items 1 and 0 of item 0 of item 2
+   16 15	/ items 1 and 0 of item 1 of item 2
+   20 19))	/ items 1 and 0 of item 2 of item 2
+
+...Elided Function Arguments
+Function arguments can also be elided, as in f[a;;b]. The result is another function, monadic in this case; see <a href="#Projections">Projections</a> for more.
+
+..Juxtaposition
+Function evaluation in <u>kdb+</u> is commonly done with juxtaposition, as in	sum 1 2 3 4	for 	sum[1 2 3 4]	. Juxtaposition can also be used for indexing. For example,
+   m 0 
+ 1 2 
+   m 0 2 
+ (1 2;3.7)
+
+The <u>kdb+</u> manual contains instances of function evaluation that uses square brackets and juxtaposition simultaneously, for example
+
+   insert[`t](`a;1;4.56)
+
+The insert function is dyadic. The first argument (the one on the left) the name of a table. The second is a list of data items to be appended to the table as a new row. This function can be evaluated with square brackets as follows:
+
+   insert[`t;(`a;1;4.56)]
+
+The expression	insert[`t]	denotes the monadic function formed from the dyadic insert function by fixing the first argument. The argument to that monadic function is the right argument of insert. Since monadic functions can be evaluated by juxtaposition, we arrive at the above evaluation expression,	insert[`t](`a;1;4.56)	. See <a href="#Projections">Projections</a> for more. 
+
+..Verb Forms for x[...]
+
+All indexing and function application can be done with the verb denoted by Dot. Here are some examples from earlier in this section.
+
+   d:((1 2 3;4 5 6 7);(8 9;10;11 12);(13 14;15 16 17 18;19 20))
+
+   d . 1 2	/ same as d[1;2]
+ 11 12	
+   d . 1 2 0	/ same as d[1;2;0]
+ 11	
+   d . enlist 1	/ same as d[1]
+ (8 9;10;11 12)
+
+You can see from the examples that the ith item in the index selects from the ith level of the list. You can also see that to index at the top level only, you must use a one-item list. For convenience, there is another verb denoted by @ for indexing at the top level only. For example,
+
+   d@1	
+ (8 9;10;11 12)	
+   d@1 2	/ selects 2 items at the top level
+ ((8 9;10;11 12);(13 14;15 16 17 18;19 20))	
+
+Analogously, a function f with three arguments a, b and c can be evaluated by	f .(a;b;c)	and a monadic function g with argument d can be evaluated by	g@d	or	g . enlist d	. Functions with no arguments require special handling. For example, if f:{2+3} then f can be evaluated with @ and any argument or with Dot and any atomic argument. In these manuals we always use @ and the atomic argument 0.
+
+   f:{2+3}  
+   f[]
+ 5
+   f@0
+ 5
+
+Dot is particularly useful when executing functions of varying valence (argument count) under program control. Both Dot and @ are referred to as Index or Apply, depending on the context. 
+
+...Functional Forms of Amend
+There are functional forms of Amend based on @ and Dot. The @ form,	@[d;i;f;y]	is analogous to	d[i]f:y	and 	@[d;i;:;y]	is analogous to 	d[i]:y	. Repeating an example from above,
+
+   s:3 20 -4 10
+   @[s;0 2;:;5 6]
+ 5 20 6 10
+   @[s;0 2;+;100]
+ 103 20 96 10
+
+Unlike the bracket form of Amend, s is not modified; the result is a copy of s with the specified modifications. This form of Amend is more like select and update expressions. And like select and update, the modifications are applied directly to s if the first argument is `s.
+
+   @[`s;0 2;+;100]
+ `s
+   s
+ 103 20 96 10
+
+The functional form is also more general than the bracket form because the function f can be any dyadic function, not only primitive atom functions.
+
+The functional form using dot is	.[d;i;f;y]	. The difference is that a list i represents indexing at depth. For example,
+
+   s:(1 3 -5;"xyzw")	
+   s[0;2]+:3	/ the bracket form
+   s	
+ (1 3 -2;"xyzw")	
+   s:(1 3 -5;"xyzw")	/ initialize s again
+   .[s;0 2;+;3]	/ Dot Amend
+ (1 3 -2;"xyzw")	
+   .[`s;0 2;+;3]	/ update s
+ `s
+   s
+ (1 3 -2;"xyzw")
+
+.Uniform Functions
+
+Uniform functions extend the concept of atom functions. Like an atom function, a uniform function applies to lists, and the count of the argument list equals the count of the corresponding result list. Unlike an atom function, an item of a uniform function result is not solely dependent on the corresponding item of the argument. The relationship between the argument and result is more general. A typical example is the function named sums. Let's look at an example.
+
+   sums 1 2 3 -4 5
+ 1.00 3.00 6.00 2.00 7.00
+
+This function is also called Running Sums. The relationship of result items to an argument list is that the nth result item is the sum of the first n items of the argument. For example, the third item, 6.00, is the sum of the first three items of the argument. Similarly, the fourth result item, 2.00, is the sum of the first four items of the argument.
+
+Another example is the deltas function, which produces the differences of neighboring items in its argument. For example, 
+
+   deltas 4 9 -5 1 2
+ 4 5 -14 6 1
+
+The ith item of the result of	deltas v	is	v[i]-v[i-1]	for i greater than 0. Note that the first item of the result is identical to the first item of the argument.  
+
+..Primitive Uniform Function Summary
+
+ Function	Source	Example	Result
+ -
+ sums	+	sums 1 2 3 -4 5	1.00 3.00 6.00 2.00 7.00
+ deltas	-	deltas 1 2 3 -4 5	1 1 1 -7 9
+ prds	*	prds 1 2 3 -4 5	1.00 2.00 6.00 -24.00 -120.00
+ ratios	%	ratios 1 2 3 -4 5	1.00 2.00 1.50 -1.33 -1.25
+ mins	&	mins 1 2 3 -4 5	1 1 1 -4 -4
+ maxs	|	maxs 1 2 3 -4 5	1 2 3 3 5
+
+.Aggregation in Update Expressions
+
+In SQL, update statements modify existing tables. This is also true in q, but q has also extended the traditional definition to include the creation of new columns. It also permits update expressions to produce new tables instead of modifying the source tables in place. In effect, update expressions are an alternative form of select expressions. Here is an example comparing an aggregation within a select expression to an aggregation within an update expression.
+
+   select ap:avg price by sym from trade
+
+ sym	ap 
+ -
+ aaa	74.44 
+ ccc	88.75 
+ dd	81.00 
+ xx	71.63 
+ yyyy	73.25 
+
+   update ap:avg price by sym from trade
+
+ time	sym	price	size	ap 
+ -
+ 09:30:01.000	xx	59.25	1900	71.63 
+ 09:30:01.000	aaa	53.75	1200	74.44 
+ 09:30:02.000	dd	81.00	1600	81.00 
+ 09:30:02.000	aaa	96.25	2200	74.44 
+ 09:30:02.000	ccc	93.25	2100	88.75 
+ 09:30:03.000	aaa	58.25	1000	74.44 
+ 09:30:03.000	yyyy	73.25	2300	73.25 
+ 09:30:04.000	aaa	89.50	1400	74.44 
+ 09:30:04.000	xx	84.00	2200	71.63 
+ 09:30:05.000	ccc	84.25	1500	88.75 
+
+If you compare the ap columns of the two results you will see that the aggregations in the select result are distributed in the aggregation column of the update result according to the sym column. For example, the aggregation value for `aaa, which is 74.44, appears in every row of the update result where the sym value is `aaa.
+
+Update expressions that include aggregations are called update aggregations, or update-by expressions.
+
+Uniform functions are effective in update aggregations because of the way aggregation results are distributed. For example, the following aggregation computes the percent change in prices for each sym.
+
+   update pct:100*(deltas price)%price by sym from trade 
+
+ time	sym	price	size	pct 
+ -
+ 09:30:01.000	xx	59.25	1900	100.00 
+ 09:30:01.000	aaa	53.75	1200	100.00 
+ 09:30:02.000	dd	81.00	1600	100.00 
+ 09:30:02.000	aaa	96.25	2200	44.16 
+ 09:30:02.000	ccc	93.25	2100	100.00 
+ 09:30:03.000	aaa	58.25	1000	-65.24 
+ 09:30:03.000	yyyy	73.25	2300	100.00 
+ 09:30:04.000	aaa	89.50	1400	34.92 
+ 09:30:04.000	xx	84.00	2200	29.46 
+ 09:30:05.000	ccc	84.25	1500	-10.68 
+
+The pct value for the first or only occurrence of a sym is 100.00. Otherwise, for example, the value of pct in the fourth row is the percent change of the prices of the sym `aaa in the second and fourth rows. 
+
+.More about Nulls
+..Nulls and Out-of-Range Indexing
+
+Null values are used in tables to represent missing values. Some null values are exceptional values, such as the IEEE Nan for floats. Others are actual values, such as 0b for bools. Nulls for all datatypes can be found in <a href="#Datatypes Summary">Datatypes Summary</a>. Indexing a list with an out-of-range index produces the null value for the datatype of the list. For example,
+
+   1 -2 12h[3]
+ 0Nh
+
+..Processing Nulls
+
+There are two primitive functions for processing null values. The dyadic function ^(fill) replaces null values in the right argument with the atomic left argument. For example,
+
+   0^1 2 3 0N
+ 1 2 3 0
+   100^1 2 -5 0N 10 0N
+ 1 2 -5 100 10 100
+   1.0^1.2 -4.5 0n 0n 15
+ 1.20 -4.50 1.00 1.00 15.00
+   `nobody^`tom`dick``harry
+ `tom`dick`nobody`harry
+
+Integer left arguments are promoted when the right argument is float or real. For example,
+
+   10^1 2 3 0n 4.5 0n
+ 1.00 2.00 3.00 10.00 4.50 10.00
+
+The monadic function	null	is an atomic function whose result has the same structure as the argument, with each atom replaced by 1b if the atom is a null, or 0b otherwise. For example,
+
+   null 1 2 3 0N
+ 0001b
+   null 1 2 -5 0N 10 0N
+ 000101b
+   null 1.2 -4.5 0n 0n 15
+ 00110b
+   null `tom`dick``harry
+ 0010b
+
+This function is useful when replacing null values in a way other than that defined by Fill. For example, suppose you want to replace the null values with their previous values. The Where function (<a href="#Where and Distinct">Where and Distinct</a>), used with Null, gives the indices of the null values.
+
+   where null 1 2 3 0n 4.5 0n
+ 3 5
+
+The replacement can then be done as follows:
+
+   v:1 2 3 0n 4.5 0n
+   v -1+where null v
+ 3.00 4.50
+   v[i]:v -1+i:where null v
+   v
+ 1.00 2.00 3.00 3.00 4.50 4.50
+
+There are two cases not handled by this expression. The first case is when the first item in v is null, and the second is when there are successive null values. The first case must be handled separately, depending on circumstances. For example, if you know the simple list will always be a float list and that a null first item should be replaced with 0.0, then the following expression will do.
+
+   if[null first v;v[0]:0.0]
+
+See <a href="#Associations, Xkey, Key and Value">Associations, Xkey, Key and Value</a> for a more general example. The second case can be handled in a While loop or with the kdb+ construct called Over (see <a href="#Over for Monadic">Over for Monadic</a>). The while loop is used here. Let's first do all the iterative steps explicitly. 
+
+   f:{r:x;r[i]:r[-1+i:where null r];r}	
+   v:10 -3.1 0n 0.1 0n 0n 0n 3.4	
+   v:f v	/ fill the nulls
+   v	
+ 10.00 -3.10 -3.10 0.10 0.10 0n 0n 3.40	
+   v:f v	/ fill the null
+   v	
+ 10.00 -3.10 -3.10 0.10 0.10 0.10 0n 3.40	
+   v:f v	/ fill the last null
+   v	
+ 10.00 -3.10 -3.10 0.10 0.10 0.10 0.10 3.40	
+
+The test we need for a While statement is whether or not any item of v is a null; if so, another pass through the loop must be made. Again, if we know that the simple list is a float list, then the test can be done with
+
+  0n in v
+
+(Also see <a href="#While Statements">While Statements</a> for a more general test). Here is the While statement.
+
+   v:10 -3.1 0n 0.1 0n 0n 0n 3.4	/ reset v
+   while[0n in v;v:f v]
+   v
+ 10.00 -3.10 -3.10 0.10 0.10 0.10 0.10 3.40
+ 
+.Type and Cast
+
+The Type function is a monadic function that gives the numeric datatype value of its argument ( see the Datatype Value column of the table in <A href="#Datatypes Summary">Datatypes Summary</A>). For example,
+
+   type 100
+ -6h	/ an int atom
+   type 0.4 -2 10.76e
+ 8h	/ a simple real list 
+   type(`a;2h;3 4)
+ 0h	/ a list of mixed types
+
+Note that values of the Type function are shorts. These examples illustrate a general rule. For datatypes that come as both atoms and simple lists, the type value of an atom is the negative of the type value for a simple list.
+
+Cast (	a$b	) is a dyadic primitive that converts the atom b to the type specified by the atom a. We begin with the case in which the left argument a is one of the values in the Datatype Name column of the table in <A href="#Datatypes Summary">Datatypes Summary</A>. For example,
+
+   "x"$97	/ cast the int 97 using the datatype name x for a byte
+ 0x61	
+   "x"$"a"	/ cast a char to a byte
+ 0x61	
+   "c"$0x41	/ cast a byte to a char 
+ "A"	
+   "d"$2003.03.23T08:31:53	/ extract the date from a datetime value
+ 2003.03.23	
+   "t"$2003.03.23T08:31:53	/ extract the time from a datetime value
+ 08:31:53.000	
+
+We saw in <a href="kdb+.htm#Temporal Arithmetic and Comparison Functions">Temporal Arithmetic and Comparison Functions</a> that an int d, representing a day count, can be added to a date to give the date d days ahead or -d days previous. The concept of a day count is also associated with a date. For example, casting a date as an int gives the day count for that date; casting an int as a date gives the date for that day count.
+
+   "i"$2003.03.23
+ 1177
+   "d"$1177
+ 2003.03.23
+   "d"$0
+ 2000.01.01
+
+Cast is an atomic function. For example,
+
+   "x"$(0 100 200;255)
+(0x0064c8;0xff)
+
+The positive value of the Type Value column of the table in <A href="#Datatypes Summary">Datatypes Summary</A> can also be used as a left argument to Cast. For example,
+
+   6$1 -4.2 3.78
+ 1 -5 3
+   8$1b
+ 1.00e
+
+The negative type values for atoms is not used in Cast.
+
+..Creating Varchars
+
+Casting simple char lists to varchars is a very important operation. It is used, for example, for importing text (varchar) data into tables. There is a special case of Cast that does it, where the left argument is the empty sym `. For example,
+
+   `$"varchar"
+ `varchar    
+   `$("varchar0";"varchar1";"etc")
+ `varchar0`varchar1`etc
+
+This form of Cast applies to right argument lists differently than the forms in the preceding section. Those forms, with left argument "x" or "d" or 6, apply independently to all atoms in the right argument, giving an atom result for each one. However, when the left argument is `, Cast applies independently to all simple char lists in the right argument, giving an atom for each one.
+
+Note that, as these examples show, all varchars are displayed in the console with back-quote followed by the varchar's contents.
+
+..Casting with Computed Types
+
+Casting with datatype values is particularly useful when associated with computed type values. For example, replacing an item in a simple list is strict, in that the datatype of the replacement value (short, float, etc.) must be the same as the simple list. There may be situations in which more latitude can be allowed. For example, if a simple list has type int, a replacement of type boolean, byte, short or int may be acceptable. A general expression that accepts all such values is	c[i]:(type c)$d	, which casts the replacement value d to the datatype of c. For example,  
+
+   c:10 345 -20 11
+   c[2]:(type c)$0xab
+   c[0]:(type c)$23h
+   c
+ 23 345 171 11
+
+We'll continue this example in <a href="#Protected Evaluation">Protected Evaluation</a>.
+
+..String and More Casting
+...Extracting Data from Text
+
+kdb+ provides primitive functions for extracting data from text files, but sometimes you have to do it yourself. A text file is read into the workspace as a list of simple char lists. The simple char lists are processed by partitioning them into smaller lists containing the text of individual values. If the values can be extracted with a special form of casting. For example,
+
+   "S"$"abc012"	/ extract a symbol
+ `abc012	
+   type "S"$"abc012"	/ check the type of the result
+ -11h	/ a varchar atom
+
+Note in this example that the left argument of Cast is upper case "S" instead of the lower case type name "s". Other conversions can also be done this way.
+
+   "I"$"271828"
+ 271828
+   "D"$"2003.03.23"
+ 2003.03.23
+
+Casting with "D" will also extract dates in other standard formats.  
+
+   "D"$"2003-03-23"
+ 2003.03.23
+   "D"$"03/23/2003"
+ 2003.03.23
+   "D"$"03/23/03"
+ 2003.03.23
+
+..Creating Text from Data
+
+The primitive function named String produces simple char lists from atomic data. For example,
+
+   string 345
+ "345"
+   string`xyz
+ "xyz"
+   string 23h
+ "23"
+   string 4294967296j
+ "4294967296"
+
+This function is used to produce char strings for display or export to text files. Consequently, the results contain none of the special notation that distinguishes types in q. For instance, in the above examples the resulting string for the short 23h drops the type name "h". So does the result for long value 4294967296j. You must use Cast with the appropriate left argument to retrieve the q values. For example,
+
+   string 4294967296j
+ "4294967296"
+   "J"$"4294967296"
+ 4294967296j
+
+Like an atom function, the string function applies independently to every atom in a list argument. However, unlike an atom function, the result when applied to an atom is a simple char list, not an atom. For example,
+
+   string(5;23h;`a`uvw`xz)
+ (,"5";"23";(,"a";"uvw";"xz"))
+
+Note that the result of 	string 5	and	string`a 	are the one-item simple lists 	,5	and	,"a"	, respectively; see <a href="#One-Item Lists and Enlist">One-Item Lists and Enlist</a>.
+
+.Join
+The join of two data objects a and b is denoted by a,b. Any two atoms or lists can be joined (concatenated). For example,
+
+   1 2 3,4
+ 1 2 3 4
+   1 2,3 4
+ 1 2 3 4
+   (0;1 2.5;01b),(`a;"abc")
+ (0;1.00 2.50;01b;`a;"abc")
+
+Join provides another important example of <A href="#Casting With Computed Types">Casting with Computed Types</A>. When two simple lists are joined, or an atom and a simple list, the result is a general list unless the types of the two operands are the same. For example,
+
+   1 2.4 5,-7.9 10	
+ 1.00 2.40 5.00 -7.90 10.00	/ both operands are simple float lists
+   1 2.4 5,-7.9	
+ 1.00 2.40 5.00 -7.90	/ one is a simple float list, the other a float atom
+   1 2.4 5, -7.9 10e	
+ (1.00;2.40;5.00;-7.90e;10.00e)	/ one is float, the other real.
+
+As when replacing items in a simple list, there may be situations in which more latitude is required. For example, if the left argument is a simple short list then a right argument of type int, boolean or byte may also be acceptable .
+
+   v:1 2.34 -567.1 20e	
+   v,(type v)$789	/ cast an int to a real
+ 1.00 2.34 -567.10 20.00 789.00e	
+   v,(type v)$1b	/ cast a boolean to a real
+ 1.00 2.34 -567.10 20.00 1.00e
+   v,(type v)$0xab
+ 1.00 2.34 -567.10 20.00 171.00e
+
+Tables can be joined.
+   t:([]a:1 2 3;b:`a`b`c)
+   s:([]a:10 11;b:`d`e)
+
+   t,s	
+ a	b
+ -
+ 1	a
+ 2	b
+ 3	c
+ 10	d
+ 11	e
+
+Tables can be joined sideways, i.e. each record to each record.
+   r:([]c:10 20 30;d:1.2 3.4 5.6)
+
+   t,'r
+ a	b	c	d
+ -
+ 1	a	10	1.20
+ 2	b	20	3.40
+ 3	c	30	5.60
+
+
+Join for key tables is strict; both the key and data columns must match in names and datatypes.
+
+.Enumeration
+
+The process of enumeration is a form of cast. The general form is
+
+ `d$v
+
+where d is the name of an existing data object. There are two possibilities for d, either a key table or a simple list of unique symbols. The object v is either an atom whose value is a key value or item of d, respectively, or a list of those atoms. We say that the projection	`d$	is an enumeration, d is an enumeration domain, and	`d$v	is an enumerated value.
+
+If `d names a key table then the enumeration defines a foreign key of that table.
+
+Individual enumerations are distinguished datatypes. Datatype values are assigned in the order in which the enumerations are defined, starting at +-20. (As for the primitive atomic types, an enumerated atom has a negative datatype value and an enumerated simple list has a positive datatype value. For example,
+
+   s:`a`b`c	
+   t:`a`e	
+   e:`s$	/ enumeration of s is defined first
+   f:`t$	
+   type e `b	/ e has type +-20
+ -20h	
+   type e `b`a	
+ 20h
+   type f `a	/ f has type +-21
+ -21h	
+   type f `a`e`a	
+ 21h	
+
+If another enumeration is subsequently defined it will have datatype value +-22, and so on.
+
+Enumerating simple varchar lists with large item counts and relatively few distinct items is an important optimization technique. Kdb+ data is self-describing. For example, a simple int list is stored as a few bytes of descriptive information followed by the int atoms in a contiguous array. When saved to disk this list has essentially the same format. When read from disk it is simply mapped into memory, a nearly instantaneous operation.
+
+Varchars are different because their contents are text, which means that their storage requirements vary. When a simple varchar list is saved to disk, the contents of its items are written end-to-end. When read from disk the individual varchar atoms are recreated. This is not a problem when files are seldom read, say only when an application is initialized. But select expressions can be applied directly to stored tables, which can cause performance problems due to repeated creation of the varchar atoms in varchar columns.      
+
+The performance problem is overcome by enumerating varchar columns; a column c would be replaced by the enumeration
+
+   `u$c
+
+where u is a list of the unique items in c, e.g.	distinct c	. For example,
+
+   c:`c`b`c`c`a`b`a`a`c`c`c`b`c`b`a	
+   u:distinct c	/ the distinct items of c
+   e:`u$c	/ e is the enumeration of c on u
+   e	/ view the console display
+ `u$`c`b`c`c`a`b`a`a`c`c`c`b`c`b`a	
+   k:0 1 0 0 2 1 2 2 0 0 0 1 0 1 2	/ k is the list of indices 
+   c~u[k]	/ c is identical to u[k]
+ 1b	
+   e[9 3 11]	/ select from e; e is a list because c is a list
+ `u$`c`c`b	/ the result is also an enumeration
+   u[k[9 3 11]]	
+ `c`c`b	
+   c[9 3 11]	
+ `c`c`b	
+
+Enumerated values can be used in the same ways as non-enumerated ones. For example, compare the following results for c and e.
+
+   c=`a
+ 000010110000001b
+   e=`a
+ 000010110000001b
+   c in `a`b
+ 010011110001011b
+   e in `a`b
+ 010011110001011b
+
+Internally, an enumerated value is a pair of objects, the name of the domain, say `d, and an int list k of indices into d; the enumerated value is identical to	d[k]	. When an enumerated value is written to a file, the name of the domain and the index list k are actually written. For simple varchar lists, k is a simple int list. As a result, reading a file of an enumerated simple varchar list is nearly instantaneous. Note the domain d, which is not written to disk with the enumerated value, must be present in the workspace when the file is read.
+
+.Associations, Xkey, Key and Value
+
+Associations are the only primitive datatype that has no syntactic form; associations are created with the primitive dyadic function denoted by ! and called Xkey. Associations are associative lists; the items of the left argument to Xkey are the indices, or keys, and the items of the right argument are the values. The left and right arguments must have the same length. The arguments can be any lists, although duplicate items in left argument lists are ineffective. An association whose left argument is a simple varchar list is called a dictionary. See <a href="#More about Tables">More about Tables</a> for the relationships between tables and dictionaries.
+
+For example, the following associations relate type values to type names.
+
+   n2v:"csif"!10 11 6 9h	/ type values associated with type names
+   n2v["i"]	/ select an item
+ 6h	
+   n2v["sf"]	/ select multiple items
+ 11 9h	
+   v2n:10 11 6 9h!"csif"	/ type names associated with type values 
+   v2n[9 6h]	
+ "fi"
+
+An example in <a href="#Processing Nulls">Processing Nulls</a> uses the following expression to replace a leading null with another value. The example assumes that v is a simple float list.
+
+ if[null first v;v[0]:0.0]
+
+Associations provide an easy way to extend this expression to handle more than one datatype. For example, the following association provides initial values for simple lists of type char, varchar, int and float.
+
+   iv:10 11 6 9h!("f";`first;0;0.0)
+
+The replacement expression then becomes
+
+ if[null first v;v[0]:iv type v]  
+
+which applies to simple lists of those four types. For example,
+
+   v:``a`c`h
+   if[null first v;v[0]:iv type v]
+   v
+ `first`a`c`h
+
+This association is easily extended to apply to all lists.  
+
+The Key function gives a list of the keys and the Value function gives a list of the values, in the same order as the keys. For example,
+
+   key n2v
+ "csif"
+   value n2v
+ 10 11 6 9
+
+The following association has a duplicate key (3).
+
+   d:1 2 3 4 3 5!`a`b`c`d`e`f
+
+The first value item keyed by 3 (`c) is accessible by key indexing; the other one (`e) is not.
+   d[3]
+ `c
+
+The following example illustrates indexing at depth in associations.
+
+   d:`a`0x`dc`ch!(1; 2 3.5 7;`a;"xyz")	/ d is a dictionary
+   d[`a]	/ select individual values
+ 1	
+   d[`0x]	
+ 2 3.5 7	/ this value item is a list
+   d[`0x][1]	/ select an item of this value item
+ 3.5	
+   d[`0x;1]	/ another way to do it 
+ 3.5	
+   d[`0x`ch`a`ch]	/ select a list of value items
+ (2 3.5 7;"xyz";1;"xyz")	
+   d[`0x`ch;1 0 0]	/ select items from each value in a list
+ (3.5 2 2;"yxx")	 
+
+The result of selecting the value of an association for a non-existent key is the null of the value list. For example,
+
+   n2v["X"]
+ 0N
+   v2n[0]
+ " "
+   d[`abc]
+ ()
+
+Here are examples of primitive functions applied to associations.   
+
+   count d	/ the number of items of d
+ 4	  
+   value d	/ the value list of d 
+ (1;2.00 3.50 7.00;`a;"xyz")	
+   key d	/ the key list of d
+ `a`0x`dc`ch	
+   string d	/ string applies to all the values
+
+ `a`0x`dc`ch!(,"1";("2.00";"3.50";"7.00");,"a";(,"x";,"y";,"z"))
+
+Unlike non-associative lists, new items can be appended to an association with indexing. For example, the byte datatype can be added to the n2v and v2n associations as follows.
+
+   v2n[4]:"x"
+   n2v["x"]:4
+   v2n
+ 10 11 6 9 4!"csifx"
+   n2v
+ "csifx"!10 11 6 9 4
+
+Note that, as with other datatypes, the console display of an association is an executable form from which the data can be recreated.
+
+The Til function also applies to a positive integer n, giving the simple list of all ints from 0 to n-1, in order. In particular, if n is the count of a list then	til n	contains all indices of that list. For example, 
+
+   til count (1;2.00 3.50 7.00;`a;"xyz")
+ 0 1 2 3
+
+..Dictionaries and Tables
+This section deals with the relationships between dictionaries and tables. We start with the fact that tables are lists of dictionaries, which in this context are called records.
+
+...A Table is a List of Dictionaries
+
+The dictionaries that make up a table are called records. Since tables are lists, structural primitives such as indexing apply to them. Here are some examples.
+
+   trade[5] / any record (row) with an atom index
+ `time`sym`price`size!(09:30:03.000;`aaa;58.25;1000)	
+   first trade / the first row, as a record
+ `time`sym`price`size!(09:30:01.000;`xx;59.25;1900)
+   trade[0] / this also gives the first row
+ `time`sym`price`size!(09:30:01.000;`xx;59.25;1900)	
+   count trade / the number of rows
+ 10	
+An out-of-range index gives a record of the null values for each column. For example,
+   trade[10]
+ `time`sym`price`size!(0Nt;`;0n;0N)	
+Indexing at depth applies to tables
+   trade[5][`sym]	/ the value of the sym column for row 5
+ `aaa	
+   trade[5;`sym]	/ another way
+ `aaa
+A simple list of indices gives a sub-table.
+   trade[0 5]
+ +`time`sym`price`size!(09:30:01.000 09:30:03.000;`xx`xx;59.25 84.00;1900 2200)	
+
+The last line shows the console display of a table, as well as the functional form for defining tables. We are now in a position to discuss this form.
+
+...A Table is the Flip of a Dictionary
+
+In the last result display in the previous section, you can see that everything to the right of the leading + is the definition of a dictionary. That dictionary has the column names of the trade table as its keys and the contents of the columns as its value list.
+The leading + denotes the Flip function, or transpose. In this manual we use the Flip function to create tables, not +.
+
+....Flip
+Flip is a monadic primitive that applies to lists and associations. The effect is to interchange the top two levels of it argument. That is, if	c:flip b	then	b[i][j]	and	c[j][i]	are identical for all valid indices i and j. In particular, all items of b must have the same count in order that b can be flipped. For example,
+
+   b:((1;2 3);(4 5 6;7);(8;9 10 11 12))
+
+Each item of b has 2 items, and therefore can be flipped.
+
+   c:flip b
+   c
+ ((1;4 5 6;8);(2 3;7;9 10 11 12))
+   b[1][0]
+ 4 5 6
+   c[0][1]
+ 4 5 6
+
+The list c has 2 items because each item of b has 2 items; each item of c has 3 items because b has three items. 
+
+Note that if you apply flip twice in succession you get back where you started, which means that the flip of a table is a dictionary. For example,
+
+   t:trade
+   d:flip trade
+   d
+ `time`sym`price`size!(09:30:01.000 09:30:03.000;`xx`aaa;59.25 58.25;1900 1000)
+
+Since d is a dictionary it can be indexed with items from its key list. In particular,
+
+   d[`sym]
+ `xx`aaa`dd`aaa`ccc`xx`aaa`yyyy`aaa`ccc
+
+Equivalently, 
+
+   d[`sym;]
+
+Since d is the flip of trade, we can use the same indices of trade, but reversed.
+
+   trade[;`sym]
+ `xx`aaa`dd`aaa`ccc`xx`aaa`yyyy`aaa`ccc
+
+...Creating Tables
+When creating a table in <u>kdb+</u>, we used the syntactic form to initialize the table with empty columns and then populated it with applications of the insert function. For example,
+
+   t:([]a:();b:())          
+   insert[`t](`a;10.70)      
+   insert[`t](`b;-5.6)      
+   insert[`t](`c;21.73)
+
+We followed that path because it is the one used in SQL, but we could also have initialized and populated a table at the same time, as follows.
+
+   t:([]a:`a`b`c;b:10.70 -5.60 21.73)
+
+Even so, this is usually done only for small tables. Large amounts of data are often read from files and organized in lists. For example, the data for the table t might have been created as a list,
+
+   d:(`a`b`c;10.70 -5.60 21.73)   
+
+from which t would be created with
+
+   t:flip`a`b!d
+
+Of course this can also be done syntactically with
+
+   ([]a:d 0;b:d 1)
+ +`a`b!(`a`b`c;10.70 -5.60 21.73)
+
+One last point: even though a table is the flip of a dictionary, the flip is never carried out. In particular, if the value items of the dictionary are simple lists, so are the columns of the table. There is some indication of this in the console displays. The console display of a flipped list shows the effect of the flip, while the console display of a table does not show a list of records, but simply indicates the flip with a leading +.  
+
+..A Key Table is a Dictionary
+
+A key table is not a table, but a pair of tables instead. The primary key columns form one table and the data columns the other. For example, the key table s has the primary key s and data columns name, status and city. Those two tables are
+
+ +(,`s)!,`s1`s2`s3`s4`s5
+ +`name`status`city!(`smith`jones`blake`clark`adams;20 10 30 20 30;`london`paris`paris`london`athens)
+
+The console display of s is
+ (+(,`s)!,`s1`s2`s3`s4`s5)!+`name`status`city!(`smith`jones`blake`clark`adams;..
+
+You can't see all of s, but you can see enough. To the left is the table of primary keys in parentheses, followed by the Xkey function (!) followed by data table. Since s is a dictionary its primary key table can be extracted with the Key function and its data table, with the Value function.
+
+   key s
+ +(,`s)!,`s1`s2`s3`s4`s5
+   value s
+ +`name`status`city!(`smith`jones`blake`clark`adams;20 10 30 20 30;`london`paris`paris`london`athens)
+
+..How Dot Notation Works
+
+We can now see how dot notation works. For example, consider the query
+
+   select s.name from sp
+ +(,`name)!,`smith`smith`smith`smith`clark`smith`jones`jones`blake`clark`clark`smith
+
+Column s in sp is the following enumeration.
+   sp[;`s]
+ `s$`s1`s1`s1`s1`s4`s1`s2`s2`s3`s4`s4`s1
+
+which is a list of indices into the key table s. More precisely, it is a list of indices into both the key s and value s tables. Consequently, the column in the above select result denoted by s.name is
+
+   (value s)[sp[;`s];`name]
+ `smith`smith`smith`smith`clark`smith`jones`jones`blake`clark`clark`smith
+
+.Associative Arithmetic
+
+Arithmetic is defined for associations with numeric value lists. For example, 
+
+   d:10 20 30!25 38.5 17
+   e:10 30 45!11.5 24 -18
+   d+e
+ 10 20 30 45!36.5 38.5 41 -18
+   d*e
+ 10 20 30 45!287.5 38.5 408 -18
+
+You can see that the keys of the sum are the union of the keys of the arguments. Also, if a key is in both arguments then the value for that key in the result is the sum of the values in the arguments. Otherwise, the value in the sum for that key is the value for that key in whichever argument it appears.
+
+.Generating Test Data with Rand
+
+kdb+ provides a convenient way to generate random test data, which is very useful when experimenting with the language or modeling applications. The primitive function called Rand produces random sequences of ints and floats. For example, the expression	20?5	produces an int vector of length 20 whose items are random ints between 0 and 4, as follows.
+
+   20?5
+ 4 3 3 4 1 2 2 0 1 3 1 4 0 2 2 1 4 4 2 4
+
+If the right argument is a float, say 4.5, then the result is a simple float list whose items are random floats between 0.0 and 4.5. For example,
+
+   10?4.5
+ 3.13239 1.699364 2.898484 1.334554 3.085937 2.437705 2.540967 3.445748 1.838425 0.6240313
+
+Sequences of random selections from a specific set of values can also be generated. To do that, first form a list of the values, say 
+
+ `Arthur`Steve`Dennis
+
+The ints 0, 1 and 2 are the valid indices of this list. Consequently, 10?3 is a list of random indices into this list. A list of random selections from this list is generated as follows.
+
+   v:`Arthur`Steve`Dennis
+   v[10?count v]
+ `Dennis`Arthur`Steve`Arthur`Dennis`Steve`Arthur`Arthur`Steve`Steve
+
+.Find
+
+The function named Find is a dyadic function whose left argument is a list and right argument is any data object. The result is the lowest index for which the right argument matches (using the Match function) an item of the left argument (the so-called "first occurrence"). If there is no match the result is the count of the left argument. For example,
+
+   w:10 -8 3 5 -1 2 3
+   w?-8	
+ 1	
+   w[1]	
+ -8	
+  w?3	/ the first occurrence of 3
+ 2	
+   w?17	/ not found
+ 7	
+   w[7]	
+ 0N	
+
+   "abcde"?"d"
+ 3
+
+Find is type-specific relative to the left argument. In the case of a simple list left argument, the right argument can also be a list whose atoms are all the same type as the left argument. The result corresponds to the left argument item-by-item. For example,
+
+   rt:(10 5 -1;-8;3 17)
+   i:w?rt
+   i
+ (0 3 4;1;2 7)
+   w[i]
+ (10 5 -1;-8;3 0N)
+   r
+ (10 5 -1;-8;3 17)
+
+If the left argument is a list of lists and the right argument is simple list, then items of the left argument are matched with the entire right argument. For example,
+
+   u:("abcde";10 2 -6;(2 3;`ab))
+   u?10 2 -6
+ 1
+   u?"abcde"
+ 0
+
+However, if the right argument is a general list then items of the left argument are matched with items of the right argument. For example,
+
+   u?(2 3;`ab)
+ 3 3
+
+In this case Find matches items of the left argument with	2 3	and	`ab	, not	(2 3;`ab)	. In order to find	(2 3;`ab)	it must be an item of a list, as follows.
+
+  u?enlist(2 3;`ab)
+ 2
+
+If the left argument is a table then right argument must be a compatible record (dictionary or list) or table. That is, each column of the left argument, paired with the corresponding item of the right argument, must be valid arguments of Find. For example, 
+
+   sp?(`s1;`p4;200)
+ 3
+   sp?`s`p`qty!(`s2;`p5;450)
+ 12
+
+.Reverse
+
+Reverse applies to lists and gives their items in the opposite order. For example,
+
+   reverse `a`b`c
+ `c`b`a
+
+Reverse comes into play when it is more efficient to work with a list in its reverse order. For example, suppose that an application calls for many joins to the front of a long list l, as in
+
+ l:b,l
+
+This expression causes a list of size	(count b)+count l	to be created and both b and l to be copied into it. That is, the list l must be copied for every join. However, when the joins go to the end of l, as in
+
+ l:l,b
+
+then it is possible to do it so that (usually) only b is copied onto the end of a. This is due to the fact that the chunk of memory allocated for a list usually 
+has unused space at the end. To specify this behavior use the form of amend that modifies l in place. The computation would proceed something like this:
+
+   l:reverse l
+   .[`l;();,;reverse b]
+   ...
+   .[`l;();,;reverse b]
+   l:reverse l
+
+See <a href="#More about Amend">More about Amend</a>.
+
+.Where and Distinct
+
+The primitives in this section provide the basic functionality for aggregation queries of lists other than tables. They also provide the potential for calculations not easily done as queries. As an example, first form a list of the data in the sp table.
+
+   v:value flip sp
+
+The Where primitive function gives a list of indices where a simple boolean list has the value 1b. For example,
+
+   a:010101010b
+   where a
+ 1 3 5 7
+   a[where a]
+ 1111b
+   a[where not a]
+ 00000b
+
+This function serves the same purpose for selecting sub-lists as "where phrases" in select expressions for selecting sub-tables. For example,
+
+   v[;where v[2]>200]
+ (`s$`s1`s1`s2`s2`s4`s1;`p$`p1`p3`p1`p2`p4`p5;300 400 300 400 300 400)
+
+or, since sp is a list,
+
+   sp where sp[;`qty]>200
+ +`s`p`qty!(`s$`s1`s1`s2`s2`s4`s1;`p$`p1`p3`p1`p2`p4`p5;300 400 300 400 300 400)
+
+We have seen Distinct before (<a href="#Enumeration">Enumeration</a>; it gives a list of the distinct items in a list (including tables). For example,
+
+   v[0]
+ `s$`s1`s1`s1`s1`s4`s1`s2`s2`s3`s4`s4`s1
+   distinct v[0]
+ `s$`s1`s4`s2`s3 
+
+.Take, Drop and Cut
+
+The Take and Drop primitives are useful for selecting from the front or back of a list. Cut, which is an extension of Drop, is used to partition a list into sublists. For example,
+
+   5#0 1 2 3 4 5 6 7 8	/ take the first 5 items
+ 0 1 2 3 4	
+   5_0 1 2 3 4 5 6 7 8	/ drop the first 5 (leaving the last 4)
+ 5 6 7 8	
+   -5#0 1 2 3 4 5 6 7 8	/ take the last 5
+ 4 5 6 7 8	
+   -5_0 1 2 3 4 5 6 7 8	/ drop the last 5 (leaving the first 4)
+ 0 1 2 3	
+   0 3 7_0 1 2 3 4 5 6 7 8	/ cut at indices 0, 3 and 7
+ (0 1 2;3 4 5 6;7 8)	
+
+Cut is often used with Where. For example, suppose we want to cut the following simple char list at tabs ("\t").
+
+   l:"one\ttwo\tthree\tfour"	
+   l="\t"	/ bools mark the tabs
+ 000100010000010000b	
+   where l="\t"	/ the indices of the tabs
+ 3 7 13   
+    (where l="\t")_l	/ cut at these indices
+ ("\ttwo";"\tthree";"\tfour")	
+
+There are two things to notice in this result. First of all, the tabs are still there, one in the front of each segment of the result. But there is also a missing segment,	"one"	. Cut is defined to give all segments starting at the indices in the left argument. In effect, Cut drops all intems up to the start of the first segment. In this example there is no leading tab, and so it is typical that a 0 i is appended to the Where result, as follows (see <a href="#Join">Join</a>).
+
+   r:(0,where l="\t")_l
+   r
+ ("one";"\ttwo";"\tthree";"\tfour") 
+
+Now it also typical that after the cut, the character which determines where the cuts take place is dropped from the segments. The first segment is different from the others because it has no leading tab, and so we don't want to drop its first character. The "1 Drop" function should be applied only to each of the other 3 items. There are two ways to express the "1 Drop" function, either as a function projection or a defined function. It is largely a matter of taste. For example,
+
+   (1_)"abc"
+ "bc"
+or
+   {1_x}"abc"
+ "bc"    
+
+Apply the "1 Drop" function to all but the first item of the above result r, as follows (<a href="#Verbs and Adverbs">Verbs and Adverbs</a>).
+
+   each[1_]1_r
+ ("two";"three";"four")
+
+or
+   each[{1_x}]1_r
+ ("two";"three";"four")
+
+Note that "all but the first item of r" is also expressed with the "1 Drop" function. Now that we see what to do, adjust r as follows:
+
+   r[1_key count r]:each[1_]1_r
+   r
+ ("one";"two";"three";"four")
+
+All three of these primitives apply to tables. For example,
+
+   5#sp
+ +`s`p`qty!(`s$`s1`s1`s1`s1`s4;`p$`p1`p2`p3`p4`p5;300 200 400 200 100)
+
+..Initializing Database Tables
+So far we have discussed only one empty list, the one denoted by (). In addition to this, every atomic datatype has a empty list. The thing that distinguishes these lists is their datatypes. Each of the empty lists can be created by Cast. For example,
+   type()
+ 0h	/ the type of a general list
+   `float$()
+ `float$()	/ the empty float list
+   type `float$()
+ 9h	/ the type of a simple float list
+The empty char list is also "".
+
+Tables in the <u>kdb+</u> manual are created as empty tables and then populated with the insert function. For example, here is the definition of the trade table from that manual. 
+
+   trade:([]time:();sym:();price:();size:())
+   trade
+ +`time`sym`price`size!(();();();())
+
+Since all simple lists are also general lists, any type of data can be inserted in this empty table. Here is the first insert.
+
+   insert[`trade](09:30:01.000;`xx;59.25;1900)
+ `trade
+   trade
+ +`time`sym`price`size!(,09:30:01.000;,`xx;,59.25;,1900)
+
+Now the column datatypes are more specific.
+
+  0#trade
+ +`time`sym`price`size!(0#0Nt;0#`;0#0n;0#0N)
+
+From this point on the data that can be inserted is limited in type; the new data for a column is cast to the datatype of the column or an error is reported if that is not possible. We have seen in this manual that tables can be created and populated all at once, but if you want to start from empty tables it is may be best initialize each column with the appropriate specific empty list. You can use null values, as in 
+
+   trade:([]time:0#0Nt;sym:0#`;price:0#0n;size:0#0N)
+
+.Verbs and Adverbs
+
+Syntactically, kdb+ has nouns, verbs and adverbs. All data objects are nouns, as are all functions. Verbs are primitive symbols and names that can be evaluated with infix notation, as in	a+b	. If Plus were a dyadic function and not a verb, it would have to be evaluated as	+[a;b]	. It turns out that Plus can be evaluated in this way because, operationally, it's a function. Syntactically, whenever Plus appears in an infix expression, it is a verb. Otherwise, syntactically, it is a noun. Verbs, juxtaposition for monadic functions and indexing, and function projections enhance readability by reducing the number of square brackets and parentheses in expressions.
+
+Adverbs modify dyadic functions and verbs to produce new, related verbs. The functions produced by adverbs are called derived functions or derived verbs, depending on context.
+
+..Each, Each-Left, Each-Right
+
+The adverb Each, denoted by quote ('), modifies dyadic functions and verbs to apply to the items of lists instead of the lists themselves. For example,
+
+   1 2 3,4 5	/ join
+ 1 2 3 4 5	
+   (1 2 3;"abcd"),'(4 5;"e")	/ Join-Each (,')
+ (1 2 3 4 5;"abcde")	
+
+The arguments of a dyadic function derived from Each must be lists of the same length, or either argument can be an atom. Actually, both arguments can be atoms, but then each has no effect. For example,
+
+   ("one";"two";"three"),'","	/ append comma to each item
+ ("one,";"two,";"three,")
+
+It's common to need to join a list, not an atom, to every item in another list. For example, suppose, in the last example, instead of appending comma to each item, you wanted to append comma-blank, as in ", ". To do that with Each, a 3-item list of comma-blanks must first be created, as follows.
+
+   v:("one";"two";"three")	/ give the list a name for convenience
+   v,'(count v)#enlist ", "	
+ ("one, ";"two, ";"three, ")	
+
+There are two variants of Each for dyadic functions called Each-Left and Each-Right that simplify cases like this. Here is Each-Left (\:) used to append comma-blank to each item of v.
+
+   v,\:", "
+ ("one, ";"two, ";"three, ")
+
+Each-Right is analogous.
+
+There is a form of Each for monadic functions that uses the keyword "each". For example,
+
+   reverse (1 2 3;"abc")	/ Reverse
+ ("abc";1 2 3)	
+   each[reverse](1 2 3;"abc")	/ Reverse-Each
+ (3 2 1;"cba")	
+
+.Grouping Without Aggregating
+
+Usually the biggest cost in execution time for evaluating an aggregation, particularly for large tables, is the grouping caused by the "by phrase". Moreover, that cost may occur repeatedly because the same grouping may be done for many different aggregations. In q it is possible to precompute the grouping and save it in a separate table to which aggregations are applied later. The aggregations must be computed differently than in an ordinary select-by expression, but a few examples will show you what to do.
+
+In the <u>kdb+</u> manual we restricted out attention to tables whose columns are simple lists, which conforms to the SQL domain. However, q tables allow any lists as columns, as long as the columns all have the same length. In particular, the following q statement, which groups but does not aggregate, is valid and produces a q table. 
+
+   t:select price,size by sym from trade
+   t
+
+ sym|	price	size
+ -
+ xx	59.25 84.00	1900 2200
+ aaa	53.75 96.25 58.25 89.50	1200 2200 1000 1400
+ dd	,81.00	,1600
+ ccc	93.25 84.25	2100 1500
+ yyyy	,73.25	,2300
+
+You can see that the items of the price and size columns are simple lists, not atoms. For example, compare the row of t for the sym `aaa to the result of the select expression that follows.
+
+   (value flip value t)[;1]
+ (53.75 96.25 58.25 89.50;1200 2200 1000 1400)
+
+     select price,size from trade where sym=`aaa
+
+ price	size
+ - 
+ 53.75	1200
+ 96.25	2200
+ 58.25	1000
+ 89.50	1400  	
+
+You can see that the price column in this result is identical to the price item in the row of table t where sym is `aaa. Similarly, the size column in this result is identical to the size item in t. The table t is an example of grouping without aggregating. Columns price and size of t are called partitioned columns. 
+
+Now the question is, how are queries formulated for table t? We'll show two representative examples. Here is the first.
+
+   r1:select avg price by sym from trade where sym in `aaa`ccc
+   r1
+
+ sym|	price
+ aaa	74.44
+ ccc	88.75
+
+The equivalent query for t is as follows.
+
+   r2:select sym,each[avg] price from t where sym in `aaa`ccc
+
+Without the Each modifier, the query would average the simple price list for the sym `aaa with the simple price list for the sym `ccc, resulting in another simple list if those two had the same count, or a length error if not. What we want, however, is to average the items in each list separately, which is what each[avg] does. 
+
+   r2
+
+ sym	price
+ aaa	74.44
+ ccc	88.75
+
+Note that the only difference in the two results is that sym is a primary key of r1, but not r2.
+
+The second example is an aggregation where part of the "where phrase" in the trade query applies to a partitioned column in t.
+
+   r3:select avg price by sym from trade where sym in `aaa`ccc,size>1200
+   r3
+
+ sym|	price
+ aaa	92.88
+ ccc	88.75
+
+The restriction	size>1200	cannot be done in the "where phrase" for table t because the size column is not a simple list; it must therefore be done in the "select phrase". The other part of the "where phrase", which applies to the sym column, can be done as usual. Consequently the query will look like
+
+   select <exp> from t where sym in `aaa`ccc
+
+where the &lt;exp&gt; to be applied to items from price and size is
+
+   avg price where size>1200
+
+That is, the expression must be applied to the price and size items for the sym `aaa and separately to those items for the sym `ccc. To do that we define 
+
+   af:{[price;size]avg price where size>1200}
+
+and then
+
+   r4:select sym,ap:price af'size from t where sym in `aaa`ccc
+
+The difference between r3 and r4 is the same as r1 and r2.
+
+.The Organization of the Workspace
+
+So far the identifiers (names) used in the manuals are composed of alphanumeric characters, with the condition that the first character must be alphabetic, for example, abc and a0B. Kdb+ also permits dots (.) in names; the first character can be a dot and if so, one other character can also be a dot. For example, .c0w and .c0w.abc are valid names, but a.b and .a.b.c are not.
+
+The kdb+ workspace is logically partitioned into directories, or contexts, according to dots in names. For example, start a new kdb+ session and then do
+
+   b:3
+   c:4
+   .cx.b:5
+   .cx.c:6
+
+The objects whose names have no dots are said to be in the default context. Up to now all objects created in these manuals are in the default context. The objects named .cx.b and .cx.c are in the .cx context. The object named .cx.c is also referred to as the object c in the .cx context, or the entry c in the .cx directory. 
+
+Contexts are used to organize applications. For example, you could put the functions that perform mathematical calculations in the .math context, those that manage files in the .files context, and so on. There are reserved names for managing connections and other things in the reserved context named .z. All .z entries are discussed below. There are other reserved contexts as well. You should consider all contexts with single character names to be reserved.
+
+Contexts are data; they are dictionaries. For example, the Key function gives a list of objects in .cx context.
+
+   key`.cx
+ `b`c
+
+The default context: 
+
+   key`.
+ `b`c
+
+You can work directly in a context. The working context, or current context, is specified with the directory command \d. For example,
+
+   \d .cx
+
+You can find the name of the working context with \d and its contents with \v.
+
+   \d
+ `cx
+   \v
+ `b`c
+   b	/ check that this b is .cx.b, which has value 5
+ 5
+
+New objects can be defined in the working context with unqualified names.
+
+   d:1 2 3
+   \v
+ `b`c`d 
+   f:{d+x} 
+   f 10
+ 11 12 13
+
+Return to the default context.
+
+   \d .
+   \v
+ `b`c 
+   b	/ the value of b in the default context is 3
+ 3
+
+The following illustrates the rules for referencing unqualified global names in defined functions.
+
+   d:4 5 6	/ d in the default context
+   .cx.f 10	/ evaluate .cx.f from the default context
+ 11 12 13	/ the evaluation still uses d in the .cx context
+   .cx.g:{d+x}	/ define the function g in the cx context from the default context
+   .cx.g 10	/ evaluate .cx.g from the default context
+ 14 15 16	/ the evaluation uses d in the default context
+   \d .cx	/ make .cx the current context	
+   g 10	/ evaluate g
+ 14 15 16	/ the evaluation still uses d in the default context
+
+That is, the value of an unqualified global name in a defined function is the one in the context where the function was defined, not the one where the function resides. This rule for referenced global names works for any two contexts; it is not necessary that one is the default context. It takes time to get used to this rule, and you can avoid it by always using fully qualified names. However, that can be tiresome in complex applications. It is also easier to reorganize scripts when names are unqualified.
+
+.Defined Functions
+
+..The General Form
+The general form of defined functions is
+
+ {[argument list] body}
+
+The argument list is a sequence of names separated by semi-colons. The body is a list of expressions and control statements separated by semi-colons. The items in the body are executed strictly from left to right, as are items within control statements. For example, a function that computes the amount of interest paid in terms of principal, rate and time can be defined as follows:
+
+ interest:{[principal;rate;time] if[1<rate;rate:0.01*rate];principal*rate*time}
+
+This function has 3 arguments, principal, rate and time. The first statement, somewhat contrived for the example, tests whether rate has an integer part. If so, it assumes that rate is given as a percent and converts it to a fraction. The expression that follows does the evaluation. For example,
+
+   interest[2345; 0.075;1]
+ 175.88
+   interest[2345; 7.5;1]
+ 175.88
+
+The argument list for a monadic function is one name between square brackets (no semi-colons). It is possible to define a function with no arguments by specifying the empty list, []. The empty argument list can be omitted, but if so, default arguments may come into play.
+
+..Default Arguments
+
+The argument list can be omitted when default arguments are used. The default arguments are x, y and z. If any of these names appears in a function definition that has no argument list then that name is a function argument. Moreover, z is always the third argument, whether or not x or y is present in the function definition. Similarly, y is always the second argument and x is always the first. For example,
+
+   f:{z*z}
+   f[1;2;3]	/ f is a function of 3 arguments
+ 9
+   f[`a;"b";3]	/ the first two arguments aren't used; they can have any values
+ 9
+
+Whether or not you use default arguments is a matter of taste. In general, they are useful in general utility functions whose arguments can't be named in meaningful ways.
+
+..Default Result
+
+The value of the right-most expression in a function body is the default result if there is no semi-colon between it and the closing }. However, functions always have some kind of results. Even in a case such as
+
+   f:{.cx.global:0;}
+
+where nothing is displayed when the function is evaluated,
+
+   f[]	
+   _	/ the default prompt
+
+the expression
+
+   r:f[]
+
+will not fail. Consequently, we say that this function has no explicit result. 
+
+..Localization
+All unqualified names in a function definition in which there is at least one simple assignment of the form	name:value	are local to that function. A local name has no value in references before an assignment is made, and any assignment to a global with that name, e.g.	name::value	, is treated like the local assignment	name:value	. For example,
+
+   a:5	/ global a
+   f:{a::10;}	/ global a is defined in f
+   f[]	
+   a	/ this is an entry line because f has no explicit result 	
+ 10	/ the new value of a
+   f:{a::20;a:5;}	/ a local in this f
+   f[]	
+   a	
+ 10	/ the value of global a is unchanged
+
+..Projections
+For functions of valence at least two, when any of the argument positions are left blank in an evaluation expression, i.e. when those arguments are not specified, the effect is to create a new function in which the specified arguments have those fixed values. The new function is called a projection onto those fixed values. For example:
+
+   f:{x+y+z}
+   f[1;2;3]
+ 6
+   g:f[1;;3]
+
+The monadic function g is the projection of f onto its first and third arguments. The function g is formed by fixing the first and third arguments of f to be 1 and 3, respectively. That leaves one argument unspecified, which is the argument of the function g. Continuing,
+
+   g[2]	/ apply g to the argument 2
+ 6
+
+Trailing arguments that are left unspecified can be left out of the projection expression. For example,
+
+   h:f[1]
+
+The function h, which has valence 2, is equivalent to f[1;;]
+
+   h[2;3]
+ 6
+
+Projections of projections are equivalent to projections of the original function. For example,
+
+   e:h[;3]
+
+which has valence 1, is equivalent to f[1;;3].
+
+   e[2]
+ 6
+
+Function projections retain their definitions even when their source functions are redefined. For example,
+
+   g 2
+ 6
+   f:{x}
+   g 2
+ 6
+
+...Verbs
+
+It is also possible to project onto the left argument of a verb. For example, 3+ is a monadic function.
+
+   (3+)10
+ 13
+
+In this example 10 is the argument to the monadic function 3+; function evaluation is by juxtaposition, which in this case is equivalent to (3+)[10]. It is not possible to project on the right argument of + in infix form, but it can done if function evaluation notation can be used for +.
+
+   +[;10]3
+ 13
+
+...Projections in Practice
+Projections are useful when many different evaluations of a function have some number of common arguments. For example, in <u>kdb+</u> the trade table was constructed with a series of table inserts of the form
+ insert[`trade](09:30:01.000;`aaa;53.75;1200)  
+Insert is a dyadic function whose first argument is the table that receives the data in the second argument. That is, the following is an equivalent expression.
+ insert[`trade;(09:30:01.000;`aaa;53.75;1200)]
+In the first expression, the subexpression	insert[`trade]	is a projection of the insert function onto the first argument. The expression is the application of the monadic function	insert[`trade]	to the argument	(09:30:01.000;`aaa;53.75;1200)	using juxtaposition. Whether to use the style of the first or second expression is a matter of taste. Some programmers find the first expression easier to read.
+
+..Parameterized Queries
+
+Select, update and delete expressions can be evaluated in defined functions. Every name except column names can be a function argument, local variable or global variable (think of column names as local within the phrases). For example,
+
+   v:200
+   f:{[tbl] select from tbl where qty>v}
+   f[sp]
+ +`s`p`qty!(`s$`s1`s1`s2`s2`s4`s1;`p$`p1`p3`p1`p2`p4`p5;300 400 300 400 300 400)
+
+Default arguments cannot be used in parameterized queries.
+
+..Debugging
+
+If a defined function fails you will see a console display of the failed primitive function and it's argument(S). The console prompt becomes a ">  ". You can examine the arguments and local variables of the function that failed. For example,
+
+   f:{[a] b:`x`y;b[0]+a*2}	
+   f 4	/ a type error is generated
+ {[a] b:`x`y;b[0]+a*2}	/ the function in which the failure occurred
+ 'type	/ the error type
+ +	/ the function that failed
+ `x	/ the left argument
+ 8	/ the right argument
+ >  _	
+The underbar in the last line indicates a blinking cursor. You can see from the console display that the failure is a type error of the function +, applied to the arguments `x and 8. In this simple example you can see immediately what the problem is, but it's not always that easy. When it's not, you can examine the arguments and locals in the function. For example,
+
+ >  a
+ 4
+ >  b
+ `x`y
+ >  _
+
+Enter a back-slash to abort the execution. You will then see the default cursor.
+ >  \
+   _
+Let's look at a slightly more complicated example.
+
+   f:{[a;b] b[0]+a*2}
+   g:{[c] d:`a`b;f[c;d]}
+   g 3
+ {[a;b] b[0]+a*2}
+ 'type
+ +
+ `a
+ 6
+ >  _
+
+Again, we see the definition of the failed function. We can examine its arguments.
+
+ >  a
+ 3
+ >  b
+ `a`b
+ >  _
+
+The problem is clearly the argument b. We can signal up with quote to see where this function is called.
+
+ >  '	/ signal up
+ {[c] d:`a`b;f[c;d]}	/ clearly, the function in which the failure occurred is f
+ '	/ the error type (signal)
+ {[a;b] b[0]+a*2}	/ the function that failed
+ 3	/ the first argument
+ `a`b	/ the second argument
+ >  _ 
+
+We can examine the argument and the local variable in g.
+
+ >  c
+ 3
+ >  d
+ `a`b
+ >  _
+
+We can now see that the local d is the problem. Enter \ to abort or ' to signal up and out and fix the definition of function g.   
+
+.Script Files
+Kdb+ scripts are text files with file extensions q or k. For example, the scripts sp.q and q.k are kdb+ product distribution scripts. Scripts with the file extension q support the level of the q language described in this manual and <u>kdb+</u>.
+
+Scripts can contain any expressions or commands, which are executed from top to bottom when the script is loaded. A script can be named in the startup command, or loaded from a kdb+ console with a load command (\l), or loaded by another script with a load command. 
+
+Here are a few lines from sp.q.
+
+ sp:([]
+  s:`s$`s1`s1`s1`s1`s4`s1`s2`s2`s3`s4`s4`s1;	/ fkey
+  p:`p$`p1`p2`p3`p4`p5`p6`p1`p2`p2`p2`p4`p5;	/ fkey
+  qty:300 200 400 200 100 100 300 400 200 200 300 400)
+
+ /s)select p.color,sum(sp.qty) from sp,p where sp.p=p.p group by p.color
+ select sum qty by p.color from sp
+
+The first thing of interest is that the definition of the table sp occupies more than one line. The rules for multi-line definitions are as follows.
+
+* The first line cannot be indented.
+* All other lines must be indented.
+
+Function definitions are like table definitions:
+
+ interest:{[principal;rate;time] if[1<rate;rate:0.01*rate];principal*rate*time}
+
+can be put on multiple lines at follows: The display shows all possible line breaks.
+
+ interest:{[principal;rate;time] 
+  if[1<rate;rate:0.01*rate];
+  principal*rate*time}
+
+There are two lines below the definition of sp in the first display. The first line is a comment and the second line is a q expression that will be executed whenever the script is loaded. The commented line contains the equivalent SQL statement. The "s)" in that line indicates SQL.
+
+.Execution Control
+..Conditional Evaluation
+The simplest form of Conditional evaluation is denoted by	$[condexp;truexp;falsexp]	. For example,
+
+   f:{$[x<10;`abc;`defg]}
+   f 5
+ `abc
+   f 15
+ `defg
+
+Using a function in this example was simply a matter of convenience. The conditional expression can have any atomic integer value (e.g., boolean or int); truexp is executed if that value is	not 0	and otherwise falsexp is executed. The result of the conditional expression is the result of whichever sub expression is executed.
+
+There are two extended forms of conditional evaluation. In one case there can be more than one conditional expression. The general form is
+
+ $[condexp1;truexp1;...;condexpn;truexpn;falsexp]  
+
+For example, 
+
+   f:{$[x<10;`abc;x<15;`defg;`hij]}
+   f 5
+ `abc
+   f 10
+ `defg
+   f 15
+ `hij
+
+More generally, any "true expression" or "false expression" in the above forms can be replaced a block of expressions enclosed in square brackets. For example,  
+
+   f:{$[x<10;[t:5;u:7;t+u];[t:10;u:11;t*u]]}
+   f 5
+ 12
+   f 10
+ 110
+
+The individual expressions in a bracketed set such as	[t:5;u:7;t+u]	are executed left to right and the rightmost one gives the result of the set. 
+
+..Protected Evaluation
+
+It is possible to execute a function in such a way that an error does not halt execution. This is particularly useful when executing user input, such as ad hoc queries. Like Amend, there is a Dot version and an At version.
+
+The primitive Value function is useful for executing user input. Here is an example of a protected execution of Value.
+
+   f:{@[value;x;`fail]
+   f "2+3"
+ 5
+   f "2 2+3 3 3"
+ `fail
+
+The example in <a href=#"Casting with Computed Types"></a>Casting with Computed Types</a> shows casting atomic values into the type of a given list c. The examples use atoms that are known to be convertible to the type of c. Protected evaluation can be used when the atoms are not known to be convertible. The general form of the previous expression was
+
+ c[i]:(type c)$v
+
+A protected evaluation version is
+
+ c[i]:.[$;(type c;v);c -1]
+
+If the cast fails, the result of the protected evaluation will be the result of an out-of-range indexing selection from c, which is the null value for the type of c. Repeating the previous example,
+
+   c:10 345 -20 11   
+   c[2]:.[$;(type c;0xab);c -1]
+   c[0]:.[$;(type c;23h);c -1]
+   c                 
+ 23 345 171 11
+
+Continuing with an atom that cannot be cast to an int,
+
+   .[$;(type c;`abc);c -1]
+ 0N
+   c[1]:.[$;(type c;`abc);c -1]
+   c
+ 23 0N 171 11 
+
+..Do Statements
+
+ do[count; expr]
+ do[count; expr1;...; exprN]
+
+The first Do statement executes the expression count times. The second do statement executes the expression list count times. The expressions in the expression list are executed left to right. If count is an expression then it is executed first and that value determines the number of times the other expressions are executed. Do statements do not have explicit results.
+
+..If Statements
+
+ if[cond; expr]
+ if[cond; expr1;...; exprN]
+
+The conditional expression is like the one in Conditional Evaluation. If its result is not 0 then the expression or expression list is executed. In the second case the expressions are executed left to right. If statements do not have explicit results.
+
+..While Statements
+
+ while[cond; expression]
+ while[cond; expression1;...; expressionN]
+
+The conditional expression is like the one in Conditional Evaluation. As long as its value remains not equal to 0, the expression or expression list is executed. When there are more than one expressions they are executed left to right. While statements do not have explicit results.
+
+An example in <a href="#Processing Nulls">Processing Nulls</a> provides an example of a While statement. In that section, the function
+
+ f:{r:x;r[i]:r[-1+i:where null r];r}                                                          
+
+was applied repeatedly to a list to replace all nulls with the nearest non-null value to the left. The example list was
+
+ v:10 -3.1 0n 0.1 0n 0n 0n 3.4     
+
+ To test for nulls in v, we can use max and the Null function, as follows.
+
+   null v
+ 00101110b
+   max null v
+ 1b
+
+The interation in Processing Nulls can then be carried out as follows.
+
+   while[max null v;v:f v]
+   v
+ 10.00 -3.10 -3.10 0.10 0.10 0.10 0.10 3.40
+
+..Control Primitives
+There are two primitive functions that alter the default execution flow in a defined function by exiting, either with a result value or an error signal. The first is Return, which is denoted by	:r	. For example, the following function returns the sym atom `other if the argument is not an atom.
+
+   f:{if[not 0>type x;:`other];x}
+   f 2 3
+ `other
+
+The second function, called Signal, signals an error instead. This function is denoted by	'r	. For example,
+
+   f:{if[not 0>type x;'`other];x}
+   f 2 3
+ {if[not 0>type x;'`other];3}
+ 'other
+ >  _
+
+Signal is useful for debugging and processing user input. In the above example, the reason for the signal can be analyzed by the techniques in <a href="#Debugging">Debugging</a>. The function f could also be called with user input under protected execution by another function. The signal from f would indicate to the caller that the message "other" was an error message, which could be reported to the user.
+
+.Commands
+Commands are special statements for interacting with the programming environment. All commands have a leading back-slash. Here is a list.
+
+ Command	Syntax
+ -
+ dictionary	\d [dict]
+ variables	\v [dict]
+ load	\l file
+ port	\p [port]
+ timer	\t [milliseconds]
+ time	\t expression
+ workspace	\w
+ o/s	\command
+ exit	\\
+
+The brackets indicate optional content. If the content is omitted then the command displays its current value. 
+
+We have seen \d and \v in <a href="#The Organization of the Kdb+ Workspace">The Organization of the Kdb+ Workspace</a>.
+
+..Dictionary: \d [dict]
+This command is used to specify the current dictionary; see <a href="#The Organization of the Kdb+ Workspace">The Organization of the Kdb+ Workspace</a> for examples.
+
+..Variables: \v [dict]
+This command displays the names of all global variables in the specified dictionary; see <a href="#The Organization of the Kdb+ Workspace">The Organization of the Kdb+ Workspace</a> for examples.
+
+..Load: \l file
+This command loads the named script into the current k session. In most examples in these manuals the script to be loaded is given in the startup command. However, it is also possible to load a script from within the kdb+ console. For example,
+
+   \l sp.q
+
+This is useful when testing changes to a script because changes can be made and repeatedly loaded without exiting from the kdb+ process. Also, commands can be included in scripts. Consequently applications can be partitioned into sets of scripts, all of which are loaded by the top-level script given in the command line.
+
+..Port: \p [digits]
+
+Set the listening port. As with script loading, in this manual we have set the port with the -p command line option. It can also be set (or changed) in a console, e.g.
+
+   \p 5001
+
+..Timer: \t [milliseconds]
+Set the timer to the number of milliseconds given by the integer represented by digits, or display the current setting if digits is not present. If the setting is a positive integer n then the function .z.ts is called every n seconds. No calls are made if the setting is 0 (the default). The function .z.ts is user defined and has no arguments.
+
+..Time: \t expression
+The execution time of the expression, in milliseconds, will be printed out when execution completes. It often happens that the result is 0, in which case you can execute the expression a sufficient number of times to get a positive result, with which you can compute the average number of milliseconds required for one execution. For example, 
+
+   \t sum til 15000
+ 0
+   \t do[10000;sum til 15000]
+ 390
+
+The last result shows that, on average, execution of	sum til 15000	takes 0.04 milliseconds (on the author's laptop). 
+
+..Workspace: \w
+This command displays 3 longs summarizing the memory usage of the current kdb+ session. For example,
+
+   \w
+ 57904 1056784 0j
+
+The middle number is the number of bytes allocated by the kdb+ process. The first number is the number of bytes actually in use at the present time. The third number is the size of the current mapped file space.
+
+..Exit Kdb+: \\
+End the kdb+ session.
+
+..OS Command: \text
+When the text following the back-slash is not the text of one of the above commands, it is passed to the operating system for evaluation. 
+
+..Ctrl-C
+Interrupt.
+
+.Inter-Process Communication
+A Kdb+ process is a server. The port is specified with the -p option in the startup command. For example, the following process will have the port 5001. 
+
+ q sp.q -p 5001
+
+The port can also be specified in a script or in the console with the command \p; see <a href="#Commands">Commands</a>. 
+
+..Kdb+ Data Client
+We have already used the port in <u>kdb+</u> for executing q queries and displaying results in a web browser. We'll now look at Kdb+ data clients.
+
+...Opening and Closing a Connection
+A kdb+ client can connect to a kdb+ server process on the same computer, on the same network, or remotely. The client uses the Hopen function to connect. For example, suppose the server listening on port 5001 is named srvr and is on the same network as the client. In that case the client connects to the server as follows.
+
+   h:hopen`:srvr:5001
+
+The symbol `:srvr:5001 is called the communication handle; the int h is called the connection handle. There is no need to identify the server if the client is running on the same machine. The communication handle in that case can simply be `::5001. A remote server is identified by its IP address, say 66.108.242.81, in which case the communication handle is `:66.108.242.81:5001.
+
+An open connection is closed with the hclose function, as in
+
+ hclose h
+
+...Asynchronous and Synchronous
+There are two ways to send messages to a server, asynchronously and synchronously. An asynchronous message does not return a result. The expression that sends an asynchronous message completes as soon as the expression is executed (which may be a little sooner than when the message is sent). Asynchronous messages are also called set messages because typically they cause changes in the state of the server. For example, a delete or insert statement can be sent asynchronously.
+
+A synchronous message expects a response from the server. The expression that sends a synchronous message waits for the response and returns it as its result. For example, a select statement must be sent as a synchronous message. Synchronous messages are also called get messages, since they expect a response.
+
+There are two forms of messages. One is a character string holding an executable expression. For example,
+
+ "select avg price by time.u from trade"
+ "insert[`trade](10:30:01;`dd;88.5;1625)" 
+
+The second form of an message is a list. The first item of the list is a char string or sym atom holding the name of a function (i.e., stored procedure) to be executed on the server. The other items are the arguments of the function call, in order. For example, the above insert message can also be phrased as a remote procedure call, as follows.
+
+ (`insert;`trade;(10:30:01;`dd;88.5;1625))
+
+A synchronous message is sent by executing the expression
+
+   processhandle message
+
+and an asynchronous message is sent by
+
+   (neg processhandle)message
+
+The following examples send synchronous character string messages to the communication partner.
+
+   h"select avg price by time.u from trade"
+
+ u|	price
+ -
+ 09:30	77.92
+ 10:00	76.31
+
+   h"insert[`trade](10:30:01;`dd;88.5;1625)"
+ `trade
+
+Since the insert message was sent synchronously the result (the name of the modified table) is returned. This confirms that the insert was sucessful. However, if the client doesn't require a response, the insert message can be sent asynchronously, as in the follow example.
+
+   (neg h)"insert[`sp](`s1;`p1;400)"
+
+Execution of this message returns immediately with no result.
+
+The function-arguments list form of this insert message is
+
+   (neg h)("insert";`sp;(`s1;`p1;400))  
+
+In most realistic situations the data to be inserted is not constant, but is either generated algorithmically or received from an external source. Consequently, the function-arguments message format is the more generally useful one because it does not require formatting the data into char strings.
+
+...Message Filters
+The default behavior of a kdb+ server is to apply the Value function to incoming messages. This behavior can be modified with message filters. Message filters are monadic, user-defined functions with reserved names .z.ps for asynchronous (set) messages and .z.pg for synchronous (get) messages. The reason for two filters is that the asynchronous message filter is not expected to return a result - and even it did, the result would not be sent to the sender - while the synchronous filter is expected to return a result. The argument to each function is the complete message received from the sender. 
+
+There are many different uses for message filters. In a server that processes ad hoc queries the filters can use protected execution to avoid stopping on query errors. In so-called gateway servers, message filters route client messages to other servers. For example, select statements with a date specification in the where phrase can be routed to a real-time server or historical server. (How can the message filter know the date? The message can be in a stored procedure call, with a parameterized query and the date as arguments). Message filters can also maintain state while a sequence of related messages is processed. 
+
+Whenever a message is received the variable .z.w is automatically given the value of the server's connection handle to the sender. This value can be referenced in the message filters. The value can be used for various purposes. For example, if you maintain a list of connected partners and the current value of .z.w is not in the list then you know this is a new user, in which case authorization and initialization functions can be executed. For example,
+
+   if[not .z.w in cp;cp,:.z.w;init .z.w]
+
+...Evaluating Messages
+
+The primitive Value function can evaluate either form of message. It applies to a simple char list holding a valid kdb+ expression, evaluates the expression as if it had been entered at a console, and returns the result of the evaluation, if any. For example,
+
+   value"3+4"
+ 7	/ the value of 3+4
+   value"m:2 3e"	/ no value is produced in this case  
+   m	/ this is the next input line; display the value of m
+ 2 3e
+
+...The Close Handler
+Either communicating partner can close a connection. A message indicating the close is printed in the console of the other partner unless that partner has a close handler. A close handler is a monadic function with the name .z.pc that is automatically called with the connection handle to the partner that closed the connection.
+
+If a client closes a connection then the server's .z.pc can use the argument to remove that client from its client list. If the server unexpectedly closes a connection (the server crashes) then the client may try to reconnect. Typically this is done with a timer so that reconnection is attempted repeatedly until successful, or perhaps up to some maximum number of attempts. In the following example, .z.pc resets the connection handle to 0 and sets the timer to 1 second. Note that the way to execute a command within a defined function is to apply the Value function to a char string holding the command text. The function .z.ts will then be called automatically every second. On each call the client attempts to reconnect. If successful, the connection handle will be assigned a positive int value. In addition, the if statement in .z.ts resets the timer to 0 if the reconnection attempt is successful.
+
+ .z.pc:{o::0;value"\\t 1000"}
+ .z.ts:{o::hopen`:srvr:5001;if[o>0;value"\\t 0"]}
+
+..Kdb+ HTTP Server
+
+There is also a message filter for HTTP messages, with the reserved name .z.ph. HTTP messages are always synchronous, so there is only one filter. This filter, which manages the Kdb+ Web Viewer, is the only one with a default definition. It can be replaced with a customized version.
+
+.Working with Files
+
+Kdb+ distinguishes three types of files, kdb+ data files, text files and all others, which we will call binary files. Files are identified by file handles, which are sym atoms of the form
+ `:[path]name
+For example, `:c:/kdbtestdata is the file handle. File handles, like communication handles, are sym atoms that begin with the character ":".
+
+..Kdb+ Data Files
+
+Data in the Kdb+ workspace is self-describing, which is accomplished by appending the descriptive information to the actual data. A kdb+ data file is a binary file that is the image of a kdb+ workspace data object, including the descriptive information.
+
+Kdb+ data can be written to kdb+ data files with Dot Amend. For example,
+
+   .[`:c:/kdbdata;();:;1 3 -4 5 10 11]
+ `:c:/kdbdata  
+
+It is also possible to append to an existing file with Amend. For example,
+   .[`:c:/kdbdata;();,;10 23 -56]
+ `:c:/kdbdata
+
+Note the comma (Join) in place of colon (Assign). The file can be read by applying the Value function to the file handle, as follows.
+
+   value`:c:/kdbdata
+ 1 3 -4 5 10 11 10 23 -56
+
+Each of these operations opens (or creates) the file, applies the operation, and closes the file. It is also possible to explicitly open a file, in which case it stays open until you close it. A file is opened and an open file handle is created in the same way as a connection handle. For example,    
+
+   h:hopen`:c:/kdbdata
+Data can be appended to the open file with the same syntax for sending messages, i.e. either	h[data]	or	h data	.
+
+   h 100 101
+ 700
+The returned value, which may be different when you repeat this example, is the value of h. This is analogous to the above Amend statement returning the file handle as its result. Any number of appends can be done with this open file handle, which can then be closed with the Hclose function.
+
+   h 1050 1100 1125 
+   hclose h
+   value`:c:/kdbdata
+ 1 3 -4 5 10 11 10 23 -56 100 101 1050 1100 1125 
+
+Kdb+ data files are used for transaction logging. When a transaction is appended to the log file with Amend, the file write is immediately synchronized to disk because the file is closed after the write. If an open file handle is used then the file write is not synchronized, which permits many more logging operations per second.
+
+...Tables
+The above Amend expression, when applied to tables, writes an entire table as one file. It is also possible to write the table to disk as a directory whose file contents are the individual columns. That is, there is one file per column in the directory. This format of a table on disk is called splayed format. The Amend statement for writing a splayed table differs from the one above only in the file handle. 
+
+ .[`:trade/;();:;trade]
+
+It is also possible to write the entire contents of a database context to one file. In particular, the default context can be written to file namedcurrentdb as follows.
+
+ .[`:currentdb;();:;value`.]
+
+..Text Files
+Text files are not Kdb+ data files and therefore the above applications of Amend do not apply. The primitive verb denoted by 0: takes a file handle as its left argument and a list of char strings as it right argument and writes the list to the text file with that handle. For example,
+
+   `:f.txt 0:("abc";"defg")
+ `:f.txt
+
+As in the Amend cases, the result is the file handle. New rows can be appended to an open text file by using the negative handle.
+
+   h:hopen `:f.txt
+   (neg h)"hijkl";
+   hclose h
+The monadic primitive function read0 is used to read a text file.
+   read0`:f.txt
+ ("abc";"defg";"hijkl")
+
+..Binary Files
+Binary files are managed in the same way as text files, using the verb 1: instead of 0:. From the Kdb+ point of view, binary files are lists of byte items. For example,
+
+   `:f.bin 1: 0xabcdef
+ `:f.bin
+
+creates the binary file f.bin with contents	0xabcdef	. The following appends to the file, 
+
+   h:hopen`:f.bin
+   h 0x01020304;
+   close h
+
+The following reads the file.
+
+   read1`:f.bin
+ 0xabcdef01020304
+
+Text files can also be read and written with read1 and 1: and managed as binary or char data. For example,
+
+   read0`:f.txt
+ ("abc";"defg";"hijkl")
+   read1`:f.txt
+ 0x6162630d0a646566670d0a68696a6b6c
+   "c"$read1`:f.txt	/ cast the data to char type
+ "abc\r\ndefg\r\nhijkl"
+
+..Specifying Field Types
+
+There are two primitives for doing this, one for text files (0:) and one for binary files (1:). The field types are designated by letters, like the q datatypes. The letters are same for text files as q data, only capitalized. For binary files, the letters are lower case.
+
+ 0 1	Type	Data(1)	Text(0)
+ - 
+ blank	skip
+ B b	boolean	1	[1tTyY]
+ X x	byte	1
+ H h	short	2	[0-9a-fA-F][0-9a-fA-F]
+ I i	int	4
+ J j	long	8
+ E e	real	4
+ F f	float	8
+ C c	char	1
+ S s	symbol	n
+ M m	month	4	[yy]yy[?]mm
+ D d	date	4	[yy]yy[?]mm[?]dd or [m]m/[d]d/[yy]yy
+ Z z	datetime	8	date?time
+ U u	minute	4	hh[:]mm
+ V v	second	4	hh[:]mm[:]ss
+ T t	time	4	hh[:]mm[:]ss[[.]ddd]
+ *	as is chars
+
+For example,	("IFC D";4 8 10 6 4)	specifies a file of fixed width fields consisting of a 4 byte int field, an 8 byte float field, a field of 10 chars, a field of width 6 that will not appear in the loaded data, and a 4 byte date field. Note that the sum of the field widths must equal the record width. For example, if there is one blank between fields then the specification would have to be	("IFC D";5 9 11 7 4)	. Text files to be read as fixed width fields must have a newline character at the end.
+
+A text file with fixed-width fields is read by
+
+ (types;widths)0:f
+
+and a binary file is read by
+
+ (types;widths)1:f
+
+The right argument f is either a file name as a sym atom or a 3-item list of the form	(file name;I;L)	. L specifies the number of bytes to be read and I specifies the starting index (the index of the first character in the file is 0). A file can only be read from the start of one record to the end of another. This form is the one to use when a very large file must be read incrementally.
+
+The result in both cases is a general list of lists with an item for each field.
+
+Variable width, delimited text files can also be read. The left argument in this case is a pair of the form	(T;D)	. T is a simple char list of type letters, as above. D is either a field-delimiting character or the enlist of one. In the case of a field delimiter, all rows are read as data and the result is a list, as above. For the enlist of a delimiter, it assumed that the first row contains field names, which are read as a simple field list; the remaining rows are read as data. The result is a table.
+
+For example, suppose that the following display are the rows of a csv file named test.csv. 
+
+ abc,def,ghi,jkl
+ 1050,1.234,abcdef,G
+ 234,1e50,gqw,X
+
+If this file read by the expression
+
+   ("IFSC";",")0:`test.csv
+
+then the result is the list
+
+ (0N 1050 234;0n 1.23 1.000e+050;`ghi`abcdef`gqw;" GX")
+
+You can see that the text "abc" on the first row of the file becomes the int 0N, "def" becomes the float 0n, and "jkl" becomes the null char " " (because it has more than one character). However, if the file is read with an enlisted delimiter,
+
+   ("IFSC";enlist ",")0:`test.csv
+
+the result is the table
+
+   +`abc`def`ghi`jkl!(1050 234;1.23 1.000e+050;`abcdef`gqw;"GX")

@@ -1,0 +1,76 @@
+Abridged Kdb+taq Manual
+
+.Summary
+Kdb+taq loads the nyse taq (25 billion+ trades and quotes) data into kdb+. The resulting multi-terabyte kdb+ database can be queried and analyzed at about 1 million ticks per second per cpu. The master, trade and quote data is from daily FTP's and/or monthly DVD's:
+ FTP http://www.nysedata.com/info/productDetail.asp?dpbid=13
+ DVD http://www.nysedata.com/info/productDetail.asp?dpbID=36
+The DVD data goes back to 1993 and (as of late 2003) is growing at 50 million records per day.
+http://www.nyse.com/content/articles/1056810884848.html
+
+ 2GB+ per day. 400GB(2003). 1000GB(1993-2002).
+
+.Hardware
+ o/s:	solaris64, linux64(opteron or nocona)
+ cpu:	2+     (2 sets of disk arrays per cpu)
+ ram:	16GB+  (8GB+ per cpu)	 	
+ dsk:	2TB+   (U320SCSI 10000rpm+ drives)
+
+The kdb+ storage factor is about 1. Get 2 times as much disk for raid5, staging and scratch space, e.g.(2004):
+ HP DL585/AMD/2CPU/16GBRAM/64bitLinux
+ ($20K)2*MSA500 G2 arrays with (7+7)*146GB 10k RPM drives(3.5TB useable) in 2 raid5 arrays.
+
+.Install
+Install kdb+. Put taq.k in q/
+
+.Load
+Put FTP(taqtrade.. taqquote.. taqmaster..) or DVD(*.tab *.bin *.idx) in SRC.
+ >q taq.k SRC DST	/ load from SRC to DST/taq
+See http://www.nyse.com/pdfs/userguid.pdf
+Kdb+ loads, indexes and stores about 1GB per minute per cpu. taq.k will load all files it finds in the SRC directory. If you want kdb+ to run in parallel:
+ 1. put a list of directories(different drive arrays) in DST/taq/par.txt
+ 2. >q DST/taq -s N    where N is equal to number of drive arrays
+There will be N slaves each reading their own drive array -- no contention. 2 disk arrays per cpu is about right(e.g. 2 cpu's and 4 array's above). Days are round-robin allocated. Multi-day queries run in parallel.
+
+.Run
+ >q DST/taq -p 5001	/ start and view at http://localhost:5001
+ >q DST/taq -p 5002	/ start another one for adhoc queries(same underlying data)
+These databases can run forever. The loads (taq.k) can send reset messages.
+
+.Options
+ >q taq.k SRC DST [-corr] [-host host:port [host:port ..]]
+ -corr  load the rearranged incorrect records (default delete)
+ -host  send reset message to server(s)
+
+.Schema
+ trade:([]date;sym;time;price;size;..)
+ quote:([]date;sym;time;bid;ask;bsize;asize;..)
+ mas:([sym;date]cusip;..)	/ master table
+
+.Query
+The data is indexed by symbol for one disk seek per day*sym*field. This yields about one million prices per second per cpu (at 10,000 ticks per sym per day). In general,
+ 10ms(6seek+4read) * (days/drives) * syms * fields, e.g. 10*1day*2sym*3fields=60ms for
+ select size wavg price by sym from trade where date=2000.10.02,sym in`A`IBM
+Data cached in memory is much faster. Restrict dates, syms and fields as much as possible -- read as little as possible, e.g.  
+ select time,price from trade where date=2000.10.02,sym=`IBM
+is faster than
+ select from trade where date=2000.10.02,sym=`IBM	/ all fields
+Move as little data as possible -- calculate in the server, e.g. from java:
+ r=k("select size wavg price from trade where date=2000.10.02,sym=`IBM");
+is much faster than pulling the data and calculating locally:
+ r=vwap(k("select size,price from trade where date=2000.10.02,sym=`IBM"));
+To retrieve for sym.exchange, e.g. `AA.N
+ f:{[d;s]x:string s;update sym:s from select from trade where date=d,sym=`$-2_x,ex=last x}
+ f[2000.10.02;`AA.N]
+
+.Client
+see http://kx.com/q/c for java, .net and c clients.
+
+.Corporate Actions
+see http://kx.com/q/taq/adj.q for symbol, split and dividend adjustments
+
+.Maintenance
+load DVD's every month and/or load FTP every night.
+
+.Test Data
+ftp://test.nysedata.com
+ >q q/taq/tq.q	generate test data
