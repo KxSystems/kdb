@@ -1,7 +1,6 @@
-//2008.02.05 dispatch
-//cl /LD ..\c\feed\ssl.c ssl.def q.lib \ssl\ssl4w32.lib
+//cl /LD ..\c\feed\ssl.c ssl.def q.lib \y\ssl\ssl4w32.lib
 //gcc -m32 -shared -fPIC ../c/feed/ssl.c -o ssl.so libssl.a
-//usr/local/gcc-3.3.2/bin/gcc -G -fPIC ../c/ssl.c -o ssl.so libssl.so
+//usr/local/gcc-3.3.2/bin/gcc -G -fPIC ../c/feed/ssl.c -o ssl.so libssl.so
 //gcc -G -fPIC ../c/feed/ssl.c -o ssl.so /apps/reuters/ssl/lib/sun4_5.5/libssl.so.4
 #include"ssl.h"
 #include"../c/k.h"
@@ -18,10 +17,11 @@ SSL(dis,r0(k(0,"dis[]",(K)0));sd0(d))SSL(rec,con();r0(k(0,"rec[]",(K)0)))
 ZS ini(S s){P(c!=-1,0)Q(sslInit(SSL_VERSION_NO),"sslinit")Q(c=sslSnkMount(s,0),"snkmount")
  sslRegisterClassCallBack(c,SSL_EC_ITEM_STATUS,stt,0);sslRegisterCallBack(c,SSL_ET_SESSION_DISCONNECTED,dis,0);
  sslRegisterClassCallBack(c,SSL_EC_DATA,upd,0);sslRegisterCallBack(c,SSL_ET_SESSION_RECONNECTED,rec,0);R con();}
-#define Q1(x,s) P(x,krr(s))
-K1(init){f=xt==KC;Q1(!f&&xt!=-KS,"type")Q1(ini(f?sn(xC,xn):xs),"init")R 0;}
-K2( ssub){I v=y->t==KS;S s;Q1(xt!=-KS||!v&&y->t!=-KS,"type")Q1(ini(""),"init")DO(v?y->n:1,Q1(sslSnkOpen(c,xs,s=v?kS(y)[i]:y->s,0,0),s))R r1(y);}
-K2(ussub){I v=y->t==KS;S s;Q1(xt!=-KS||!v&&y->t!=-KS,"type")Q1(ini(""),"init")DO(v?y->n:1,Q1(sslSnkClose(c,xs,s=v?kS(y)[i]:y->s),s))   R r1(y);}
+#define Q1(x) P(s=(x),krr(s))
+K1(init){S s;f=xt==KC;Q1(f||xt==-KS?0:"type")Q1(ini(f?sn(xC,xn):xs))R 0;} ZS sxy(K x,K y){R xt!=-KS||y->t!=KS&&y->t!=-KS?(S)"type":ini("");}
+K2( snap){S s=sxy(x,y);I v=y->t>0,o=SSL_RT_SNAPSHOT;Q1(s)DO(v?y->n:1,Q1(sslSnkOpen(c,xs,s=v?kS(y)[i]:y->s,0,SSL_SOO_REQUEST_TYPE,&o,0)?s:0))R r1(y);}
+K2( ssub){S s=sxy(x,y);I v=y->t>0;Q1(s)DO(v?y->n:1,Q1(sslSnkOpen(c,xs,s=v?kS(y)[i]:y->s,0,0)?s:0))R r1(y);}
+K2(ussub){S s=sxy(x,y);I v=y->t>0;Q1(s)DO(v?y->n:1,Q1(sslSnkClose(c,xs,s=v?kS(y)[i]:y->s   )?s:0))R r1(y);}
 K  sub(K y){K x=ks(ss("IDN_SELECTFEED"));R y= ssub(x,y),r0(x),y;}
 K usub(K y){K x=ks(ss("IDN_SELECTFEED"));R y=ussub(x,y),r0(x),y;}
 
@@ -31,7 +31,8 @@ K2(esc){K r;I i=0,j=0,n,m;C c;S e;if(10!=xt||10!=y->t)R krr("type");r=ktn(KC,xn)
   SW(kG(y)[i++]){CS('`',j=n)CS('b',DO(n-1,kG(r)[j++]=c))}}}R r;}
 
 /*
-2007.10.01 dis then sd0();dispatch[]
+2008.04.25 snap
+2008.02.05 dispatch usub ussub
 2007.06.26 k(0,..,(K)0)
 2006.06.27 new stt
 2006.05.19 s32/stt[x;y;z]
