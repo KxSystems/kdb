@@ -178,7 +178,7 @@ Functions execute left OF right, e.g. write	x*1+rate	instead of	x*(1+rate)	. Uni
 
 .Lambdas
 Lambdas are compiled
- / (bytecode;params(8);locals(24);globals(32)),Constants(96)
+ / (bytecode;params(8);locals(23);globals(31)),Constants(96)
  value {[a;b]c:d:e+f+2+3}
 
 .Rollups

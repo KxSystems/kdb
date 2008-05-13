@@ -125,6 +125,13 @@ upsert: K,:K (also K,:r K,:l K,:L K,:R)
 <xmp>aj[`sym`time;update time:time-1500 from trade;quote]
 </xmp>
 <p>brings in quotes as of 1500 milliseconds before the trade. See <a href="http://kx.com/q/taq/taq.q">http://kx.com/q/taq/taq.q</a> for examples. In the two column case the first column should be either `p# or `g#. Realtime data is grouped(`g#) by sym and sorted by time. Historical data is `p# by sym for better disk access.</p>
+<p>In aj[`sym`time;t;q] the last key must be`time (or other datetime) and q must be sorted by time within the equivalence classes of the other keys, e.g.</p>
+
+<xmp>rdb tables are often ([]`s#time;`g#sym;..) / overall time sort
+hdb tables are often ([]`p#sym;time..) / time sort within sym 
+</xmp>
+<p>q should have `g#sym(rdb) or a `p#sym(hdb). This way the asof join gets a small set of possible records immediately and then does a binary search within those - often several million times faster than without a `g# or `p#.</p>
+<p>t doesn't matter. aj is like lj - the second table needs the fast lookup.</p>
 <p><h5 id="Union Join">10 Union Join</h5></p>
 
 <xmp>x uj y
@@ -211,7 +218,7 @@ S xcols t / rearrange cols(preamble)
 <p><h5 id="Lambdas">15 Lambdas</h5></p>
 <p>Lambdas are compiled</p>
 
-<xmp>/ (bytecode;params(8);locals(24);globals(32)),Constants(96)
+<xmp>/ (bytecode;params(8);locals(23);globals(31)),Constants(96)
 value {[a;b]c:d:e+f+2+3}                                   
 </xmp>
 <p><h5 id="Rollups">16 Rollups</h5></p>
@@ -465,8 +472,8 @@ x f\:y / eachleft
 <p><h5 id="Clients">38 Clients</h5></p>
 <p>Connect and make remote function calls, e.g.   (OS is s32|l32|w32)</p>
 
-<xmp>http://kx.com/q/c/c.java c c=new c("host",port);c.k(string|{func,args..});  
-http://kx.com/q/c/c.c    int c=khp("host",port);k(c,string|{func,args..},0);
+<xmp>http://kx.com/q/c/c.jar    c c=new c("host",port);c.k(string|{func,args..});  
+http://kx.com/q/c/c.c      int c=khp("host",port);k(c,string|{func,args..},0);
 </xmp>
 
 <xmp>QHOME/OS>gcc ../c/c.c c.o   (-lsocket)
