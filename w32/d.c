@@ -1,7 +1,8 @@
-//WIN32: cl -D_C     /LD d.c d.def script1.res /o\windows\system32\qodbc.dll c.obj advapi32.lib user32.lib wsock32.lib odbc32.lib odbccp32.lib 
+//WIN32: cl -DODBC   /LD d.c d.def script1.res /o\windows\system32\qodbc.dll \d\c.c advapi32.lib user32.lib wsock32.lib odbc32.lib odbccp32.lib 
 //WIN64: cl -D_WIN64 /LD d.c d.def script1.res /o\windows\system32\qodbc.dll c.obj advapi32.lib user32.lib wsock32.lib odbc32.lib odbccp32.lib bufferoverflowU.lib
 //gcc -shared ../c/c/d.c -o qodbc.so -lodbc -fPIC -w
 //http://www.easysoft.com/developer/interfaces/odbc/linux.html#driver_install_unixodbc   also datadirect
+//2008.05.29 redo sqltables
 //2007.02.05 SAS -4/4096 remove "\"" 2007.01.21 colattribute 2007.01.16 sns/getconnectattr R S1; 2007.01.07(primary/foreign requires 2007.01.07+) 2006.12.26(sqlprepare ex) 2006.11.01 DSN=(allow access/vb?) 2006.08.25 typename N0 2006.08.15 prompt for DBQ UID PWD
 //http://msdn.microsoft.com/library/default.asp?url=/library/en-us/odbc/htm/odbc_test_overview.asp
 //http://msdn.microsoft.com/library/default.asp?url=/library/en-us/odbc/htm/dasdkodbcoverview_64bit.asp
@@ -56,7 +57,7 @@ ZV b0(I h){if(tb[h])free(tb[h]),tb[h]=0,free(tu[h]),free(tw[h]),free(tn[h]);}
 ZV ch(I h){if(tk[h])r0(tk[h]),tk[h]=0,ti[h]=tj[h]=0;}ZV fh(I h){ch(h),b0(h),s[h]=s5[h]=s6[h]=0;}
 A SQLFreeStmt(D d,UH j){SW(j){CS(SQL_CLOSE,ch((I)(L)d))CS(SQL_UNBIND,b0((I)(L)d))CS(SQL_DROP,fh((I)(L)d))CS(SQL_RESET_PARAMS,0)}R 0;}
 A SQLFreeHandle(H j,D d){U(j==3)R fh((I)(L)d),0;}A SQLCancel(D d){R SQLFreeStmt(d,SQL_CLOSE);}
-ZA k1(D d,S f,S s,I n){I h=(I)(L)d;C b[99]=".o.";K x=k(c,strcat(b,f),kpn(s,sj(s,n)),0);P(!x,QS("08S01","k1",-1))
+ZA k1(D d,S f,S s,I n){I h=(I)(L)d;C b[99]=".o.";K x=k(c,strcat(b,f),s?kpn(s,sj(s,n)):0,(K)0);P(!x,QS("08S01","k1",-1))
  Q(xt==-128,xs)P(xt!=XT,(r0(x),0))R bi[h]=-s9[h],tk[h]=x,x=xk,tf[h]=kS(xx),x=xy,tj[h]=xn,td[h]=xK,x=*xK,ti[h]=xn,0;}
 ZI nu(K x,I i){I t=xt;R t<KH?0:t==KH?xH[i]==nh:t==KJ?xJ[i]==nj:t==KE?isnan(xE[i]):t==KF||t==KZ?isnan(xF[i]):t==KC?xG[i]==' ':t==KS?!*xS[i]:xI[i]==ni;}
 ZI Td(I f,S b,I d){H*j=(H*)b;R d=dj(d),*j=d/10000,j[1]=(d/100)%100,j[2]=d%100,f?sprintf(b,"%d-%02d-%02d",j[0],j[1],j[2]):6;}
@@ -106,12 +107,13 @@ CS(SQL_DESC_SCHEMA_NAME,s="")CS(SQL_DESC_SEARCHABLE,*n=SQL_PRED_SEARCHABLE)CS(SQ
 CS(SQL_DESC_TYPE,*n=T0[t>KS?KZ:t])CS(SQL_DESC_TYPE_NAME,s=N0[t])CS(SQL_DESC_UNNAMED,*n=SQL_NAMED)CS(SQL_DESC_UNSIGNED,*n=SQL_FALSE)CS(SQL_DESC_UPDATABLE,*n=SQL_ATTR_WRITE)}
 if(s)*j2=sns(b,j1,s);R 0;}
 A SQLGetTypeInfo(D h,H j){R k1(h,"TypeInfo",j?si(j):(S)"",S0);}
-A SQLTables(D h,S d,H dj,S s,H sj,S t,H tj,S c,H cj){Q(c&&*c=='%',"tables")R k1(h,"Tables",t&&*t&&*t!='%'?t:(S)"",tj);}
-A SQLColumns(D h,S d,H dj,S u,H uj,S t,H tj,S c,H cj){Q(c,"column")R k1(h,"Columns",t,tj);}
-A SQLPrimaryKeys(D h,S d,H dj,S s,H sj,S t,H tj){R k1(h,"Key",t,tj);}
-A SQLForeignKeys(D h,S d,H dj,S s,H sj,S t,H tj,S d1,H dj1,S s1,H sj1,S t1,H tj1){R k1(h,t?"Gkey":"Fkey",t?t:t1,t?tj:tj1);}
-A SQLSpecialColumns(D h,UH i,S d,H dj,S s,H sj,S t,H tj,UH j,UH j1){R k1(h,"Special",i==SQL_ROWVER?(S)"":t,tj);}
-A SQLStatistics(D h,S d,H dj,S s,H sj,S t,H tj,UH j,UH j1){R k1(h,"Stats",t,tj);}
+A SQLTables(D h,S d,H dj,S e,H ej,S t,H tj,S c,H cj){I f;Q(d&&sj(d,dj)||e&&sj(e,ej)||!c,"tables")if(t&&(tj=sj(t,tj))&&*t!='%')strncpy(b,t,tj);else tj=0;
+ R b[tj++]=',',strncpy(b+tj,c,cj=sj(c,cj)),b[tj+cj]=0,f=strcmp(b+1,"SQL_ALL_TABLE_TYPES"),k1(h,f?"Tables":"o([]TABLE_NAME:`;TABLE_TYPE:`TABLE`VIEW;REMARKS:`)",f?b:0,S0);}
+A SQLColumns(D h,S d,H dj,S e,H ej,S t,H tj,S c,H cj){Q(c,"column")R k1(h,"Columns",t,tj);}
+A SQLPrimaryKeys(D h,S d,H dj,S e,H ej,S t,H tj){R k1(h,"Key",t,tj);}
+A SQLForeignKeys(D h,S d,H dj,S e,H ej,S t,H tj,S d1,H dj1,S e1,H ej1,S t1,H tj1){R k1(h,t?"Gkey":"Fkey",t?t:t1,t?tj:tj1);}
+A SQLSpecialColumns(D h,UH i,S d,H dj,S e,H ej,S t,H tj,UH j,UH j1){R k1(h,"Special",i==SQL_ROWVER?(S)"":t,tj);}
+A SQLStatistics(D h,S d,H dj,S e,H ej,S t,H tj,UH j,UH j1){R k1(h,"Stats",t,tj);}
 //QUERY_TIMEOUT,MAX_ROWS,NO_SCAN,MAX_LENGTH,ASYNC_ENABLE,5,6,CONCUR,KEYSET_SIZE,ROWSET_SIZE,RETRIEVE_DATA,USE_BOOKMARKS 
 A SQLSetStmtAttr(D d,SQLINTEGER i,V*s,SQLINTEGER n){I h=(I)(L)d,v=(I)(L)s;SW(i){CS(SQL_QUERY_TIMEOUT,s0[h]=v)CS(SQL_MAX_LENGTH,s3[h]=v)
 CS(SQL_BIND_TYPE,s5[h]=v)CS(SQL_CURSOR_TYPE,s6[h]=v?SQL_CURSOR_STATIC:0;P(v!=s6[h],QS("01S02","cursor",1)))
@@ -120,7 +122,7 @@ A SQLGetStmtAttr(D d,SQLINTEGER i,V*s,SQLINTEGER n,SQLINTEGER*i1){I h=(I)(L)d,v;
 CS(SQL_BIND_TYPE,v=s5[h])CS(SQL_CURSOR_TYPE,v=s6[h])
 case 27:CS(SQL_ROWSET_SIZE,v=s9[h])CS(SQL_RETRIEVE_DATA,v=s11[h])CD:Q(i>12,"getstmtattr")v=sb[i];}R*(I*)s=v,0;}
 #define MX 128 // MSQ schema_name_len=0; CRW table_name_len!=0;
-A SQLGetInfo(D d,UH h,V*v,H h1,H*h2){S s=0;I i=-2;  //  ver/commit/rollback  manager calls 77(ver) 23(num) 24(rollback)
+A SQLGetInfo(D d,UH h,V*v,H h1,H*h2){S s=0;I i=-2;  //mb(si(h));  ver/commit/rollback  manager calls 77(ver) 23(num) 24(rollback)
 SW(h){CD:Q1(si(h))// 47-72 convert  103 65003
 CS(SQL_CONVERT_FUNCTIONS,i=0)
 CS(SQL_NUMERIC_FUNCTIONS,i=0)
