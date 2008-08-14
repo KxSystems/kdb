@@ -75,8 +75,8 @@ void w(Object x){int i=0,n,t=t(x);w((byte)t);if(t<0)switch(t){case-1:w(((Boolean
 boolean rb(){return 1==b[j++];}short rh(){int x=b[j++],y=b[j++];return(short)(a?x&0xff|y<<8:x<<8|y&0xff);}
 int ri(){int x=rh(),y=rh();return a?x&0xffff|y<<16:x<<16|y&0xffff;}long rj(){int x=ri(),y=ri();return a?x&0xffffffffL|(long)y<<32:(long)x<<32|y&0xffffffffL;}
 float re(){return Float.intBitsToFloat(ri());}double rf(){return Double.longBitsToDouble(rj());}char rc(){return(char)(b[j++]&0xff);}
-String rs(){int i=j;for(;b[j++]!=0;);return new String(b,i,j-1-i);}Month rm(){return new Month(ri());}Minute ru(){return new Minute(ri());}Second rv(){return new Second(ri());}
-Object r(){int i=0,n,t=b[j++];if(t<0)switch(t){case-1:return new Boolean(rb());case-4:return new Byte(b[j++]);case-5:return new Short(rh());
+String rs()throws UnsupportedEncodingException{int i=j;for(;b[j++]!=0;);return new String(b,i,j-1-i,"ISO-8859-1");}Month rm(){return new Month(ri());}Minute ru(){return new Minute(ri());}Second rv(){return new Second(ri());}
+Object r()throws UnsupportedEncodingException{int i=0,n,t=b[j++];if(t<0)switch(t){case-1:return new Boolean(rb());case-4:return new Byte(b[j++]);case-5:return new Short(rh());
   case-6:return new Integer(ri());case-7:return new Long(rj());case-8:return new Float(re());
   case-9:return new Double(rf());case-10:return new Character(rc());case-11:return rs();
   case-13:return rm();case-14:return rd();case-15:return rz();case-17:return ru();case-18:return rv();case-19:return rt();}
@@ -98,7 +98,7 @@ public void ks(String s,Object x)throws IOException{Object[]a={cs(s),x};w(0,a);}
 public void ks(String s,Object x,Object y)throws IOException{Object[]a={cs(s),x,y};w(0,a);}
 public void ks(String s,Object x,Object y,Object z)throws IOException{Object[]a={cs(s),x,y,z};w(0,a);}
 public static class KException extends Exception{KException(String s){super(s);}}
-public Object k()throws KException,IOException{synchronized(i){i.readFully(b=new byte[8]);a=b[0]==1;j=4;
+public Object k()throws KException,IOException,UnsupportedEncodingException{synchronized(i){i.readFully(b=new byte[8]);a=b[0]==1;j=4;
  i.readFully(b=new byte[ri()-8]);if(b[0]==-128){j=1;throw new KException(rs());}j=0;return r();}}
 public synchronized Object k(Object x)throws KException,IOException{w(1,x);return k();}
 public Object k(String s)throws KException,IOException{return k(cs(s));}
@@ -112,7 +112,7 @@ public static void O(long x){System.out.println(x);}public static void O(double 
 public static long t(){return System.currentTimeMillis();}static long t;
 public static void tm(){long u=t;t=t();if(u>0)O(t-u);}static String i2(int i){return new DecimalFormat("00").format(i);}
 }
-
+//2008.08.14 String(,,,"ISO-8859-1") to avoid mutex
 //2007.10.18 tz 
 //2007.08.06 kx
 //2007.04.20 sql.{Date|Time|Timestamp}
