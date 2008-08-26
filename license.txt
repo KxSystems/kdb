@@ -1,0 +1,60 @@
+
+PUBLIC Q CODE LIBRARY LICENSE AGREEMENT
+
+CAREFULLY READ THE FOLLOWING TERMS AND CONDITIONS.  BY DOWNLOADING FILES FROM THE PUBLIC Q CODE LIBRARY, YOU ARE
+AGREEING TO BE BOUND BY THESE TERMS AND CONDITIONS.  IF YOU DO NOT AGREE TO THESE TERMS AND CONDITIONS, DO NOT 
+DOWNLOAD THE FILES.
+
+This Public q Code Library License Agreement is made between Kx Systems, Inc. (“Kx”) and you, the End User, with 
+respect to the files contained in the folder located at http://kx.com/q and its sub-folders (the “Public q Code
+Library  Files”).  You agree to use the Public q Code Library Files under the terms and conditions set forth below.
+ 
+1.	LICENSE GRANT
+	1.1	Grant of License.  Kx hereby grants End User a irrevocable, non-exclusive license to copy, modify, merge,
+	publish, sublicense, decompile, compile and/or sell the Public q Code Library Files.  The foregoing license 
+	grant is subject to the below restrictions and conditions.
+	1.2	Public q Code Library Use Restrictions.  The name and trademarks of Kx shall not be used in advertising 
+	or otherwise to promote the use, distribution or sale of the Public q Code Library Files without prior
+	written authorization from Kx. 
+	1.3	Proprietary Rights.  End User acknowl¬edges and agrees that Kx owns all right, title and interest in 
+	the Public q Code Library Files and in all of Kx’s patents, trademarks, trade names, inventions, copyrights,
+	know-how and trade secrets relating to the design and operation of the Public q Code Library Files.  End 
+	User shall not remove any copyright notices or other proprietary rights notices of Kx contained in the 
+	Public q Code Library Files.
+
+2.	NO SUPPORT OR MAINTENANCE
+	The Public q Code Library Files is licensed to End User without any support (consulting services) or 
+	maintenance (error corrections).  
+
+3.	FEES
+	The Public q Code Library Files is licensed to End User without charge.   
+
+4.	NO WARRANTY 
+	THE PUBLIC Q CODE LIBRARY FILES ARE PROVIDED “AS IS.”  KX EXPRESSLY DISCLAIMS AND NEGATES ALL WARRANTIES 
+	FOR THE PUBLIC Q CODE LIBRARY FILES, WHETHER EXPRESSED, IMPLIED, STATUTORY OR OTHERWISE, AND KX 
+	SPECIFICALLY DISCLAIMS ANY IMPLIED WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE,
+	NONINFRINGEMENT OF INTELLECTUAL PROPERTY OR OTHER VIOLATION OF RIGHTS.  KX DOES NOT WARRANT THAT 
+	THE PUBLIC Q CODE LIBRARY FILES WILL MEET END USER REQUIREMENTS OR THAT THE OPERATION OF THE PUBLIC 
+	Q CODE LIBRARY FILES WILL BE UNINTERRUPTED OR ERROR FREE.
+
+5.	LIMITATION OF LIABILITY  
+	KX SHALL NOT BE LIABLE FOR ANY DAMAGES, AND IN PARTICULAR SHALL NOT BE LIABLE FOR ANY SPECIAL, INCIDENTAL,
+	CONSEQUENTIAL, INDIRECT OR OTHER SIMILAR DAMAGES, IN CONNECTION WITH OR ARISING OUT OF THE USE OF OR 
+	INABILITY TO USE THE PUBLIC Q CODE LIBRARY FILES, EVEN IF KX HAS BEEN ADVISED OF THE POSSIBILITY OF 
+	SUCH DAMAGES.  SUCH DAMAGES INCLUDE, BUT ARE NOT LIMITED TO, LOSS OF PROFITS, REVENUE OR BUSINESS 
+	INFORMATION.
+	 
+6.	GENERAL
+	This is the only Agreement between End User and Kx relating to the Public q Code Library Files.  This 
+	Agreement shall be governed by California law, except as to copyright matters covered by Federal law.  
+	This Agreement is deemed entered into at Palo Alto, California by both parties.  Should any provision 
+	of this Agreement be declared unenforceable in any jurisdiction, then such provision shall be deemed 
+	to be severed from this Agreement and shall not effect the remainder hereof.  End User agrees and 
+	certifies that the Public q Code Library Files shall not be shipped, transferred or exported, directly 
+	or indirectly, into any country prohibited by the United States Export Administration Act, and the 
+	regulations thereunder, or will the Public q Code Library Files be used for any purpose prohibited by 
+	the same.
+
+End of License Agreement
+
+
