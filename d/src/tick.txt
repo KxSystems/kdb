@@ -28,8 +28,8 @@ Install kdb+. Unzip tick.zip in q/
 
 .Run
 A tickerplant system usually has the tickerplant, realtime db, historical db, one or more feeds and several clients, e.g.
- >q tick.k sym DST	-p 5010 / load schema tick/sym.q and sets log `:DST/symYYYY.MM.DD
- >q tick/r.k :5010	-p 5011 / rdb (realtime db gets everything)
+ >q tick.q sym DST	-p 5010 / load schema tick/sym.q and sets log `:DST/symYYYY.MM.DD
+ >q tick/r.q :5010	-p 5011 / rdb (realtime db gets everything)
  >q DST/sym	-p 5012 / hdb (historical db gets daily snapshot)
  >q tick/c.q last :5010	/ sample last client
  >q tick/c.q vwap :5010	/ sample vwap client
@@ -44,14 +44,14 @@ The historical database port should be 1+realtime port -- e.g. 5012 -- so the ti
 We provide triarch/ssl and bloomberg feed handlers. The handlers can be on any machine. They can parse about 100,000 records per second -- i.e. more than the feeds can send.
 
 .Options
- >q tick.k SRC DST [-p 5010] [-t 1000] [-o hours]
+ >q tick.q SRC DST [-p 5010] [-t 1000] [-o hours]
  SRC	default: sym (tick/sym.q)
  DST	default: none (no log. no rdb.)
  -p port	default: 5010
  -t timer milliseconds	default: 1000
  -o gmt offset hours	default: localtime
 For testing and replay(http://kx.com/q/tow) don't provide a DST, e.g.
- >q tick.k sym
+ >q tick.q sym
 
 .Client
 Subscribe with:

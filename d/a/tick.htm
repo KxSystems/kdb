@@ -29,8 +29,8 @@ options 6GB
 <p><h5 id="Run">6 Run</h5></p>
 <p>A tickerplant system usually has the tickerplant, realtime db, historical db, one or more feeds and several clients, e.g.</p>
 
-<xmp>>q tick.k sym DST       -p 5010 / load schema tick/sym.q and sets log `:DST/symYYYY.MM.DD
->q tick/r.k :5010       -p 5011 / rdb (realtime db gets everything)                      
+<xmp>>q tick.q sym DST       -p 5010 / load schema tick/sym.q and sets log `:DST/symYYYY.MM.DD
+>q tick/r.q :5010       -p 5011 / rdb (realtime db gets everything)                      
 >q DST/sym              -p 5012 / hdb (historical db gets daily snapshot)                
 >q tick/c.q last :5010  / sample last client                                             
 >q tick/c.q vwap :5010  / sample vwap client                                             
@@ -47,7 +47,7 @@ client (java, .net, c or q) subscribe: e.g. .u.sub[`trade`quote;`MSFT.O`IBM.N]
 <p>We provide triarch/ssl and bloomberg feed handlers. The handlers can be on any machine. They can parse about 100,000 records per second -- i.e. more than the feeds can send.</p>
 <p><h5 id="Options">7 Options</h5></p>
 
-<xmp>>q tick.k SRC DST [-p 5010] [-t 1000] [-o hours]                                
+<xmp>>q tick.q SRC DST [-p 5010] [-t 1000] [-o hours]                                
 SRC                                              default: sym (tick/sym.q)      
 DST                                              default: none (no log. no rdb.)
 -p port                                          default: 5010                  
@@ -56,7 +56,7 @@ DST                                              default: none (no log. no rdb.)
 </xmp>
 <p>For testing and replay(<a href="http://kx.com/q/tow">http://kx.com/q/tow</a>) don't provide a DST, e.g.</p>
 
-<xmp>>q tick.k sym
+<xmp>>q tick.q sym
 </xmp>
 <p><h5 id="Client">8 Client</h5></p>
 <p>Subscribe with:</p>
@@ -71,7 +71,7 @@ upd:{[t;x]vwap+:select size wsum price,sum size by sym from x} / incremental vwa
 upd:{[t;x].[t;();,;select by sym from x}                   / last
 upd:{[t;x].[t;();,'';select time,price,size by sym from x} / nest
 </xmp>
-<p>In java and c#: (using <a href="http://kx.com/q/c/c.java">http://kx.com/q/c/c.java</a> or <a href="http://kx.com/q/c/c.cs">http://kx.com/q/c/c.cs</a>)</p>
+<p>In java and c#: (using <a href="http://kx.com/q/c/c.jar">http://kx.com/q/c/c.jar</a> or <a href="http://kx.com/q/c/c.cs">http://kx.com/q/c/c.cs</a>)</p>
 
 <xmp>k.c(".u.sub[`trade;`MSFT.O`IBM.N]");                                                        
 while(true){Object x=k.c();Console.WriteLine(at(x,1));alerts..} // print incoming table name
