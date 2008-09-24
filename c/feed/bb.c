@@ -9,10 +9,12 @@ ZV upd(bb_msg_tick_t*b){K x;I t,m;bb_decode_tick_t*d=b->tick_data;
  DO(b->comm_header.num_items,t=d[i].type;m=d[i].mon_id;
   if(t<4)r0(k(0,"upd",ks(ss(tba[t])),knk(3,ki(m),kf(d[i].data.BID.price),ki(qn(d[i].data.BID.size))),0)))}
 
-ZK d0(I d){C b[9999];I n;for(;n=bb_sizeof_nextmsg(c);)SW(bb_rcvdata(c,b,n)){
- CS(BB_SVC_TICKMONITOR,mon((bb_msg_monid_t*)b))
- CS(BB_SVC_TICKDATA,   upd((bb_msg_tick_t*)b)) 
- CS(BB_SVC_STATUS,     stt((bb_msg_status_t*)b))}R 0;}
+ZK d0(I d){C*b;I n;for(;n=bb_sizeof_nextmsg(c);free(b))
+  SW(bb_rcvdata(c,b=malloc(n),n)){
+   CS(BB_SVC_TICKMONITOR,mon((bb_msg_monid_t*)b))
+   CS(BB_SVC_TICKDATA,   upd((bb_msg_tick_t*)b)) 
+   CS(BB_SVC_STATUS,     stt((bb_msg_status_t*)b))}
+ R 0;}
 
 ZK init(){R c?c:(c=bb_connect(8194))?sd1(bb_getsocket(c),d0):0;}
 K1(sub){R!init()?krr("init"):xt!=-KS?krr("type"):ki(bb_tickmntr(c,1,xs)-1);} // could do 10*36bytes
