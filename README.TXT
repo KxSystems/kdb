@@ -13,7 +13,7 @@ trade.q	trade
 
 financial apps built with q
 tick	tickerplant (1 million transactions per second)
-taq	loader for 30 billion us equity trades and quotes
+taq	loader for 100+ billion us equity trades and quotes
 tow	replay (1 to 10 million transactions per second)
 
 o/s specific binaries
@@ -21,6 +21,7 @@ l64	64bit linux
 s64	64bit solaris/sparc
 v64	64bit solaris/amd
 w64	64bit windows
+m64	64bit macintosh
 
 l32	32bit linux
 s32	32bit solaris
