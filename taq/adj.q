@@ -21,7 +21,7 @@ s:100#`$read0`:tick/sp500.txt
  where sym in s,time within 09:00 10:00
 \t b:select sum size%AMD[mas;date]by mas,minute from update mas:MSD[sym;date]from a
 
-\t mdaily:select mas,date,adj*high,adj*low,adj*price,size%adj from
+\t mdaily:select mas,date,high*adj,low*adj,price*adj,size%adj from
  update adj:AMD[mas;date]from`mas xasc
  update mas:MSD[sym;date]from select from daily
 
