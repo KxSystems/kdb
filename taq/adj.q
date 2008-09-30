@@ -27,7 +27,7 @@ s:100#`$read0`:tick/sp500.txt
 
 / return timeseries for daterange and symbols
 ret:{[d;s]
- update AMD[mas;date]*price,size%AMD[mas;date]from
+ update price*AMD[mas;date],size%AMD[mas;date]from
   select date,time,mas:MSD[sym;date],price,size from 
    trade where date within d,sym in SMD[s;first date]}
 
