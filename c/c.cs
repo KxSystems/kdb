@@ -1,15 +1,13 @@
+//2007.09.26 0Wz to MaxValue
 //2006.10.05 truncate string at null
 //2006.09.29 NULL  c.Date class(sync with c.java)
-// \winnt\microsoft.net\framework\v2.0.50727\csc c.cs
 using System;using System.IO;using System.Net.Sockets; //csc c.cs  given >q trade.q -p 5001
-class c:TcpClient{public static void Main(string[]args){
- c c=new c("localhost",5001);//c.ReceiveTimeout=1000;
+class c:TcpClient{public static void Main(string[]args){//c.ReceiveTimeout=1000;
+//c c=new c("localhost",5010);c.k(".u.sub[`trade;`MSFT.O`IBM.N]");while(true){object r=c.k();O(n(at(r,2)));}
+ c c=new c("localhost",5001);
+//object[]x=new object[4];x[0]=t();x[1]="xx";x[2]=(double)93.5;x[3]=300;tm();for(int i=0;i<1000;++i)c.k("insert","trade",x);tm();
  Flip r=td(c.k("select sum price by sym from trade"));O("cols: "+n(r.x));O("rows: "+n(r.y[0]));
-// object[]x=new object[4];x[0]=t();x[1]="xx";x[2]=(double)93.5;x[3]=300;
-// tm();for(int i=0;i<1000;++i)c.ks("insert", "trade", x);tm();
-// c c=new c("localhost",5010);c.k(".u.sub[`trade;`MSFT.O`IBM.N]");while(true){object r=c.k();O(n(at(r,2)));}
- c.Close();
-}
+ c.Close();}
 byte[]b,B;int j,J;bool a;Stream s;public new void Close(){s.Close();base.Close();}
 public c(string h,int p):this(h,p,Environment.UserName){}
 public c(string h,int p,string u):base(h,p){s=this.GetStream();B=new byte[1+u.Length];J=0;w(u);s.Write(B,0,J);if(1!=s.Read(B,0,1))throw new Exception("access");}
@@ -21,8 +19,10 @@ static object[]NU={null,false,null,null,(byte)0,Int16.MinValue,ni,nj,(Single)nf,
  new Month(ni),new Date(ni),new DateTime(0),null,new Minute(ni),new Second(ni),new TimeSpan(nj)};
 static object NULL(char c){return NU[" b  xhijefcs mdz uvt".IndexOf(c)];}
 public static bool qn(object x){int t=-c.t(x);return t>4&&x.Equals(NU[t]);}
+
+static DateTime za=DateTime.MinValue,zw=DateTime.MaxValue;
 public class Date{public int i;public Date(int x){i=x;}
- public DateTime DateTime(){return new DateTime(i==ni?0L:(long)8.64e11*i+o);}
+ public DateTime DateTime(){return i==-int.MaxValue?za:i==int.MaxValue?zw:new DateTime(i==ni?0L:(long)8.64e11*i+o);}
  public Date(long x){i=x==0L?ni:(int)(x/(long)8.64e11)-730119;}
  public Date(DateTime z):this(z.Ticks){}public override string ToString(){return i==ni?"":this.DateTime().ToString("d");}}
 public class Month{public int i;public Month(int x){i=x;}public override string ToString(){int m=24000+i,y=m/12;return i==ni?"":i2(y/100)+i2(y%100)+"-"+i2(1+m%12);}}
@@ -57,7 +57,9 @@ string rs(){int i=0,k=j;for(;b[k]!=0;)++k;char[]s=new char[k-j];for(;j<k;)s[i++]
 void w(Date d){w(d.i);}Date rd(){return new Date(ri());}   void w(Minute u){w(u.i);}Minute ru(){return new Minute(ri());}    
 void w(Month m){w(m.i);}Month rm(){return new Month(ri());}void w(Second v){w(v.i);}Second rv(){return new Second(ri());}
 void w(TimeSpan t){w(qn(t)?ni:(int)(t.Ticks/10000));}TimeSpan rt(){int i=ri();return new TimeSpan(qn(i)?nj:10000L*i);}
-void w(DateTime z){w(qn(z)?nf:(z.Ticks-o)/8.64e11);}DateTime rz(){double f=rf();return new DateTime(qn(f)?0:10000*(long)(.5+8.64e7*f)+o);}
+void w(DateTime z){w(qn(z)?nf:z==za?Double.NegativeInfinity:z==zw?Double.PositiveInfinity:(z.Ticks-o)/8.64e11);}
+DateTime rz(){double f=rf();return Double.IsInfinity(f)?(f<0?za:zw):new DateTime(qn(f)?0:10000*(long)Math.Round(8.64e7*f)+o);}
+
 void w(object x){int i=0,n,t=c.t(x);w((byte)t);if(t<0)switch(t){case-1:w((bool)x);return;case-4:w((byte)x);return;
  case-5:w((short)x);return;case-6:w((int)x);return;case-7:w((long)x);return;case-8:w((float)x);return;case-9:w((double)x);return;
  case-10:w((char)x);return;case-11:w((string)x);return;case-13:w((Month)x);return;case-17:w((Minute)x);return;case-18:w((Second)x);return;
@@ -81,7 +83,7 @@ object r(){int i=0,n,t=(sbyte)b[j++];if(t<0)switch(t){case-1:return rb();case-4:
  case 17:Minute[]U=new Minute[n];for(;i<n;i++)U[i]=ru();return U;case 15:DateTime[]Z=new DateTime[n];for(;i<n;i++)Z[i]=rz();return Z;
  case 18:Second[]V=new Second[n];for(;i<n;i++)V[i]=rv();return V;case 19:TimeSpan[]T=new TimeSpan[n];for(;i<n;i++)T[i]=rt();return T;}return null;}
 void w(int i,object x){int n=nx(x)+8;B=new byte[n];B[0]=1;B[1]=(byte)i;J=4;w(n);w(x);s.Write(B,0,n);}
-void read(byte[]b){int i=0,n=b.Length;for(;i<n;)i+=s.Read(b,i,n-i);}
+void read(byte[]b){int i=0,j,n=b.Length;for(;i<n;i+=j)if(!(j=s.Read(b,i,n-i)))throw new Exception("read");}
 public object k(){read(b=new byte[8]);a=b[0]==1;j=4;read(b=new byte[ri()-8]);if(b[0]==128){j=1;throw new Exception(rs());}j=0;return r();}
 public object k(object x){w(1,x);return k();}
 public object k(string s){return k(cs(s));}char[]cs(string s){return s.ToCharArray();}
