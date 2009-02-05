@@ -22,13 +22,13 @@ n:{r j+:1};i:{j+:1;x};p:{i x n[]};p1:{$[x~z;((x;-:)x~(-);y n[]);y z]};si:{x?$[-1
 p2:{{y;|/r[j]~/:x}[x]{|(x n[];y;r j)}[y]/y z};l:{{","~r j}{x n y}[x]\x y};b:{$[x~r j;y r j+:1+`by~r j+1;()]}
 a:p2[(+;-)]p2[(*;%)]p1[-]{$["("~x;p a;"{"~x;i m`d`t?r -1+j+:2;~"("~n[]
  $[(3>t:si[d]x)&11=@r j;m t;x];(#:)~x;i(#:;$[(?:)~x:n[];(x;i n[]);i$[(*)~x;`i;x]]);(x;p a)]}
-c:p2[|]p2[&]p1[~:]{$["("~x;p c;|(,$[(in)~f;i .q.plist,l[a]n n[];(within)~f;|(a n[];a n[]);a n[]]),|(f:r j;a x)]};
+c:p2[|]p2[&]p1[~:]{$["("~x;p c;|(,$[(in)~f;i .q.plist,l[a]n n[];(within)~f;|(a n[];a n[]);a n[]]),|(f:r j;a x)]}
 
 wh:{$[#x:b[`where]c;{$[@x;x;(&)~*x;,/.z.s'1_x;,x]}x;x]};f:{$[~t:@x;f'x;-11=t;*|`\:x;x]}
 nm:{(!).+l[{($[|/(x:r j)~/:(`;","),k;{$[1<#x;.z.s x 1;-11=@x;*|`\:x;`x]}y;i x];y:x y)}x]y}
 jn:{if[~1=#r:x@&~b:1={$[98=@x:. x;0;#+!x]}'x;'`join];r:*r;x@:&b;e:1_'y@&b:{$[~(=)~*x;0b;11=@x:1_x]}'y
  y@:&~b;a:e@'b:e[;0]in c:{`/:x,*!+!. x}'x;b:e@'~b;(+(r,x)!(,r!!#. r),x$.:'a b?c;y,(=),'e@&~b in c)}
-sel:{j::1;s:$[(*)~x:r j+:d:(?:)~x:r j;i();nm[a]x];e:1=#x:nm[i]n[];0N!w:wh[];if[e;s:f's;w:f'w];g:#b[`group]l i;
+sel:{j::1;s:$[(*)~x:r j+:d:(?:)~x:r j;i();nm[a]x];e:1=#x:nm[i]n[];w:wh[];if[e;s:f's;w:f'w];g:#b[`group]l i;
  v:.`.;x:(?).$[e;(.*x;w);[.[`.;();,;.:'x];jn[!x]w]],($[g;g#s;d];g_s);.[`.;();:;v]
  if[`order~r j;if[~o~(g&#o:{$[2=#x;::;,:]@*|`\:x 1}'(&","~'o)_o:",",(j+2)_r)#!s;x:0!x;x:g!x{x y z x}/[::;(<:;>:)0<@:'o;x@*:'o:|o]]];x}
 
