@@ -44,9 +44,9 @@ typedef struct k0{I r;H t,u;union{G g;H h;I i;J j;E e;F f;S s;struct k0*k;struct
 #ifdef __cplusplus
 extern"C"{
 #endif
-extern I khpu(char*,I,char*),khp(char*,I),ymd(I,I,I),dj(I);extern V r0(K),sd0(I);extern S sn(S,I),ss(S);
+extern I khpu(const char*,I,const char*),khp(const char*,I),ymd(I,I,I),dj(I);extern V r0(K),sd0(I);extern S sn(S,I),ss(S);
 extern K ka(I),kb(I),kg(I),kh(I),ki(I),kj(J),ke(F),kf(F),kc(I),ks(S),kd(I),kz(F),kt(I),sd1(I,K(*)(I)),dl(V*f,I),
- ktn(I,I),knk(I,...),kp(S),kpn(S,I),ja(K*,V*),js(K*,S),jk(K*,K),k(I,char*,...),xT(K),xD(K,K),ktd(K),r1(K),krr(S),orr(S),dot(K,K),d9(K),b9(I,K);
+ ktn(I,I),knk(I,...),kp(S),kpn(S,I),ja(K*,V*),js(K*,S),jk(K*,K),k(I,const char*,...),xT(K),xD(K,K),ktd(K),r1(K),krr(S),orr(S),dot(K,K),d9(K),b9(I,K);
 #ifdef __cplusplus 
 }
 #endif
