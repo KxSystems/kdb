@@ -1,14 +1,9 @@
-#if _WIN64
-typedef long I;typedef __int64 L,J;
-#elif WIN32
-typedef long I,L;typedef __int64 J;
-#else
-typedef int I;typedef long L;typedef long long J;
-#endif  // typedef struct k0{I r;H t,u;I n;G G0[1];}*K; before gcc3.0
-typedef unsigned char*S,G,C;typedef short H;typedef float E;typedef double F;typedef void V;
+#ifndef KX
+#define KX
+typedef char*S,C;typedef unsigned char G;typedef short H;typedef int I;typedef long long J;typedef float E;typedef double F;typedef void V;
 typedef struct k0{I r;H t,u;union{G g;H h;I i;J j;E e;F f;S s;struct k0*k;struct{I n;G G0[1];};};}*K;
 
-#include<string.h>
+//#include<string.h>
 // vector accessors, e.g. kF(x)[i] for float&datetime
 #define kG(x)	((x)->G0)
 #define kC(x)	kG(x)
@@ -44,9 +39,9 @@ typedef struct k0{I r;H t,u;union{G g;H h;I i;J j;E e;F f;S s;struct k0*k;struct
 #ifdef __cplusplus
 extern"C"{
 #endif
-extern I khpu(const char*,I,const char*),khp(const char*,I),ymd(I,I,I),dj(I);extern V r0(K),sd0(I);extern S sn(S,I),ss(S);
+extern I khpu(const S,I,const S),khp(const S,I),ymd(I,I,I),dj(I);extern V r0(K),sd0(I);extern S sn(S,I),ss(S);
 extern K ka(I),kb(I),kg(I),kh(I),ki(I),kj(J),ke(F),kf(F),kc(I),ks(S),kd(I),kz(F),kt(I),sd1(I,K(*)(I)),dl(V*f,I),
- ktn(I,I),knk(I,...),kp(S),kpn(S,I),ja(K*,V*),js(K*,S),jk(K*,K),k(I,const char*,...),xT(K),xD(K,K),ktd(K),r1(K),krr(S),orr(S),dot(K,K),d9(K),b9(I,K);
+ ktn(I,I),knk(I,...),kp(S),kpn(S,I),ja(K*,V*),js(K*,S),jk(K*,K),k(I,const S,...),xT(K),xD(K,K),ktd(K),r1(K),krr(S),orr(S),dot(K,K);
 #ifdef __cplusplus 
 }
 #endif
@@ -119,3 +114,5 @@ extern double log();
 #define xS ((S*)xG)
 #define xK ((K*)xG)
 #define xC xG
+
+#endif
