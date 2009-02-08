@@ -83,7 +83,7 @@ object r(){int i=0,n,t=(sbyte)b[j++];if(t<0)switch(t){case-1:return rb();case-4:
  case 17:Minute[]U=new Minute[n];for(;i<n;i++)U[i]=ru();return U;case 15:DateTime[]Z=new DateTime[n];for(;i<n;i++)Z[i]=rz();return Z;
  case 18:Second[]V=new Second[n];for(;i<n;i++)V[i]=rv();return V;case 19:TimeSpan[]T=new TimeSpan[n];for(;i<n;i++)T[i]=rt();return T;}return null;}
 void w(int i,object x){int n=nx(x)+8;B=new byte[n];B[0]=1;B[1]=(byte)i;J=4;w(n);w(x);s.Write(B,0,n);}
-void read(byte[]b){int i=0,j,n=b.Length;for(;i<n;i+=j)if(!(j=s.Read(b,i,n-i)))throw new Exception("read");}
+void read(byte[]b){int i=0,j,n=b.Length;for(;i<n;i+=j)if(0==(j=s.Read(b,i,n-i)))throw new Exception("read");}
 public object k(){read(b=new byte[8]);a=b[0]==1;j=4;read(b=new byte[ri()-8]);if(b[0]==128){j=1;throw new Exception(rs());}j=0;return r();}
 public object k(object x){w(1,x);return k();}
 public object k(string s){return k(cs(s));}char[]cs(string s){return s.ToCharArray();}
