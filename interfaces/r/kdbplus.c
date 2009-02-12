@@ -447,45 +447,19 @@ static SEXP from_month_kobject(K object)
 	return from_int_kobject(object);	
 }
 
-static SEXP from_date_kobject(K x)
+static SEXP from_date_kobject(K object) 
 {
-	SEXP result;
-	int i, length = x->n;
-	if (scalar(x)) {
-		PROTECT(result = NEW_INTEGER(1));
-		INTEGER_POINTER(result)[0] = x->i + 10957;
-	}
-	else {
-		PROTECT(result = NEW_INTEGER(length));
-		for(i = 0; i < length; i++)
-			INTEGER_POINTER(result)[i] = (int) xI[i] + 10957;
-	}
-	SEXP dateclass = PROTECT(allocVector(STRSXP,1));
-	SET_STRING_ELT(dateclass, 0, mkChar("Date"));
-	setAttrib(result, R_ClassSymbol, dateclass);
-	UNPROTECT(2);
-	return result;
+	return from_int_kobject(object);
 }
 
-static SEXP from_datetime_kobject(K x)
+static SEXP from_datetime_kobject(K x) 
 {
 	SEXP result;
-	int i, length = x->n;
-	if (scalar(x)) {
-		PROTECT(result = NEW_NUMERIC(1));
-		NUMERIC_POINTER(result)[0] = (x->f + 10957) * 86400;
-	}
-	else {
-		PROTECT(result = NEW_NUMERIC(length));
-		for(i = 0; i < length; i++)
-			NUMERIC_POINTER(result)[i] = (kF(x)[i] + 10957) * 86400;
-	}
-	SEXP datetimeclass = PROTECT(allocVector(STRSXP,2));
-	SET_STRING_ELT(datetimeclass, 0, mkChar("POSIXt"));
-	SET_STRING_ELT(datetimeclass, 1, mkChar("POSIXct"));
-	setAttrib(result, R_ClassSymbol, datetimeclass);
-	UNPROTECT(2);
-	return result;
+	PROTECT(result = NEW_INTEGER(1));
+	INTEGER_POINTER(result)[0] = 86400*(x->f+10957);
+	r0(x);
+	UNPROTECT(1);
+	return result;	
 }
 
 static SEXP from_minute_kobject(K object) 

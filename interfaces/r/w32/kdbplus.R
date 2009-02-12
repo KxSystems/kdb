@@ -1,4 +1,4 @@
-dyn.load("c:/r/kdbplus.dll")
+dyn.load(file.path("c:\\r\\","kdbplus.dll"))
 
 open_connection <- function(host="localhost", port=5000, user=NULL) {
          parameters <- list(host, as.integer(port), user)
