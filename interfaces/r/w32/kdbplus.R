@@ -1,4 +1,4 @@
-dyn.load("c:/r/kdbplus.dll")
+dyn.load(file.path(Sys.getenv("QHOME"),"l64","kx_r_interface.so"))
 
 open_connection <- function(host="localhost", port=5000, user=NULL) {
          parameters <- list(host, as.integer(port), user)
