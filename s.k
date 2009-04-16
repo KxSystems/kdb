@@ -35,7 +35,7 @@ lj:{+({x!!#. x}'x),y$(0!.*x)(*!x){y[1](*y:+`\:'y)?x}'1_'z} ;lr:{a!:a:,y;b!:b:,r 
 jn:{if[~1=#f:&~1={$[98=@x:. x;0;#+!x]}'x;'`join];a:f#x;b:y{$[(11=@y:1_y)&(=)~*y;x=*`\:y 1-y?z;0b]}[t:*!a]\:/:(!x){`/:x,*!+!. y}'. x:f_x;(lj[a;x;y b?'1b];y@&~|/b)}
 st:{[t;w;g;s;h;o;m]if[#h;s[`]:h];t:0!(?).$[98=@t;(t;w;g;s);1=#t;(.*t;f'w;f'g;f's);jn[t;w],(g;s)];if[#h;t@:&t`];if[#o;t@:?[t;::;o]];$[#m;(m&#t)#t;t]}
 sel:{j+:d:(?:)~r j::x+1;s:$[(*)~x:r j;i();nm[a]x];if[~`from~r j;'`from];x:$[3>k:si[`left`right`inner]r j+1;lr k;nm i]n[];w:wh[];g:b[`group]l a;h:b[`having]c
- if[#o:$[m:#g;+/g~'m#o;0]_o:b[`order]l{[s;x]x:a x;if[6=@x;x:s x-1];$[`desc~r j;i(>:;x);x]}[. s];if[1<#o;'`nyio];o:f$[(>:)~*o:*o;o;(<:;o)]];m:b[`limit]i
+ if[#o:$[m:#g;+/g~'m#o;0]_o:b[`order]l{[s;x]x:a x;if[-6=@x;x:s x-1];$[`desc~r j;i(>:;x);x]}[. s];if[1<#o;'`nyio];o:f$[(>:)~*o:*o;o;(<:;o)]];m:b[`limit]i
  v:$[#s;(!s)#;];if[#k:(f'*:'g)^(*&s~\:)'g;g:k#s;$[#s:k_s;s[u]:(*:;)'s u:&0>@:'s;[s:g;g:1b]]];v st[x;w;$[#g;g;d];s;h;o;m]}
 
 t:(`char`varchar`tinyint`smallint`bigint`timestamp!`symbol`symbol`byte`short`long`datetime),t!t:`boolean`int`real`float`date`time
