@@ -27,7 +27,7 @@ cs:{$[@y;y x;(x'). y]};c1:{$[`when~x:r j;{cs[(+x)?'1b;y]},wt[];{cs[y?x;z]},|(|wt
 n:{r j+:1};i:{j+:1;x};p:{i x n[]};p1:{$[x~z;((x;-:)x~(-);y n[]);y z]};dt:{"DTZ"[x]$$*i r j}
 p2:{{y;|/r[j]~/:x}[x]{|(x n y;y;r j)}[y]/y z};l:{{","~r j}{x n y}[x]\x y};b:{$[x~r j;y n[];()]}
 a:p2[(+;-)]p2[(*;%)]p1[-]{$["("~x;p c;"{"~x;p{dt`d`t?i r j};`case~x;p c1;~"("~n[];$[(3>t:si[d]x)&11=@r j;dt t;x];(#:)~x;i(#:;$[(?:)~x:n[];(x;i n[]);i$[(*)~x;`i;x]]);x,p l c]}
-c:p2[|]p2[&]p1[~:]{x:a x;$[9=c:(in;within;like;<;=;>;~>;~=;~<)?f:r j;x;(f;x;$[~i c;ls,p l a;c=1;|(a n[];a r j);a r j])]}
+c:p2[|]p2[&]p1[~:]{x:a x;$[9=c:((in;within;like;<;=;>;~>;~=;~<)~\:f:r j)?1b;x;(f;x;$[~i c;ls,p l a;c=1;|(a n[];a r j);c=2;($:;a r j);a r j])]}
 
 wh:{$[#x:b[`where]c;{$[@x;x;(&)~*x;,/.z.s'1_x;,x]}x;x]};f:{$[(11=t)|~t:@x;f'x;-11=t;*|`\:x;x]}
 nm:{(!).+l[{($[|/(x:r j)~/:(`;","),k;{$[1<#x;.z.s x 1;-11=@x;*|`\:x;`x]}y;i x];y:x y)}x]y}
