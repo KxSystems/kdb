@@ -15,8 +15,10 @@ Library  Files”).  You agree to use the Public q Code Library Files under the te
 	grant is subject to the below restrictions and conditions.
 	1.2	Public q Code Library Use Restrictions.  The name and trademarks of Kx shall not be used in advertising 
 	or otherwise to promote the use, distribution or sale of the Public q Code Library Files without prior
-	written authorization from Kx. 
-	1.3	Proprietary Rights.  End User acknowl¬edges and agrees that Kx owns all right, title and interest in 
+	written authorization from Kx. End Users are prohibited from using, or authorizing any other person to use, 
+	the Public q Code Library Files to develop any code, program, application, derivative work or any other printed 
+	or electronic matter that has functionality similar to Kx’s Kdb+ software.
+	1.3	Proprietary Rights.  End User acknowledges and agrees that Kx owns all right, title and interest in 
 	the Public q Code Library Files and in all of Kx’s patents, trademarks, trade names, inventions, copyrights,
 	know-how and trade secrets relating to the design and operation of the Public q Code Library Files.  End 
 	User shall not remove any copyright notices or other proprietary rights notices of Kx contained in the 
