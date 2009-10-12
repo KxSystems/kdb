@@ -1,5 +1,8 @@
 / guess a reasonable loadstring for a csv file (kdb+ 2.4 or greater)
-"kdb+csvguess 0.39 2007.12.01"
+"kdb+csvguess 0.43 2009.09.19"
+/ 2009.09.19 cleanup tests
+/ 2009.09.15 add conservative checks for N&P (2.6) 
+/ 2008.03.03 describe -savedb etc in savescript 
 / 2007.12.01 add POSTSAVEALL for SAVE/BULKSAVE - allow disk `p# etc 
 / 2007.10.20 catch 0W etc when cancast_ing, don't try and create E  
 / 2007.10.17 cleanup D+M support for 2.4, add -z1
@@ -31,13 +34,13 @@ ZAPHDRS:ZAPHDRS and not NOHEADER
 SAVESCRIPT:any`savescript`ss in key o
 SAVEINFO:any`saveinfo`si in key o
 if[any`zeuro`zeur`z1 in key o;system"z 1"]
-EXIT:`exit in key o
+EXIT:`exit in key o                             
 SYMMAXWIDTH:30 / max symbol width before we just give up and keep as * string
 SYMMAXGR:10 / max symbol granularity% before we give up and keep as a * string
 WIDTHHDR:25000 / initial width read to look for header record
 READLINES:5555 / approximate number of records to check
 FORCECHARWIDTH:30 / width beyond which we just set a column to be text and finished 
-CHUNKSIZE:25000000 / chunksize read when bulk load/save - much larger than safe default in .Q.fs 
+CHUNKSIZE:50000000 / chunksize read when bulk load/save - much larger than safe default in .Q.fs 
 SAVEDB:`:csvdb / database top level, where things like `:sym live
 SAVEPTN:` / individual partition, 2006.12.25 frinstance; ` => none
 PRESAVEEACH:{x} / function to be run before each incremental save (delete date field?) 
@@ -45,6 +48,7 @@ POSTLOADEACH:{x} / function to be run after each incremental load from file
 / POSTLOADALL:{update `p#sym from`sym`time xasc x}
 POSTLOADALL:{x} / function to be run after complete load from file (LOAD/BULKLOAD only, not BULKSAVE as never all data in one place)
 / POSTSAVEALL:{@[`sym`time xasc x;`sym;`p#]}
+/ POSTSAVEALL:{dasc[x;`sym`time;`p#]} / faster than xasc on disk 
 POSTSAVEALL:{x} / function to be run after all saved, to set `p# on `sym for example: {@[x;`sym;`p#]} or sort by sym {`sym xasc x}
 @[.:;"\\l csvguess.custom.q";::]; / save your custom settings in csvguess.custom.q to override those set above
 
@@ -67,79 +71,71 @@ if[ZAPHDRS;info:update c:zh1 c from info]
 / check for reserved words used as colnames
 reserved:key`.q;reserved,:.Q.res;reserved,:`i
 info:update res:c in reserved from info
-info:update ci:i,t:"?",ipa:0b,mdot:0,mw:0,rule:0,gr:0,ndv:0,maybe:0b,empty:0b from info
+info:update ci:i,t:"?",ipa:0b,mdot:0,mw:0,rule:0,gr:0,ndv:0,maybe:0b,empty:0b,j10:0b,j12:0b from info
 info:update ci:`s#ci from info
-info:update sdv:{string(distinct x)except`}peach v from info where t="?"
-info:update ndv:count each sdv from info where t="?"
-info:update gr:floor 0.5+100*ndv%nas,mw:{max count each x}peach sdv from info where t="?",0<ndv
+info:update sdv:{string(distinct x)except`}peach v from info
+info:update ndv:count each sdv from info
+info:update gr:floor 0.5+100*ndv%nas,mw:{max count each x}peach sdv from info where 0<ndv
 / rule:10 only in csvutil.q 
-info:update t:"*",rule:20 from info where t="?",mw>FORCECHARWIDTH / long values
+info:update t:"*",rule:20 from info where mw>FORCECHARWIDTH / long values
 info:update t:"C "[DISCARDEMPTY],rule:30,empty:1b from info where t="?",mw=0 / empty columns
 info:update dchar:{asc distinct raze x}peach sdv from info where t="?"
 info:update mdot:{max sum each"."=x}peach sdv from info where t="?",{"."in x}each dchar
-info:update t:"n",rule:40 from info where t="?",{$[any x in"0123456789";all x in".-+eE0123456789/: ";0b]}each dchar / vaguely numeric..
-info:update t:"I",rule:50,ipa:1b from info where t="n",mw within 7 15,mdot=3,{all x in".0123456789"}each dchar / ip-address
+info:update t:"n",rule:40 from info where t="?",{any x in"0123456789"}each dchar / vaguely numeric..
+info:update t:"I",rule:50,ipa:1b from info where t="n",mw within 7 15,mdot=3,{all x in".0123456789"}each dchar,cancast["I"]peach sdv / ip-address
 info:update t:"J",rule:60 from info where t="n",mdot=0,{all x in"+-0123456789"}each dchar,cancast["J"]peach sdv
 info:update t:"I",rule:70 from info where t="J",mw<12,cancast["I"]peach sdv
 info:update t:"H",rule:80 from info where t="I",mw<7,cancast["H"]peach sdv
-info:update t:"F",rule:90,maybe:0b from info where t="n",mdot<2,mw>1,cancast["F"]peach sdv
-info:update t:"E",rule:100,maybe:0b from info where t="F",mw<9,{all x in".+-0123456789"}each dchar
-/ M [yy]yymm yyyy[?]mm
-info:update t:"M",rule:110,maybe:1b from info where t="I",mw=6,cancast["M"]peach sdv / 200506, YYYYMM is less likely than [H]HMMSS so do that first 
-info:update t:"M",rule:120,maybe:1b from info where t="H",mw=4,cancast["M"]peach sdv,{not all(value each x)within 1960 2035}peach sdv / 0506, YYMM is less likely than [H]HMM so do that first, discard obvious years_only 
-info:update t:"M",rule:130,maybe:0b from info where t in"?n",mw=7,{all x like"[12][0-9][0-9][0-9]?[01][0-9]"}peach sdv,cancast["M"]peach sdv / 2005?06, YYYY?MM 
-info:update t:"M",rule:140,maybe:1b from info where t in"EF",mw=7,{all x like"[12][0-9][0-9][0-9].[01][0-9]"}peach sdv,cancast["M"]peach sdv / 2005.06, YYYY.MM 
-info:update t:"V",rule:150,maybe:1b from info where t="I",mw in 5 6,7<count each dchar,{all x like"*[0-9][0-5][0-9][0-5][0-9]"}peach sdv,cancast["V"]peach sdv / 235959 12345        
-info:update t:"U",rule:160,maybe:1b from info where t="H",mw in 3 4,7<count each dchar,{all x like"*[0-9][0-5][0-9]"}peach sdv,{not all(value each x)within 2000 2035}peach sdv,cancast["U"]peach sdv /2359
-/ D [yy]yymmdd ddMMM[yy]yy yyyy/[mm|MMM]/dd [mm|MMM]/dd/[yy]yy \z 0 dd/[mm|MMM]/[yy]yy \z 1
-info:update t:"D",rule:170,maybe:0b from info where t="n",mw in 8 10,mdot in 0 2,cancast["D"]peach sdv / 2005.06.07 2005/06/07 2005-06-07
-info:update t:"D",rule:180,maybe:1b from info where t="I",mw in 6 8,cancast["D"]peach sdv / 20050607
-info:update t:"D",rule:190,maybe:0b from info where t="?",mw in 7 9 11,mdot in 0 2,cancast["D"]peach sdv / 29oct2005 29oct05 etc
-info:update t:"U",rule:200,maybe:0b from info where t="n",mw in 4 5,mdot=0,{all x like"*[0-9]:[0-5][0-9]"}peach sdv,cancast["U"]peach sdv
-info:update t:"T",rule:210,maybe:0b from info where t="n",mw within 7 12,mdot<2,{all x like"*[0-9]:[0-5][0-9]:[0-5][0-9]*"}peach sdv,cancast["T"]peach sdv
-info:update t:"V",rule:220,maybe:0b from info where t="T",mw in 7 8,mdot=0,cancast["V"]peach sdv
-info:update t:"T",rule:230,maybe:1b from info where t="F",mw within 7 10,mdot=1,{all x like"*[0-9][0-5][0-9][0-5][0-9].*"}peach sdv,cancast["T"]peach sdv
-info:update t:"Z",rule:240,maybe:0b from info where t in"n?",mw within 11 24,mdot<4,{$[all x in"0123456789.:ABCDEFGJLMNOPRSTUVYabcdefgjlmnoprstuvy/- ";1<sum".:/ T-"in x;0b]}each dchar,cancast["Z"]peach sdv
-info:update t:"?",rule:250,maybe:0b from info where t="n" / reset remaining maybe numeric
-info:update t:"C",rule:260,maybe:0b from info where t="?",mw=1 / char
-info:update t:"B",rule:270,maybe:0b from info where t in"HC",mw=1,mdot=0,{$[all x in"01tTfFyYnN";(any"0fFnN"in x)and any"1tTyY"in x;0b]}each dchar / boolean
-info:update t:"B",rule:280,maybe:1b from info where t in"HC",mw=1,mdot=0,{all x in"01tTfFyYnN"}each dchar / boolean
-info:update t:"X",rule:290,maybe:0b from info where t="?",mw=2,{$[all x in"0123456789abcdefABCDEF";(any .Q.n in x)and any"abcdefABCDEF"in x;0b]}each dchar /hex
-info:update t:"S",rule:300,maybe:1b from info where t="?",mw<SYMMAXWIDTH,mw>1,gr<SYMMAXGR / symbols (max width permitting)
-info:update t:"*",rule:310,maybe:0b from info where t="?" / the rest as strings
-info:update maybe:1b from info where mw>4,not t="D",(lower c)like"*date*"
-info:update maybe:1b from info where mw>1,not t in"TUV",(lower c)like"*time*"
+info:update t:"F",rule:90 from info where t="n",mdot<2,mw>1,cancast["F"]peach sdv
+info:update t:"E",rule:100,maybe:1b from info where t="F",mw<9
+info:update t:"M",rule:110,maybe:1b from info where t in"nIHEF",mdot<2,mw within 4 7,cancast["M"]peach sdv 
+info:update t:"D",rule:120,maybe:1b from info where t in"nI",mdot in 0 2,mw within 6 11,cancast["D"]peach sdv 
+info:update t:"V",rule:130,maybe:1b from info where t="I",mw in 5 6,7<count each dchar,{all x like"*[0-9][0-5][0-9][0-5][0-9]"}peach sdv,cancast["V"]peach sdv / 235959 12345        
+info:update t:"U",rule:140,maybe:1b from info where t="H",mw in 3 4,7<count each dchar,{all x like"*[0-9][0-5][0-9]"}peach sdv,cancast["U"]peach sdv /2359
+info:update t:"U",rule:150,maybe:0b from info where t="n",mw in 4 5,mdot=0,{all x like"*[0-9]:[0-5][0-9]"}peach sdv,cancast["U"]peach sdv
+info:update t:"T",rule:160,maybe:0b from info where t="n",mw within 7 12,mdot<2,{all x like"*[0-9]:[0-5][0-9]:[0-5][0-9]*"}peach sdv,cancast["T"]peach sdv
+info:update t:"V",rule:170,maybe:0b from info where t="T",mw in 7 8,mdot=0,cancast["V"]peach sdv
+info:update t:"T",rule:180,maybe:1b from info where t in"EF",mw within 7 10,mdot=1,{all x like"*[0-9][0-5][0-9][0-5][0-9].*"}peach sdv,cancast["T"]peach sdv
+info:update t:"Z",rule:190,maybe:0b from info where t="n",mw within 11 24,mdot<4,cancast["Z"]peach sdv
+info:update t:"P",rule:200,maybe:1b from info where t="n",mw within 12 29,mdot<4,{all x like"[12]*"}peach sdv,cancast["P"]peach sdv
+info:update t:"N",rule:210,maybe:1b from info where t="n",mw within 3 28,mdot=1,cancast["N"]peach sdv
+info:update t:"?",rule:220,maybe:0b from info where t="n" / reset remaining maybe numeric
+info:update t:"C",rule:230,maybe:0b from info where t="?",mw=1 / char
+info:update t:"B",rule:240,maybe:0b from info where t in"HC",mw=1,mdot=0,{$[all x in"01tTfFyYnN";(any"0fFnN"in x)and any"1tTyY"in x;0b]}each dchar / boolean
+info:update t:"B",rule:250,maybe:1b from info where t in"HC",mw=1,mdot=0,{all x in"01tTfFyYnN"}each dchar / boolean
+info:update t:"X",rule:260,maybe:0b from info where t="?",mw=2,{$[all x in"0123456789abcdefABCDEF";(any .Q.n in x)and any"abcdefABCDEF"in x;0b]}each dchar /hex
+info:update t:"S",rule:270,maybe:1b from info where t="?",mw<SYMMAXWIDTH,mw>1,gr<SYMMAXGR / symbols (max width permitting)
+info:update t:"*",rule:280,maybe:0b from info where t="?" / the rest as strings
 / flag those S/* columns which could be encoded to integers (.Q.j10/x10/j12/x12) to avoid symbols
-info:update j10:0b,j12:0b from info
 info:update j12:1b from info where t in"S*",mw<13,{all x in .Q.nA}each dchar
 info:update j10:1b from info where t in"S*",mw<11,{all x in .Q.b6}each dchar 
 if["?"in exec t from info;'`unknown.field]; / check all done
 
 info:select c,ci,t,maybe,empty,res,j10,j12,ipa,mw,mdot,rule,gr,ndv,dchar from info
-/ make changes to <info>, run refresh[] and they'll be picked up correctly, test with: LOAD10 LOADFILE, or sba[]
+/ make changes to <info>, test with: LOAD10 LOADFILE, or sba[]
 / update t:" " from`info where not t="S" / only load symbols
 / update t:"*" from`info where t="S" / load all char as strings, no need to enumerate before save
-/ refresh[]
 / run savescript[] when results are correct
 
 k)fs2:{[f;s]((-7!s)>){[f;s;x]i:1+last@&0xa=r:1:(s;x;CHUNKSIZE);f@`\:i#r;x+i}[f;s]/0j} / .Q.fs with bigger chunks
+disksort:{[t;c;a]if[not`s~attr(t:hsym t)c;if[count t;ii:iasc iasc flip c!t c,:();if[not$[(0,-1+count ii)~(first;last)@\:ii;@[{`s#x;1b};ii;0b];0b];{v:get y;if[not$[all(fv:first v)~/:256#v;all fv~/:v;0b];v[x]:v;y set v];}[ii]each` sv't,'get` sv t,`.d]];@[t;first c;a]];t}
 
 SAVENAME:LOADNAME:`${x where((first x)in .Q.a),1_ x in .Q.an}lower first"."vs last"/"vs 1_string LOADFILE
 SAVEPATH:{` sv((`. `SAVEDB`SAVEPTN`SAVENAME)except`),`}
 SAVE:{(r:SAVEPATH[])set PRESAVEEACH .Q.en[`. `SAVEDB] x;POSTSAVEALL r;r}
 DATA:() / delete from`DATA
 
-refresh:{ / rebuild globals from <info>
-	LOADFMTS::raze exec t from`ci xasc select ci,t from info;
-	JUSTSYMFMTS::{x[where not x="S"]:" ";x}LOADFMTS;
-	LOADHDRS::exec c from`ci xasc select ci,c from info where not t=" ";
-	JUSTSYMHDRS::LOADHDRS where LOADFMTS="S";}
-	
+/ rebuild globals from <info>
+LOADFMTS::raze exec t from`ci xasc select ci,t from info
+JUSTSYMFMTS::{x[where not x="S"]:" ";x}LOADFMTS
+LOADHDRS::exec c from`ci xasc select ci,c from info where not t=" "
+JUSTSYMHDRS::LOADHDRS where LOADFMTS="S"
+
 status:{ / loadability..
 	-1(string`second$.z.t)," FILE:`",(string FILE),"; SAVEDB:`",(string SAVEDB),"; SAVEPTN:`",(string SAVEPTN),"; SAVENAME:`",(string SAVENAME),"; \\z ",(string system"z"),"; DELIM:\"",DELIM,"\"";
 	-1(string`second$.z.t)," ",(string count info)," column(s); ",(string exec count i from info where maybe)," flagged maybe; ",(string exec count i from info where empty)," empty; ",(string exec count i from info where res)," with reserved names";}
 
-status refresh[]
+status[]
 
 LOADDEFN:{(LOADFMTS;$[NOHEADER;DELIM;enlist DELIM])}
 JUSTSYMDEFN:{(JUSTSYMFMTS;$[NOHEADER;DELIM;enlist DELIM])}
@@ -164,15 +160,19 @@ JUSTSYM:{[file] .tmp.jsc:0;fs2[{.tmp.jsc+:count .Q.en[`. `SAVEDB]POSTLOADEACH$[N
 / q xxx.q FILENAME -bs -savedb foo -saveptn 2006.12.25 / to bulksave FILENAME to directory foo in the 2006.12.25 date partition
 / q xxx.q FILENAME -bs -savedb foo -saveptn 2006.12.25 -savename goo / to bulksave FILENAME to directory foo in the 2006.12.25 date partition as table goo
 / q xxx.q ... -exit / exit on completion of commands (only makes sense with -bs and -js)
-savescript:{refresh[];f:`$":",(string LOADNAME),".load.q";f 1:"";hs:neg hopen f;
+/ q xxx.q .. -chunksize NN / non-default read chunksize - default is 25 
+savescript:{f:`$":",(string LOADNAME),".load.q";f 1:"";hs:neg hopen f;
 	hs"/ ",(string .z.z)," ",(string .z.h)," ",(string .z.u);
-	hs"/ q ",(string LOADNAME),".load.q FILE [-bl|bulkload] [-bs|bulksave] [-js|justsym] [-exit] [-savedb SAVEDB] [-saveptn SAVEPTN] [-savename SAVENAME] ";
+	hs"/ q ",(string LOADNAME),".load.q FILE [-bl|bulkload] [-bs|bulksave] [-js|justsym] [-exit] [-savedb SAVEDB] [-saveptn SAVEPTN] [-savename SAVENAME] [-chunksize NNN (in MB)] ";
 	hs"/ q ",(string LOADNAME),".load.q FILE";
 	hs"/ q ",(string LOADNAME),".load.q";
+	hs"/ q ",(string LOADNAME),".load.q -chunksize 11 / test to find optimum for your file";
+	hs"/ q ",(string LOADNAME),".load.q -savedb DB -saveptn PTN -savename NAME / to save to `:DB/PTN/NAME/";
+	hs"/ q ",(string LOADNAME),".load.q -savedb taq -saveptn 2008.04.01 -savename trade / to save to `:taq/2008.04.01/trade/";
 	hs"/ q ",(string LOADNAME),".load.q -help";
 	hs"FILE:LOADFILE:`$\"",(string LOADFILE),"\"";
 	hs"o:.Q.opt .z.x;if[count .Q.x;FILE:hsym`${x[where\"\\\\\"=x]:\"/\";x}first .Q.x]";
-	hs"if[`help in key o;-1\"usage: q ",(string LOADNAME),".load.q [FILE(default",(string LOADFILE),")] [-help] [-bl|bulkload] [-bs|bulksave] [-js|justsym] [-savedb SAVEDB] [-saveptn SAVEPTN] [-savename SAVENAME] [-exit]\\n\";exit 1]";
+	hs"if[`help in key o;-1\"usage: q ",(string LOADNAME),".load.q [FILE(default",(string LOADFILE),")] [-help] [-bl|bulkload] [-bs|bulksave] [-js|justsym] [-savedb SAVEDB] [-saveptn SAVEPTN] [-savename SAVENAME] [-chunksize NNN (in MB)] [-exit]\\n\";exit 1]";
 	hs"SAVEDB:",-3!SAVEDB;hs"SAVEPTN:",-3!SAVEPTN;
 	hs"if[`savedb in key o;if[count first o[`savedb];SAVEDB:hsym`$first o[`savedb]]]";
 	hs"if[`saveptn in key o;if[count first o[`saveptn];SAVEPTN:`$first o[`saveptn]]]";
@@ -180,16 +180,17 @@ savescript:{refresh[];f:`$":",(string LOADNAME),".load.q";f 1:"";hs:neg hopen f;
 	hs"\\z ",(string system"z")," / D date format 0 => mm/dd/yyyy or 1 => dd/mm/yyyy (yyyy.mm.dd is always ok)";
 	hs"LOADNAME:",-3!LOADNAME;hs"SAVENAME:",-3!SAVENAME;hs"LOADFMTS:\"",LOADFMTS,"\"";hs"LOADHDRS:",raze"`",'string LOADHDRS;
 	hs"if[`savename in key o;if[count first o[`savename];SAVENAME:`$first o[`savename]]]";
-	hs"SAVEPATH:",-3!SAVEPATH;
-	hs"LOADDEFN:",-3!LOADDEFN;hs"POSTLOADEACH:",-3!POSTLOADEACH;hs"POSTLOADALL:",-3!POSTLOADALL;hs"POSTSAVEALL:",-3!POSTSAVEALL;hs"LOAD:",-3!LOAD;hs"LOAD10:",(-3!LOAD10)," / just load first 10 records";
-	hs"JUSTSYMFMTS:\"",JUSTSYMFMTS,"\"";hs"JUSTSYMHDRS:",$[0=count JUSTSYMHDRS;"0#`";raze"`",'string JUSTSYMHDRS];
-	hs"JUSTSYMDEFN:",-3!JUSTSYMDEFN;
+	hs"SAVEPATH:",-3!SAVEPATH;hs"LOADDEFN:",-3!LOADDEFN;
+	hs"PRESAVEEACH:",-3!PRESAVEEACH;hs"POSTLOADEACH:",-3!POSTLOADEACH;hs"POSTLOADALL:",-3!POSTLOADALL;hs"POSTSAVEALL:",-3!POSTSAVEALL;hs"LOAD:",-3!LOAD;hs"LOAD10:",(-3!LOAD10)," / just load first 10 records";
+	hs"JUSTSYMFMTS:\"",JUSTSYMFMTS,"\"";hs"JUSTSYMHDRS:",$[0=count JUSTSYMHDRS;"0#`";raze"`",'string JUSTSYMHDRS];hs"JUSTSYMDEFN:",-3!JUSTSYMDEFN;
 	hs"CHUNKSIZE:",string CHUNKSIZE;hs"DATA:()";
+	hs"if[`chunksize in key o;if[count first o[`chunksize];CHUNKSIZE:floor 1e6*1|\"I\"$first o[`chunksize]]]";
 	hs"k)fs2:",2_ last value fs2;
-	hs"BULKLOAD:",-3!BULKLOAD;hs"PRESAVEEACH:",-3!PRESAVEEACH;hs"SAVE:",-3!SAVE;hs"BULKSAVE:",-3!BULKSAVE;hs"JUSTSYM:",-3!JUSTSYM;
-	hs"if[any`js`justsym in key o;-1(string`second$.z.t),\" saving `sym for <\",(1_string FILE),\"> to directory \",1_string SAVEDB;.tmp.st:.z.t;.tmp.rc:JUSTSYM FILE;.tmp.et:.z.t;.tmp.fs:hcount FILE;-1(string`second$.z.t),\" done (\",(string .tmp.rc),\" records; \",(string floor .tmp.rc%1e-3*`int$.tmp.et-.tmp.st),\" records/sec; \",(string floor 0.5+.tmp.fs%1e3*`int$.tmp.et-.tmp.st),\" MB/sec)\"]";
-	hs"if[any`bs`bulksave in key o;-1(string`second$.z.t),\" saving <\",(1_string FILE),\"> to directory \",1_string` sv(SAVEDB,SAVEPTN,SAVENAME)except`;.tmp.st:.z.t;.tmp.rc:BULKSAVE FILE;.tmp.et:.z.t;.tmp.fs:hcount FILE;-1(string`second$.z.t),\" done (\",(string .tmp.rc),\" records; \",(string floor .tmp.rc%1e-3*`int$.tmp.et-.tmp.st),\" records/sec; \",(string floor 0.5+.tmp.fs%1e3*`int$.tmp.et-.tmp.st),\" MB/sec)\"]";
-	hs"if[any`bl`bulkload in key o;-1(string`second$.z.t),\" loading <\",(1_string FILE),\"> to variable DATA\";.tmp.st:.z.t;BULKLOAD FILE;.tmp.et:.z.t;.tmp.rc:count DATA;.tmp.fs:hcount FILE;-1(string`second$.z.t),\" done (\",(string .tmp.rc),\" records; \",(string floor .tmp.rc%1e-3*`int$.tmp.et-.tmp.st),\" records/sec; \",(string floor 0.5+.tmp.fs%1e3*`int$.tmp.et-.tmp.st),\" MB/sec)\"]";
+	hs"disksort:",-3!disksort;
+	hs"BULKLOAD:",-3!BULKLOAD;hs"SAVE:",-3!SAVE;hs"BULKSAVE:",-3!BULKSAVE;hs"JUSTSYM:",-3!JUSTSYM;
+	hs"if[any`js`justsym in key o;-1(string`second$.z.t),\" saving `sym for <\",(1_string FILE),\"> to directory \",1_string SAVEDB;.tmp.st:.z.t;.tmp.rc:JUSTSYM FILE;.tmp.et:.z.t;.tmp.fs:hcount FILE;-1(string`second$.z.t),\" done (\",(string .tmp.rc),\" records; \",(string floor .tmp.rc%1e-3*`int$.tmp.et-.tmp.st),\" records/sec; \",(string floor 0.5+.tmp.fs%1e3*`int$.tmp.et-.tmp.st),\" MB/sec; CHUNKSIZE \",(string floor 0.5+CHUNKSIZE%1e6),\")\"]";
+	hs"if[any`bs`bulksave in key o;-1(string`second$.z.t),\" saving <\",(1_string FILE),\"> to directory \",1_string` sv(SAVEDB,SAVEPTN,SAVENAME)except`;.tmp.st:.z.t;.tmp.rc:BULKSAVE FILE;.tmp.et:.z.t;.tmp.fs:hcount FILE;-1(string`second$.z.t),\" done (\",(string .tmp.rc),\" records; \",(string floor .tmp.rc%1e-3*`int$.tmp.et-.tmp.st),\" records/sec; \",(string floor 0.5+.tmp.fs%1e3*`int$.tmp.et-.tmp.st),\" MB/sec; CHUNKSIZE \",(string floor 0.5+CHUNKSIZE%1e6),\")\"]";
+	hs"if[any`bl`bulkload in key o;-1(string`second$.z.t),\" loading <\",(1_string FILE),\"> to variable DATA\";.tmp.st:.z.t;BULKLOAD FILE;.tmp.et:.z.t;.tmp.rc:count DATA;.tmp.fs:hcount FILE;-1(string`second$.z.t),\" done (\",(string .tmp.rc),\" records; \",(string floor .tmp.rc%1e-3*`int$.tmp.et-.tmp.st),\" records/sec; \",(string floor 0.5+.tmp.fs%1e3*`int$.tmp.et-.tmp.st),\" MB/sec; CHUNKSIZE \",(string floor 0.5+CHUNKSIZE%1e6),\")\"]";
 	hs"if[`exit in key o;exit 0]";
 	hs"/ DATA:(); BULKLOAD LOADFILE / incremental load all to DATA";
 	hs"/ BULKSAVE LOADFILE / incremental save all to SAVEDB[/SAVEPTN]";
