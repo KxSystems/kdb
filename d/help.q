@@ -1,4 +1,4 @@
-/ help.q 2008.04.07T09:26:43.309
+/ help.q 2009.10.15T12:40:44.820
 \d .help
 DIR:TXT:()!()
 display:{if[not 10h=abs type x;x:string x];$[1=count i:where(key DIR)like x,"*";-1 each TXT[(key DIR)[i]];show DIR];}
@@ -28,7 +28,7 @@ TXT,:(enlist`attributes)!enlist(
  )
 DIR,:(enlist`attributes)!enlist`$"data attributes"
 TXT,:(enlist`cmdline)!enlist(
- "q [f] [-b] [-c r c] [-C r c][-l] [-o N] [-p N] [-P N] [-q] [-r|R :H:P] ";
+ "q [f] [-b] [-c r c] [-C r c] [-l] [-L][-o N] [-p N] [-P N] [-q] [-r :H:P] ";
  "      [-s N] [-t N] [-T N] [-u|U F] [-w N] [-W N] [-z 0|1]";
  "";
  "f load script (*.q, *.k, *.s), file or directory";
@@ -37,17 +37,18 @@ TXT,:(enlist`cmdline)!enlist(
  "-c r c           console maxRows maxCols";
  "-C r c           http display maxRows maxCols ";
  "-l               log updates to filesystem ";
+ "-L               as -l, but sync logging";
  "-o N             offset hours (from GMT: affects .z.Z)";
  "-p N             port kdbc(/jdbc/odbc) http(html xml txt csv)";
  "-p -N            port multithreaded kdbc";
  "-P N             printdigits, default 7, 0=>all";
  "-q               quiet, no startup banner text";
  "-r :H:P          replicate from :host:port ";
- "-R :H:P          as -r, but sync";
  "-s N             slaves for parallel execution";
  "-t N             timer milliseconds";
  "-T N             timeout seconds(applies to all client queries)";
  "-u F             usr:pwd file, no access above start directory";
+ "-u 1             disable system escapes";
  "-U F             as -u, but no file restrictions";
  "-w N             workspace MB limit (default: 2*RAM)";
  "-W N             week offset, default 2, 0=>saturday";
@@ -55,38 +56,40 @@ TXT,:(enlist`cmdline)!enlist(
  )
 DIR,:(enlist`cmdline)!enlist`$"command line parameters"
 TXT,:(enlist`data)!enlist(
- "char-size--type-literal-------q---------sql--------java-------.net---  ";
- "b    1     1    0b            boolean              Boolean    boolean   ";
- "x    1     4    0x0           byte                 Byte       byte      ";
- "h    2     5    0h            short     smallint   Short      int16     ";
- "i    4     6    0             int       int        Integer    int32     ";
- "j    8     7    0j            long      bigint     Long       int64     ";
- "e    4     8    0e            real      real       Float      single    ";
- "f    8     9    0.0           float     float      Double     double    ";
- "c    1     10   \" \"           char                 Character  char";
- "s    .     11   `             symbol    varchar    String     string    ";
- "m    4     13   2000.01m      month";
- "d    4     14   2000.01.01    date      date       Date                 ";
- "z    8     15   dateTtime     datetime  timestamp  Timestamp  DateTime  ";
- "u    4     17   00:00         minute";
- "v    4     18   00:00:00      second";
- "t    4     19   00:00:00.000  time      time       Time       TimeSpan ";
- "*    4     20.. `s$`          enum";
- "           98                 table";
- "           99                 dict";
- "           100                lambda";
- "           101                unary prim";
- "           102                binary prim";
- "           103                ternary(operator)";
- "           104                projection";
- "           105                composition";
- "           106                f'";
- "           107                f/";
- "           108                f\\";
- "           109                f':";
- "           110                f/:";
- "           111                f\\:";
- "           112                dynamic load";
+ "char-size--type-literal------------q---------sql--------java-------.net---  ";
+ "b    1     1    0b                 boolean              Boolean    boolean   ";
+ "x    1     4    0x0                byte                 Byte       byte      ";
+ "h    2     5    0h                 short     smallint   Short      int16     ";
+ "i    4     6    0                  int       int        Integer    int32     ";
+ "j    8     7    0j                 long      bigint     Long       int64     ";
+ "e    4     8    0e                 real      real       Float      single    ";
+ "f    8     9    0.0                float     float      Double     double    ";
+ "c    1     10   \" \"                char                 Character  char";
+ "s    .     11   `                  symbol    varchar    String     string    ";
+ "p    8     12   dateDtimespan      timestamp";
+ "m    4     13   2000.01m           month";
+ "d    4     14   2000.01.01         date      date       Date                 ";
+ "z    8     15   dateTtime          datetime  timestamp  Timestamp  DateTime";
+ "n    8     16   00:00:00.000000000 timespan";
+ "u    4     17   00:00              minute";
+ "v    4     18   00:00:00           second";
+ "t    4     19   00:00:00.000       time      time       Time       TimeSpan ";
+ "*    4     20.. `s$`               enum";
+ "           98                      table";
+ "           99                      dict";
+ "           100                     lambda";
+ "           101                     unary prim";
+ "           102                     binary prim";
+ "           103                     ternary(operator)";
+ "           104                     projection";
+ "           105                     composition";
+ "           106                     f'";
+ "           107                     f/";
+ "           108                     f\\";
+ "           109                     f':";
+ "           110                     f/:";
+ "           111                     f\\:";
+ "           112                     dynamic load";
  "";
  "the nested types are 77+t (e.g. 78 is boolean. 96 is time.)";
  "";
@@ -134,15 +137,20 @@ DIR,:(enlist`define)!enlist`$"assign, define, control and debug"
 TXT,:(enlist`dotz)!enlist(
  ".z.a       ip-address ";
  ".z.b       dependencies (more information than \\b)";
- ".z.d       gmt date";
+ ".z.d       utc date";
  ".z.D       local date";
+ ".z.exit    callback on exit ";
  ".z.f       startup file";
  ".z.h       hostname";
  ".z.i       pid";
  ".z.k       kdb+ releasedate ";
  ".z.K       kdb+ major version";
  ".z.l       license information (;expirydate;updatedate;;;)";
+ ".z.n       utc timespan ";
+ ".z.N       local timespan";
  ".z.o       OS ";
+ ".z.p       utc timetamp";
+ ".z.P       local timetamp ";
  ".z.pc[h]   close, h handle (already closed)";
  ".z.pg[x]   get";
  ".z.ph[x]   http get";
@@ -151,15 +159,17 @@ TXT,:(enlist`dotz)!enlist(
  ".z.pp[x]   http post";
  ".z.ps[x]   set";
  ".z.pw[u;p] validate user and password";
+ ".z.q       in quiet mode (no console)";
  ".z.s       self, current function definition";
- ".z.t       gmt time";
+ ".z.t       utc time";
  ".z.T       local time";
  ".z.ts[x]   timer expression (called every \\t)";
  ".z.u       userid ";
  ".z.vs[v;i] value set";
  ".z.w       handle (0 for console, handle to remote for KIPC)";
+ ".z.W       openHandles!vectorOfMessageSizes (oldest first)";
  ".z.x       command line parameters (argc..)";
- ".z.z       gmt timestamp";
+ ".z.z       utc timestamp";
  ".z.Z       local timestamp"
  )
 DIR,:(enlist`dotz)!enlist`$".z locale contents "
@@ -167,21 +177,29 @@ TXT,:(enlist`errors)!enlist(
  "runtime errors";
  "error--------example-----explanation";
  "access                   attempt to read files above directory, run system commands or failed usr/pwd";
+ "accp                     tried to accept an incoming tcp/ip connection but failed to do so";
+ "arch                     attempt to load file of wrong endian format";
  "assign       cos:12      attempt to reuse a reserved word";
+ "badtail                  incomplete transaction at end of logfile, get good (count;length) with -11!(-2;`:file)";
  "cast         `sym$`xxx   attempt to enumerate invalid value (`xxx not in sym in example) ";
  "conn                     too many incoming connections (1022 max)";
- "d8                       the log had a partial transaction at the end but q couldn't truncate the file.(maybe no write access)";
+ "d8                       the log had a partial transaction at the end but q couldn't truncate the file.";
  "domain       !-1         out of domain";
+ "elim                     more than 57 distinct enumerations ";
+ "from         select a b  badly formed select statement";
  "glim                     `g# limit, kdb+ currently limited to 99 concurrent `g#'s ";
  "hwr                      handle write error, can't write inside a peach";
  "length       ()+!1       incompatible lengths";
  "limit        0W#2        tried to generate a list longer than 2,000,000,000           ";
- "loop         a::a        dependency loop";
+ "loop         a::a        dependency or transitive closure loop";
  "mismatch                 columns that can't be aligned for R,R or K,K ";
  "Mlim                     more than 999 nested columns in splayed tables";
  "nyi                      not yet implemented";
  "noamend                  can't change global state inside an amend";
+ "noupdate                 update not allowed when using negative port number";
  "os                       operating system error";
+ "parse                    invalid syntax";
+ "part                     something wrong with the partitions in the hdb";
  "pl                       peach can't handle parallel lambda's (2.3 only)";
  "Q7                       nyi op on file nested array";
  "rank         +[2;3;4]    invalid rank or valence";
@@ -190,10 +208,13 @@ TXT,:(enlist`errors)!enlist(
  "stack        {.z.s[]}[]  ran out of stack space";
  "stop        \t         user interrupt(ctrl-c) or time limit (-T)";
  "stype        '42         invalid type used to signal";
+ "trunc                    the log had a partial transaction at the end but q couldn't truncate the file.";
  "type         til 2.2     wrong type";
  "u-fail       `u#1 1      cannot apply `u# to data (not unique values)";
+ "unmappable               when saving partitioned data, each column must be mappable";
  "value                    no value";
  "vd1                      attempted multithread update";
+ "view                     trying to re-assign a view to something else";
  "wsfull                   malloc failed. ran out of swap (or addressability on 32bit). or hit -w limit.";
  "XXX                      value error (XXX undefined) ";
  "";
@@ -211,7 +232,7 @@ TXT,:(enlist`errors)!enlist(
  "params                   too many parameters (8 max)";
  "";
  "license errors";
- "cpu                      too many cpus ";
+ "core                     too many cores";
  "exp                      expiry date passed";
  "host                     unlicensed host";
  "k4.lic                   k4.lic file not found, check QHOME/QLIC";
@@ -244,22 +265,26 @@ TXT,:(enlist`syscmd)!enlist(
  "\\e [0|1]     error trap clients";
  "\\f [d]       functions [directory]";
  "\\l [f]       load script (or dir:files splays parts scripts)";
- "\\m old new   unix mv ";
  "\\o [0N]      offset from gmt";
  "\\p [i]       port (0 turns off)";
  "\\P [7]       print digits(0-all)";
- "\\s [i]       number of slaves ";
+ "\\r old new   unix mv ";
+ "\\s           number of slaves (query only) ";
  "\\S [-314159] seed";
  "\\t [i]       timer [x] milliseconds (1st fire after delay)";
  "\\t expr      time expression ";
  "\\T [i]       timeout [x] seconds ";
+ "\\u           reload the user:pswd file specified with -u";
  "\\v [d]       variables [directory]";
- "\\w           workspace(used allocated max mapped)";
- "             (max set by -w, 0 => unlimited)";
+ "\\w           workspace(M0 sum of allocs from M1 bytes;M1 mapped anon bytes;M2 peak of M1;M3 mapped files bytes)";
+ "             (max set by -w, 0 => unlimited) - see .Q.w[]";
+ "\\w 0         count symbols defined, symbol space used (bytes)";
  "\\W [2]       week offset(sat..fri)";
  "\\x .z.p?     expunge .z.p? value (ie reset to default)";
  "\\z [0]       \"D\"$ uses mm/dd/yyyy or dd/mm/yyyy";
  "\\cd [d]      O/S directory [go to]";
+ "\\_           is readonly (cmdline -b)";
+ "\\_ f.q       create runtime script f.q_ from f.q (or f.k_ from f.k) ";
  "\\[other]     O/S execute";
  "\\\\           exit";
  "\\            (escape suspension, or switch language mode)";
