@@ -5,23 +5,24 @@ import java.net.*;import java.io.*;import java.sql.*;import java.lang.reflect.Ar
 //Flip t=td(c.k("select sum size by sym from trade"));O(n(t.x));O(n(t.y[0]));O(at(t.y[0],0)); //cols rows data
 public class c{public static void main(String[]args){try{c c=new c("",5001);
 O(c.k("0N!",c.k("0N!1999.01.01D-1")));
- c.close();}catch(Exception e){e.printStackTrace();}} 
+ c.close();}catch(Exception e){e.printStackTrace();}}
 public Socket s;DataInputStream i;OutputStream o;byte[]b,B;int j,J;boolean a,v6;
 void io(Socket x)throws IOException{s=x;i=new DataInputStream(s.getInputStream());o=s.getOutputStream();}public void close()throws IOException{s.close();i.close();o.close();}
 public c(ServerSocket s)throws IOException{io(s.accept());i.read(b=new byte[99]);o.write(b,0,1);} //c c=new c(new ServerSocket(5010));while(true)c.w(2,c.k());
-public c(String h,int p,String u)throws KException,IOException{io(new Socket(h,p));B=new byte[1+ns(u+="\2")];J=0;w(u);o.write(B);if(1!=i.read(B,0,1))throw new KException("access");v6=B[0]==2;}
+public c(String h,int p,String u)throws KException,IOException{io(new Socket(h,p));B=new byte[1+ns(u+="\1")];J=0;w(u);o.write(B);if(1!=i.read(B,0,1))throw new KException("access");v6=B[0]==2;}
 public c(String h,int p)throws KException,IOException{this(h,p,System.getProperty("user.name"));}
 public static class Month{public int i;public Month(int x){i=x;}public String toString(){int m=i+24000,y=m/12;return i==ni?"":i2(y/100)+i2(y%100)+"-"+i2(1+m%12);}}
 public static class Minute{public int i;public Minute(int x){i=x;}public String toString(){return i==ni?"":i2(i/60)+":"+i2(i%60);}}
 public static class Second{public int i;public Second(int x){i=x;}public String toString(){return i==ni?"":new Minute(i/60).toString()+':'+i2(i%60);}}
 public static class Timespan{public long j;public Timespan(long x){j=x;}public String toString(){return j==nj?"":j+"";}}
-public static class Dict{public Object x;public Object y;public Dict(Object X,Object Y){x=X;y=Y;}} 
+public static class Dict{public Object x;public Object y;public Dict(Object X,Object Y){x=X;y=Y;}}
 public static class Flip{public String[]x;public Object[]y;public Flip(Dict X){x=(String[])X.x;y=(Object[])X.y;}public Object at(String s){return y[find(x,s)];}}
 public static class KException extends Exception{KException(String s){super(s);}}
 
+private void u(){int n=0,r=0,f=0,s=8,p=s;short i=0;j=0;byte[]dst=new byte[ri()];int d=j;int[]aa=new int[256];while(s<dst.length){if(i==0){f=0xff&(int)b[d++];i=1;}if((f&i)!=0){r=aa[0xff&(int)b[d++]];dst[s++]=dst[r++];dst[s++]=dst[r++];n=0xff&(int)b[d++];for(int m=0;m<n;m++)dst[s+m]=dst[r+m];}else dst[s++]=b[d++];while(p<s-1)aa[(0xff&(int)dst[p])^(0xff&(int)dst[p+1])]=p++;if((f&i)!=0)p=s+=n;i*=2;if(i==256)i=0;}b=dst;j=8;}
 void w(byte x){B[J++]=x;}static int ni=Integer.MIN_VALUE;static long nj=Long.MIN_VALUE;static double nf=Double.NaN;
-boolean rb(){return 1==b[j++];}void w(boolean x){w((byte)(x?1:0));}  char rc(){return(char)(b[j++]&0xff);}void w(char c){w((byte)c);} 
-short rh(){int x=b[j++],y=b[j++];return(short)(a?x&0xff|y<<8:x<<8|y&0xff);}                               void w(short h){w((byte)(h>>8));w((byte)h);}  
+boolean rb(){return 1==b[j++];}void w(boolean x){w((byte)(x?1:0));}  char rc(){return(char)(b[j++]&0xff);}void w(char c){w((byte)c);}
+short rh(){int x=b[j++],y=b[j++];return(short)(a?x&0xff|y<<8:x<<8|y&0xff);}                               void w(short h){w((byte)(h>>8));w((byte)h);}
 int ri(){int x=rh(),y=rh();return a?x&0xffff|y<<16:x<<16|y&0xffff;}                                       void w(int i){w((short)(i>>16));w((short)i);}
 long rj(){int x=ri(),y=ri();return a?x&0xffffffffL|(long)y<<32:(long)x<<32|y&0xffffffffL;}                void w(long j){w((int)(j>>32));w((int)j);}
 float re(){return Float.intBitsToFloat(ri());}                                                            void w(float e){w(Float.floatToIntBits(e));}
@@ -32,7 +33,7 @@ public java.util.TimeZone tz=java.util.TimeZone.getDefault();
 static long k=86400000L*10957,n=1000000000L;long o(long x){return tz.getOffset(x);}long lg(long x){return x+o(x);}long gl(long x){return x-o(x-o(x));}
 Date rd(){int i=ri();return new Date(i==ni?nj:gl(k+86400000L*i));}                             void w(Date d){long j=d.getTime();w(j==nj?ni:(int)(lg(j)/86400000-10957));}
 Time rt(){int i=ri();return new Time(i==ni?nj:gl(i));}                                         void w(Time t){long j=t.getTime();w(j==nj?ni:(int)(lg(j)%86400000));}
-Timestamp rz(){double f=rf();return new Timestamp(Double.isNaN(f)?nj:gl(k+(long)(8.64e7*f)));} void w(java.util.Date z){long j=z.getTime();w(j==nj?nf:(lg(j)-k)/8.64e7);} 
+Timestamp rz(){double f=rf();return new Timestamp(Double.isNaN(f)?nj:gl(k+(long)(8.64e7*f)));} void w(java.util.Date z){long j=z.getTime();w(j==nj?nf:(lg(j)-k)/8.64e7);}
 Timestamp rp(){long j=rj(),d=j<0?(j+1)/n-1:j/n;Timestamp p=new Timestamp(j==nj?j:gl(k+1000*d));p.setNanos((int)(j-n*d));O(p);return p;}
 void w(Timestamp p){long j=p.getTime();w(j==nj?j:1000000*(lg(j)-k)+p.getNanos()%1000000);}
 
@@ -47,13 +48,13 @@ Object r()throws UnsupportedEncodingException{int i=0,n,t=b[j++];if(t<0)switch(t
   case 6:int[]I=new int[n];for(;i<n;i++)I[i]=ri();return I;             case 7:long[]J=new long[n];for(;i<n;i++)J[i]=rj();return J;
   case 8:float[]E=new float[n];for(;i<n;i++)E[i]=re();return E;	        case 9:double[]F=new double[n];for(;i<n;i++)F[i]=rf();return F;
  case 10:char[]C=new char[n];for(;i<n;i++)C[i]=rc();return C;          case 11:String[]S=new String[n];for(;i<n;i++)S[i]=rs();return S;
- case 12:Timestamp[]P=new Timestamp[n];for(;i<n;i++)P[i]=rp();return P;case 13:Month[]M=new Month[n];for(;i<n;i++)M[i]=rm();return M;  
+ case 12:Timestamp[]P=new Timestamp[n];for(;i<n;i++)P[i]=rp();return P;case 13:Month[]M=new Month[n];for(;i<n;i++)M[i]=rm();return M;
  case 14:Date[]D=new Date[n];for(;i<n;i++)D[i]=rd();return D;          case 15:Timestamp[]Z=new Timestamp[n];for(;i<n;i++)Z[i]=rz();return Z;
  case 16:Timespan[]N=new Timespan[n];for(;i<n;i++)N[i]=rn();return N;  case 17:Minute[]U=new Minute[n];for(;i<n;i++)U[i]=ru();return U;
  case 18:Second[]V=new Second[n];for(;i<n;i++)V[i]=rv();return V;      case 19:Time[]T=new Time[n];for(;i<n;i++)T[i]=rt();return T;}return null;}
 
 //object.getClass().isArray()   t(int[]) is .5 isarray is .1 lookup .05
-public int t(Object x){return 
+public int t(Object x){return
  x instanceof Boolean?-1:x instanceof Byte?-4:x instanceof Short?-5:x instanceof Integer?-6:x instanceof Long?-7:x instanceof Float?-8:x instanceof Double?-9:x instanceof Character?-10:x instanceof String?-11:
 x instanceof Date?-14:x instanceof Time?-19:v6&&x instanceof Timestamp?-12:x instanceof java.util.Date?-15:x instanceof Timespan?-16: x instanceof Month?-13:x instanceof Minute?-17:x instanceof Second?-18:
  x instanceof boolean[]?1:x instanceof byte[]?4:x instanceof short[]?5:x instanceof int[]?6:x instanceof long[]?7:x instanceof float[]?8:x instanceof double[]?9:x instanceof char[]?10:x instanceof String[]?11:
@@ -82,7 +83,7 @@ public void ks(String s)throws IOException{w(0,cs(s));}public void ks(Object x)t
 public void ks(String s,Object x)throws IOException{Object[]a={cs(s),x};w(0,a);}
 public void ks(String s,Object x,Object y)throws IOException{Object[]a={cs(s),x,y};w(0,a);}
 public void ks(String s,Object x,Object y,Object z)throws IOException{Object[]a={cs(s),x,y,z};w(0,a);}
-public Object k()throws KException,IOException,UnsupportedEncodingException{synchronized(i){i.readFully(b=new byte[8]);a=b[0]==1;j=4;i.readFully(b=new byte[ri()-8]);if(b[0]==-128){j=1;throw new KException(rs());}j=0;return r();}}
+public Object k()throws KException,IOException,UnsupportedEncodingException{synchronized(i){i.readFully(b=new byte[8]);a=b[0]==1;boolean c=b[2]==1;j=4;i.readFully(b=new byte[ri()-8]);if(c)u();else j=0;if(b[0]==-128){j=1;throw new KException(rs());}return r();}}
 public synchronized Object k(Object x)throws KException,IOException{w(1,x);return k();}
 public Object k(String s)throws KException,IOException{return k(cs(s));}
 public Object k(String s,Object x)throws KException,IOException{Object[]a={cs(s),x};return k(a);}
@@ -101,8 +102,9 @@ public static Flip td(Object X){if(X instanceof Flip)return(Flip)X;Dict d=(Dict)
 public static Object O(Object x){System.out.println(x);return x;}public static void O(int x){System.out.println(x);}public static void O(boolean x){System.out.println(x);}public static void O(long x){System.out.println(x);}public static void O(double x){System.out.println(x);}
 public static long t(){return System.currentTimeMillis();}static long t;public static void tm(){long u=t;t=t();if(u>0)O(t-u);}static String i2(int i){return new DecimalFormat("00").format(i);}
 }
+//2009.10.29 u - uncompress
 //2009.09.23 Timestamp,Timespan,v6 connect
 //2008.08.14 String(,,,"ISO-8859-1") to avoid mutex
-//2007.10.18 tz 
+//2007.10.18 tz
 //2007.08.06 kx
 //2007.04.20 sql.{Date|Time|Timestamp}
