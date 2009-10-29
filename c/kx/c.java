@@ -9,7 +9,7 @@ O(c.k("0N!",c.k("0N!1999.01.01D-1")));
 public Socket s;DataInputStream i;OutputStream o;byte[]b,B;int j,J;boolean a,v6;
 void io(Socket x)throws IOException{s=x;i=new DataInputStream(s.getInputStream());o=s.getOutputStream();}public void close()throws IOException{s.close();i.close();o.close();}
 public c(ServerSocket s)throws IOException{io(s.accept());i.read(b=new byte[99]);o.write(b,0,1);} //c c=new c(new ServerSocket(5010));while(true)c.w(2,c.k());
-public c(String h,int p,String u)throws KException,IOException{io(new Socket(h,p));B=new byte[1+ns(u+="\1")];J=0;w(u);o.write(B);if(1!=i.read(B,0,1))throw new KException("access");v6=B[0]==2;}
+public c(String h,int p,String u)throws KException,IOException{B=new byte[2+ns(u)];io(new Socket(h,p));J=0;w(u+"\1");o.write(B);if(1!=i.read(B,0,1)){B=new byte[1+ns(u)];io(new Socket(h,p));J=0;w(u);o.write(B);if(1!=i.read(B,0,1))throw new KException("access");}v6=B[0]==1;}
 public c(String h,int p)throws KException,IOException{this(h,p,System.getProperty("user.name"));}
 public static class Month{public int i;public Month(int x){i=x;}public String toString(){int m=i+24000,y=m/12;return i==ni?"":i2(y/100)+i2(y%100)+"-"+i2(1+m%12);}}
 public static class Minute{public int i;public Minute(int x){i=x;}public String toString(){return i==ni?"":i2(i/60)+":"+i2(i%60);}}
@@ -83,7 +83,7 @@ public void ks(String s)throws IOException{w(0,cs(s));}public void ks(Object x)t
 public void ks(String s,Object x)throws IOException{Object[]a={cs(s),x};w(0,a);}
 public void ks(String s,Object x,Object y)throws IOException{Object[]a={cs(s),x,y};w(0,a);}
 public void ks(String s,Object x,Object y,Object z)throws IOException{Object[]a={cs(s),x,y,z};w(0,a);}
-public Object k()throws KException,IOException,UnsupportedEncodingException{synchronized(i){i.readFully(b=new byte[8]);a=b[0]==1;boolean c=b[2]==1;j=4;i.readFully(b=new byte[ri()-8]);if(c)u();else j=0;if(b[0]==-128){j=1;throw new KException(rs());}return r();}}
+public Object k()throws KException,IOException,UnsupportedEncodingException{synchronized(i){i.readFully(b=new byte[8]);a=b[0]==1;boolean c=v6&&b[2]==1;j=4;i.readFully(b=new byte[ri()-8]);if(c)u();else j=0;if(b[0]==-128){j=1;throw new KException(rs());}return r();}}
 public synchronized Object k(Object x)throws KException,IOException{w(1,x);return k();}
 public Object k(String s)throws KException,IOException{return k(cs(s));}
 public Object k(String s,Object x)throws KException,IOException{Object[]a={cs(s),x};return k(a);}
@@ -102,7 +102,7 @@ public static Flip td(Object X){if(X instanceof Flip)return(Flip)X;Dict d=(Dict)
 public static Object O(Object x){System.out.println(x);return x;}public static void O(int x){System.out.println(x);}public static void O(boolean x){System.out.println(x);}public static void O(long x){System.out.println(x);}public static void O(double x){System.out.println(x);}
 public static long t(){return System.currentTimeMillis();}static long t;public static void tm(){long u=t;t=t();if(u>0)O(t-u);}static String i2(int i){return new DecimalFormat("00").format(i);}
 }
-//2009.10.29 u - uncompress, limit read requests to 64kB
+//2009.10.29 u - uncompress, connect retry for v<=2.5
 //2009.09.23 Timestamp,Timespan,v6 connect
 //2008.08.14 String(,,,"ISO-8859-1") to avoid mutex
 //2007.10.18 tz
