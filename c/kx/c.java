@@ -83,7 +83,8 @@ public void ks(String s)throws IOException{w(0,cs(s));}public void ks(Object x)t
 public void ks(String s,Object x)throws IOException{Object[]a={cs(s),x};w(0,a);}
 public void ks(String s,Object x,Object y)throws IOException{Object[]a={cs(s),x,y};w(0,a);}
 public void ks(String s,Object x,Object y,Object z)throws IOException{Object[]a={cs(s),x,y,z};w(0,a);}
-public Object k()throws KException,IOException,UnsupportedEncodingException{synchronized(i){i.readFully(b=new byte[8]);a=b[0]==1;boolean c=b[2]==1;j=4;i.readFully(b=new byte[ri()-8]);if(c)u();else j=0;if(b[0]==-128){j=1;throw new KException(rs());}return r();}}
+void read(byte[]b) throws IOException{int k=0,j,n=b.length;for(;k<n;k+=j)if(0>(j=i.read(b,k,Math.min(65536,n-k))))throw new EOFException();}
+public Object k()throws KException,IOException,UnsupportedEncodingException{synchronized(i){read(b=new byte[8]);a=b[0]==1;boolean c=b[2]==1;j=4;read(b=new byte[ri()-8]);if(c)u();else j=0;if(b[0]==-128){j=1;throw new KException(rs());}return r();}}
 public synchronized Object k(Object x)throws KException,IOException{w(1,x);return k();}
 public Object k(String s)throws KException,IOException{return k(cs(s));}
 public Object k(String s,Object x)throws KException,IOException{Object[]a={cs(s),x};return k(a);}
@@ -102,7 +103,7 @@ public static Flip td(Object X){if(X instanceof Flip)return(Flip)X;Dict d=(Dict)
 public static Object O(Object x){System.out.println(x);return x;}public static void O(int x){System.out.println(x);}public static void O(boolean x){System.out.println(x);}public static void O(long x){System.out.println(x);}public static void O(double x){System.out.println(x);}
 public static long t(){return System.currentTimeMillis();}static long t;public static void tm(){long u=t;t=t();if(u>0)O(t-u);}static String i2(int i){return new DecimalFormat("00").format(i);}
 }
-//2009.10.29 u - uncompress
+//2009.10.29 u - uncompress, limit read requests to 64kB
 //2009.09.23 Timestamp,Timespan,v6 connect
 //2008.08.14 String(,,,"ISO-8859-1") to avoid mutex
 //2007.10.18 tz
