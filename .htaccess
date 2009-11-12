@@ -1,5 +1,5 @@
-ReadmeName .license_footer.html
-HeaderName .license_header.html
+# ReadmeName .license_footer.html
+# HeaderName .license_header.html
 
-IndexOptions FancyIndexing NameWidth=24 DescriptionWidth=32 SuppressHTMLPreamble
-IndexOptions FoldersFirst
+# IndexOptions FancyIndexing NameWidth=24 DescriptionWidth=32 SuppressHTMLPreamble
+# IndexOptions FoldersFirst
