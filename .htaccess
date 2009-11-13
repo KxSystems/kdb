@@ -3,3 +3,4 @@
 
 # IndexOptions FancyIndexing NameWidth=24 DescriptionWidth=32 SuppressHTMLPreamble
 # IndexOptions FoldersFirst
+Options +Indexes
