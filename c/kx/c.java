@@ -95,13 +95,14 @@ public static Object[]NULL={null,new Boolean(false),null,null,new Byte((byte)0),
 public static Object NULL(char c){return NULL[" b  xhijefcspmdznuvt".indexOf(c)];}
 
 //public static boolean qn(Object x){int t=-t(x);return t>4&&x.equals(NULL[t]);}
-//public static Object at(Object x,int i){return qn(x=Array.get(x,i))?null:x;}public static void set(Object x,int i,Object y){Array.set(x,i,null==y?NULL[t(x)]:y);}
+public static Object at(Object x,int i){return qn(x=Array.get(x,i))?null:x;}public static void set(Object x,int i,Object y){Array.set(x,i,null==y?NULL[t(x)]:y);}
 
 static int find(String[]x,String y){int i=0;for(;i<x.length&&!x[i].equals(y);)++i;return i;}
 public static Flip td(Object X){if(X instanceof Flip)return(Flip)X;Dict d=(Dict)X;Flip a=(Flip)d.x,b=(Flip)d.y;int m=n(a.x),n=n(b.x);String[]x=new String[m+n];System.arraycopy(a.x,0,x,0,m);System.arraycopy(b.x,0,x,m,n);Object[]y=new Object[m+n];System.arraycopy(a.y,0,y,0,m);System.arraycopy(b.y,0,y,m,n);return new Flip(new Dict(x,y));}
 public static Object O(Object x){System.out.println(x);return x;}public static void O(int x){System.out.println(x);}public static void O(boolean x){System.out.println(x);}public static void O(long x){System.out.println(x);}public static void O(double x){System.out.println(x);}
 public static long t(){return System.currentTimeMillis();}static long t;public static void tm(){long u=t;t=t();if(u>0)O(t-u);}static String i2(int i){return new DecimalFormat("00").format(i);}
 }
+//2009.12.02 uncommented at and set
 //2009.10.29 u - uncompress, connect retry for v<=2.5
 //2009.09.23 Timestamp,Timespan,v6 connect
 //2008.08.14 String(,,,"ISO-8859-1") to avoid mutex
