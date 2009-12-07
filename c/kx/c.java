@@ -54,11 +54,11 @@ Object r()throws UnsupportedEncodingException{int i=0,n,t=b[j++];if(t<0)switch(t
  case 18:Second[]V=new Second[n];for(;i<n;i++)V[i]=rv();return V;      case 19:Time[]T=new Time[n];for(;i<n;i++)T[i]=rt();return T;}return null;}
 
 //object.getClass().isArray()   t(int[]) is .5 isarray is .1 lookup .05
-public int t(Object x){return
+public static int t(Object x){return
  x instanceof Boolean?-1:x instanceof Byte?-4:x instanceof Short?-5:x instanceof Integer?-6:x instanceof Long?-7:x instanceof Float?-8:x instanceof Double?-9:x instanceof Character?-10:x instanceof String?-11:
-x instanceof Date?-14:x instanceof Time?-19:v6&&x instanceof Timestamp?-12:x instanceof java.util.Date?-15:x instanceof Timespan?-16: x instanceof Month?-13:x instanceof Minute?-17:x instanceof Second?-18:
+x instanceof Date?-14:x instanceof Time?-19:x instanceof Timestamp?-12:x instanceof java.util.Date?-15:x instanceof Timespan?-16: x instanceof Month?-13:x instanceof Minute?-17:x instanceof Second?-18:
  x instanceof boolean[]?1:x instanceof byte[]?4:x instanceof short[]?5:x instanceof int[]?6:x instanceof long[]?7:x instanceof float[]?8:x instanceof double[]?9:x instanceof char[]?10:x instanceof String[]?11:
-x instanceof Date[]?14:x instanceof Time[]?19:v6&&(x instanceof Timestamp[])?12:x instanceof java.util.Date[]?15:x instanceof Timespan[]?16:x instanceof Month[]?13:x instanceof Minute[]?17:x instanceof Second[]?18:
+x instanceof Date[]?14:x instanceof Time[]?19:x instanceof Timestamp[]?12:x instanceof java.util.Date[]?15:x instanceof Timespan[]?16:x instanceof Month[]?13:x instanceof Minute[]?17:x instanceof Second[]?18:
  x instanceof Flip?98:x instanceof Dict?99:0;}
 
 static int[]nt={0,1,0,0,1,2,4,8,4,8,1,0,8,4,4,8,8,4,4,4};static int ns(String s){int i;return s==null?0:-1<(i=s.indexOf('\000'))?i:s.length();}
@@ -69,7 +69,8 @@ void w(Object x){int i=0,n,t=t(x);w((byte)t);if(t<0)switch(t){case-1:w(((Boolean
   case-4:w(((Byte)x).byteValue());return;      case-5:w(((Short)x).shortValue());return;
   case-6:w(((Integer)x).intValue());return;    case-7:w(((Long)x).longValue());return;
   case-8:w(((Float)x).floatValue());return;    case-9:w(((Double)x).doubleValue());return;
- case-10:w(((Character)x).charValue());return; case-11:w((String)x);return;case-12:w((Timestamp)x);return;case-13:w((Month)x);return;case-14:w((Date)x);return;
+ case-10:w(((Character)x).charValue());return; case-11:w((String)x);return;
+case-12:w((Timestamp)x);return;case-13:w((Month)x);return;case-14:w((Date)x);return;
  case-15:w((java.util.Date)x);return;case-16:w((Timespan)x);return;case-17:w((Minute)x);return;case-18:w((Second)x);return;case-19:w((Time)x);return;}
  if(t==99){Dict r=(Dict)x;w(r.x);w(r.y);return;}B[J++]=0;if(t==98){Flip r=(Flip)x;B[J++]=99;w(r.x);w(r.y);return;}
  w(n=n(x));for(;i<n;++i)if(t==0)w(((Object[])x)[i]);else if(t==1)w(((boolean[])x)[i]);else if(t==4)w(((byte[])x)[i]);
@@ -83,7 +84,7 @@ public void ks(String s)throws IOException{w(0,cs(s));}public void ks(Object x)t
 public void ks(String s,Object x)throws IOException{Object[]a={cs(s),x};w(0,a);}
 public void ks(String s,Object x,Object y)throws IOException{Object[]a={cs(s),x,y};w(0,a);}
 public void ks(String s,Object x,Object y,Object z)throws IOException{Object[]a={cs(s),x,y,z};w(0,a);}
-public Object k()throws KException,IOException,UnsupportedEncodingException{synchronized(i){i.readFully(b=new byte[8]);a=b[0]==1;boolean c=v6&&b[2]==1;j=4;i.readFully(b=new byte[ri()-8]);if(c)u();else j=0;if(b[0]==-128){j=1;throw new KException(rs());}return r();}}
+public Object k()throws KException,IOException,UnsupportedEncodingException{synchronized(i){i.readFully(b=new byte[8]);a=b[0]==1;boolean c=b[2]==1;j=4;i.readFully(b=new byte[ri()-8]);if(c)u();else j=0;if(b[0]==-128){j=1;throw new KException(rs());}return r();}}
 public synchronized Object k(Object x)throws KException,IOException{w(1,x);return k();}
 public Object k(String s)throws KException,IOException{return k(cs(s));}
 public Object k(String s,Object x)throws KException,IOException{Object[]a={cs(s),x};return k(a);}
@@ -95,14 +96,16 @@ public static Object[]NULL={null,new Boolean(false),null,null,new Byte((byte)0),
 public static Object NULL(char c){return NULL[" b  xhijefcspmdznuvt".indexOf(c)];}
 
 public static boolean qn(Object x){int t=-t(x);return t>4&&x.equals(NULL[t]);}
-public static Object at(Object x,int i){return qn(x=Array.get(x,i))?null:x;}public static void set(Object x,int i,Object y){Array.set(x,i,null==y?NULL[t(x)]:y);}
+public static Object at(Object x,int i){return qn(x=Array.get(x,i))?null:x;}
+public static void set(Object x,int i,Object y){Array.set(x,i,null==y?NULL[t(x)]:y);}
 
 static int find(String[]x,String y){int i=0;for(;i<x.length&&!x[i].equals(y);)++i;return i;}
 public static Flip td(Object X){if(X instanceof Flip)return(Flip)X;Dict d=(Dict)X;Flip a=(Flip)d.x,b=(Flip)d.y;int m=n(a.x),n=n(b.x);String[]x=new String[m+n];System.arraycopy(a.x,0,x,0,m);System.arraycopy(b.x,0,x,m,n);Object[]y=new Object[m+n];System.arraycopy(a.y,0,y,0,m);System.arraycopy(b.y,0,y,m,n);return new Flip(new Dict(x,y));}
 public static Object O(Object x){System.out.println(x);return x;}public static void O(int x){System.out.println(x);}public static void O(boolean x){System.out.println(x);}public static void O(long x){System.out.println(x);}public static void O(double x){System.out.println(x);}
 public static long t(){return System.currentTimeMillis();}static long t;public static void tm(){long u=t;t=t();if(u>0)O(t-u);}static String i2(int i){return new DecimalFormat("00").format(i);}
 }
-//2009.12.02 uncommented at,set and qn
+//2009.12.07 removed v6 dependencies
+//2009.12.02 uncommented at, set and qn 
 //2009.10.29 u - uncompress, connect retry for v<=2.5
 //2009.09.23 Timestamp,Timespan,v6 connect
 //2008.08.14 String(,,,"ISO-8859-1") to avoid mutex
