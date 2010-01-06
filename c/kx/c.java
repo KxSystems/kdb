@@ -3,9 +3,11 @@ import java.net.*;import java.io.*;import java.sql.*;import java.lang.reflect.Ar
 //tick: c c=new c("",5010);Object[]x={"GE",new Double(2.5),new Integer(23)};c.k(".u.upd","trade",x);
 //Object[]x={new Time(t()),"xx",new Double(93.5),new Integer(300)};for(int i=0;i<1000;++i)c.ks("upsert","trade",x);c.k("");
 //Flip t=td(c.k("select sum size by sym from trade"));O(n(t.x));O(n(t.y[0]));O(at(t.y[0],0)); //cols rows data
-public class c{public static void main(String[]args){try{c c=new c("",5001);
-O(c.k("0N!",c.k("0N!1999.01.01D-1")));
+public class c{
+/*public static void main(String[]args){try{c c=new c("",5001);
+ O(c.k("0N!",c.k("0N!1999.01.01D-1")));
  c.close();}catch(Exception e){e.printStackTrace();}}
+*/
 public Socket s;DataInputStream i;OutputStream o;byte[]b,B;int j,J;boolean a,v6;
 void io(Socket x)throws IOException{s=x;i=new DataInputStream(s.getInputStream());o=s.getOutputStream();}public void close()throws IOException{s.close();i.close();o.close();}
 public c(ServerSocket s)throws IOException{io(s.accept());i.read(b=new byte[99]);o.write(b,0,1);} //c c=new c(new ServerSocket(5010));while(true)c.w(2,c.k());
@@ -34,7 +36,7 @@ static long k=86400000L*10957,n=1000000000L;long o(long x){return tz.getOffset(x
 Date rd(){int i=ri();return new Date(i==ni?nj:gl(k+86400000L*i));}                             void w(Date d){long j=d.getTime();w(j==nj?ni:(int)(lg(j)/86400000-10957));}
 Time rt(){int i=ri();return new Time(i==ni?nj:gl(i));}                                         void w(Time t){long j=t.getTime();w(j==nj?ni:(int)(lg(j)%86400000));}
 Timestamp rz(){double f=rf();return new Timestamp(Double.isNaN(f)?nj:gl(k+(long)(8.64e7*f)));} void w(java.util.Date z){long j=z.getTime();w(j==nj?nf:(lg(j)-k)/8.64e7);}
-Timestamp rp(){long j=rj(),d=j<0?(j+1)/n-1:j/n;Timestamp p=new Timestamp(j==nj?j:gl(k+1000*d));p.setNanos((int)(j-n*d));O(p);return p;}
+Timestamp rp(){long j=rj(),d=j<0?(j+1)/n-1:j/n;Timestamp p=new Timestamp(j==nj?j:gl(k+1000*d));if(j!=nj)p.setNanos((int)(j-n*d));return p;}
 void w(Timestamp p){long j=p.getTime();w(j==nj?j:1000000*(lg(j)-k)+p.getNanos()%1000000);}
 
 String rs()throws UnsupportedEncodingException{int i=j;for(;b[j++]!=0;);return new String(b,i,j-1-i,"ISO-8859-1");} void w(String s){int i=0,n=ns(s);for(;i<n;)w(s.charAt(i++));B[J++]=0;}
@@ -104,6 +106,7 @@ public static Flip td(Object X){if(X instanceof Flip)return(Flip)X;Dict d=(Dict)
 public static Object O(Object x){System.out.println(x);return x;}public static void O(int x){System.out.println(x);}public static void O(boolean x){System.out.println(x);}public static void O(long x){System.out.println(x);}public static void O(double x){System.out.println(x);}
 public static long t(){return System.currentTimeMillis();}static long t;public static void tm(){long u=t;t=t();if(u>0)O(t-u);}static String i2(int i){return new DecimalFormat("00").format(i);}
 }
+//2010.01.06 fixed 0Np
 //2009.12.07 removed v6 dependencies
 //2009.12.02 uncommented at, set and qn 
 //2009.10.29 u - uncompress, connect retry for v<=2.5
