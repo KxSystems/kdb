@@ -1,3 +1,4 @@
+//2010.01.11 Added null checks for qn for UDTs Date,Month,Minute,Second,KTimespan
 //2010.01.04 Added new time types (timespan->KTimespan,timestamp->DateTime), drop writing kdb+ datetime
 //2009.10.19 Limit reads to blocks of 64kB to reduce load on kernel memory
 //2007.09.26 0Wz to MaxValue
@@ -9,10 +10,13 @@ class c:TcpClient{
 /*
 public static void Main(string[]args){//c.ReceiveTimeout=1000;
 //c c=new c("localhost",5010);c.k(".u.sub[`trade;`MSFT.O`IBM.N]");while(true){object r=c.k();O(n(at(r,2)));}
- c c=new c("localhost",5001);
+c c=new c("localhost",5001);
 //object[]x=new object[4];x[0]=t();x[1]="xx";x[2]=(double)93.5;x[3]=300;tm();for(int i=0;i<1000;++i)c.k("insert","trade",x);tm();
- Flip r=td(c.k("select sum price by sym from trade"));O("cols: "+n(r.x));O("rows: "+n(r.y[0]));
- c.Close();}
+// Flip r=td(c.k("select sum price by sym from trade"));O("cols: "+n(r.x));O("rows: "+n(r.y[0]));
+    char[]t="hijefcmdznuvtp".ToCharArray();
+    for(int i=0;i<t.Length;i++)
+        O("0N"+t[i]+"  "+qn(c.k("0N"+t[i])));
+c.Close();}
 */
 byte[]b,B;int j,J;bool a;Stream s;public new void Close(){s.Close();base.Close();}
 public c(string h,int p):this(h,p,Environment.UserName){}
@@ -23,7 +27,7 @@ static TimeSpan t(){return DateTime.Now.TimeOfDay;}static TimeSpan v;static void
 static void O(object x){Console.WriteLine(x);}static string i2(int i){return String.Format("{0:00}",i);}
 static int ni=Int32.MinValue;static long nj=Int64.MinValue,o=(long)8.64e11*730119;static double nf=Double.NaN;
 static object[]NU={null,false,null,null,(byte)0,Int16.MinValue,ni,nj,(Single)nf,nf,' ',"",new DateTime(0),
- new Month(ni),new Date(ni),new DateTime(0),new KTimespan(nj),new Minute(ni),new Second(ni),new TimeSpan(nj)};
+ new Month(ni),new Date(ni),new DateTime(0),new KTimespan(nj),new Minute(ni),new Second(ni),new TimeSpan(ni)};
 static object NULL(char c){return NU[" b  xhijefcspmdznuvt".IndexOf(c)];}
 public static bool qn(object x){int t=-c.t(x);return t>4&&x.Equals(NU[t]);}
 
@@ -37,11 +41,21 @@ static DateTime za=DateTime.MinValue,zw=DateTime.MaxValue;
 public class Date{public int i;public Date(int x){i=x;}
  public DateTime DateTime(){return i==-int.MaxValue?za:i==int.MaxValue?zw:new DateTime(i==ni?0L:(long)8.64e11*i+o);}
  public Date(long x){i=x==0L?ni:(int)(x/(long)8.64e11)-730119;}
- public Date(DateTime z):this(z.Ticks){}public override string ToString(){return i==ni?"":this.DateTime().ToString("d");}}
-public class Month{public int i;public Month(int x){i=x;}public override string ToString(){int m=24000+i,y=m/12;return i==ni?"":i2(y/100)+i2(y%100)+"-"+i2(1+m%12);}}
-public class Minute{public int i;public Minute(int x){i=x;}public override string ToString(){return i==ni?"":i2(i/60)+":"+i2(i%60);}}
-public class Second{public int i;public Second(int x){i=x;}public override string ToString(){return i==ni?"":new Minute(i/60).ToString()+':'+i2(i%60);}}
-public class KTimespan{public TimeSpan t;public KTimespan(long x){t=new TimeSpan(x==nj?nj:x/100);}public override string ToString(){return qn(t)?"":t.ToString();}}
+ public Date(DateTime z):this(z.Ticks){}public override string ToString(){return i==ni?"":this.DateTime().ToString("d");}
+ public override bool Equals(object o){if(o==null)return false;if(this.GetType()!=o.GetType())return false;Date d=(Date)o;return i==d.i;}
+ public override int GetHashCode(){return i;}}
+public class Month{public int i;public Month(int x){i=x;}public override string ToString(){int m=24000+i,y=m/12;return i==ni?"":i2(y/100)+i2(y%100)+"-"+i2(1+m%12);}
+ public override bool Equals(object o){if(o==null)return false;if(this.GetType()!=o.GetType())return false;Month m=(Month)o;return i==m.i;}
+ public override int GetHashCode(){return i;}}
+public class Minute{public int i;public Minute(int x){i=x;}public override string ToString(){return i==ni?"":i2(i/60)+":"+i2(i%60);}
+ public override bool Equals(object o){if(o==null)return false;if(this.GetType()!=o.GetType())return false;Minute m=(Minute)o;return i==m.i;}
+ public override int GetHashCode(){return i;}}
+public class Second{public int i;public Second(int x){i=x;}public override string ToString(){return i==ni?"":new Minute(i/60).ToString()+':'+i2(i%60);}
+ public override bool Equals(object o){if(o==null)return false;if(this.GetType()!=o.GetType())return false;Second s=(Second)o;return i==s.i;}
+ public override int GetHashCode(){return i;}}
+public class KTimespan{public TimeSpan t;public KTimespan(long x){t=new TimeSpan(x==nj?nj:x/100);}public override string ToString(){return qn(t)?"":t.ToString();}
+ public override bool Equals(object o){if(o==null)return false;if(this.GetType()!=o.GetType())return false;KTimespan n=(KTimespan)o;return t.Ticks==n.t.Ticks;}
+ public override int GetHashCode(){return t.GetHashCode();}}
 
 public class Dict{public object x;public object y;public Dict(object X,object Y){x=X;y=Y;}}
 static int find(string[]x,string y){int i=0;for(;i<x.Length&&!x[i].Equals(y);)++i;return i;}
@@ -71,11 +85,11 @@ void w(char c){w((byte)c);}char rc(){return(char)(b[j++]&0xff);}void w(string s)
 string rs(){int i=0,k=j;for(;b[k]!=0;)++k;char[]s=new char[k-j];for(;j<k;)s[i++]=(char)(0xFF&b[j++]);++j;return new string(s);}
 void w(Date d){w(d.i);}Date rd(){return new Date(ri());}   void w(Minute u){w(u.i);}Minute ru(){return new Minute(ri());}    
 void w(Month m){w(m.i);}Month rm(){return new Month(ri());}void w(Second v){w(v.i);}Second rv(){return new Second(ri());}
-void w(TimeSpan t){w(qn(t)?ni:(int)(t.Ticks/10000));}TimeSpan rt(){int i=ri();return new TimeSpan(qn(i)?nj:10000L*i);}
+void w(TimeSpan t){w(qn(t)?ni:(int)(t.Ticks/10000));}TimeSpan rt(){int i=ri();return new TimeSpan(qn(i)?ni:10000L*i);}
 void w(DateTime p){w(qn(p)?nj:(100*(p.Ticks-o)));}
 DateTime rz(){double f=rf();return Double.IsInfinity(f)?(f<0?za:zw):new DateTime(qn(f)?0:10000*(long)Math.Round(8.64e7*f)+o);}
 void w(KTimespan t){w(qn(t)?nj:(t.t.Ticks*100));} KTimespan rn(){return new KTimespan(rj());}
-DateTime rp(){long j=rj(),d=j<0?(j+1)/100-1:j/100;DateTime p=new DateTime(j==nj?j:o+d);return p;}
+DateTime rp(){long j=rj(),d=j<0?(j+1)/100-1:j/100;DateTime p=new DateTime(j==nj?0:o+d);return p;}
 
 void w(object x){int i=0,n,t=c.t(x);w((byte)t);if(t<0)switch(t){case-1:w((bool)x);return;case-4:w((byte)x);return;
  case-5:w((short)x);return;case-6:w((int)x);return;case-7:w((long)x);return;case-8:w((float)x);return;case-9:w((double)x);return;
@@ -112,3 +126,4 @@ public void ks(String s){w(0,cs(s));}
 public void ks(String s,Object x){Object[]a={cs(s),x};w(0,a);}
 public void ks(String s,Object x,Object y){Object[]a={cs(s),x,y};w(0,a);}
 }
+
