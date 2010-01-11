@@ -5,7 +5,9 @@
 //2006.09.29 NULL  c.Date class(sync with c.java)
 using System;using System.IO;using System.Net.Sockets; //csc c.cs  given >q trade.q -p 5001
 
-/*class c:TcpClient{public static void Main(string[]args){//c.ReceiveTimeout=1000;
+class c:TcpClient{
+/*
+public static void Main(string[]args){//c.ReceiveTimeout=1000;
 //c c=new c("localhost",5010);c.k(".u.sub[`trade;`MSFT.O`IBM.N]");while(true){object r=c.k();O(n(at(r,2)));}
  c c=new c("localhost",5001);
 //object[]x=new object[4];x[0]=t();x[1]="xx";x[2]=(double)93.5;x[3]=300;tm();for(int i=0;i<1000;++i)c.k("insert","trade",x);tm();
