@@ -1,3 +1,4 @@
+//2010.01.14 Exposed static var e (Encoding) as public
 //2010.01.12 Added support for unicode encoding, defaults to ASCII 
 //2010.01.11 Added null checks for qn for UDTs Date,Month,Minute,Second,KTimespan
 //2010.01.04 Added new time types (timespan->KTimespan,timestamp->DateTime), drop writing kdb+ datetime
@@ -19,7 +20,7 @@ class c:TcpClient{
  c.Close();
 }
 */
-static System.Text.Encoding e=System.Text.Encoding.ASCII;
+public static System.Text.Encoding e=System.Text.Encoding.ASCII;
 byte[]b,B;int j,J;bool a;Stream s;public new void Close(){s.Close();base.Close();}
 public c(string h,int p):this(h,p,Environment.UserName){}
 public c(string h,int p,string u){Connect(h,p);s=this.GetStream();B=new byte[2+u.Length];J=0;w(u+"\x1");s.Write(B,0,J);if(1!=s.Read(B,0,1)){B=new byte[1+u.Length];Connect(h,p);s=this.GetStream();J=0;w(u);s.Write(B,0,J);if(1!=s.Read(B,0,1))throw new Exception("access");}}
