@@ -1,3 +1,4 @@
+//2010.01.18 SQLInteger->SQLULEN for v64 build
 //2008.03.24 load "" instead of () for null text
 //2007.05.04 fix null charstrings;read bool and byte as smallint
 //2007.03.28  KB null->0  KS(>8)->0
@@ -16,7 +17,7 @@ K1(open){Z D d9;H j=xt==KS;D d,v=GetForegroundWindow();ZC b[1024];
   SQLConnect(d,j?*xS:xs,S0,j?xS[1]:0,S0,j?xS[2]:0,S0))R kj((J)(L)d);}
 K1(close){D d=(D)(L)xj;R SQLDisconnect(d),SQLFreeConnect(d),knk(0);}ZV d0(D d){SQLFreeStmt(d,SQL_DROP);}
 Z D d1(J j){D d=(D)(L)j;Q0(SQLAllocStmt(d,&d))R d;}
-ZK rs(I a,D d,H j){C b[128];SQLINTEGER n=128;K x=ktn(a?0:KS,0);if(!a)for(SQLBindCol(d,j,SQL_C_CHAR,b,n,&n);!SQLFetch(d);)js(&x,ss(b));R d0(d),x;}
+ZK rs(I a,D d,H j){C b[128];SQLULEN n=128;K x=ktn(a?0:KS,0);if(!a)for(SQLBindCol(d,j,SQL_C_CHAR,b,n,&n);!SQLFetch(d);)js(&x,ss(b));R d0(d),x;}
 ZK fk(K x,S s,H j){D d=d1(xj);U(d)R rs(SQLForeignKeys(d,(S)0,0,(S)0,0,(S)0,0,(S)0,0,(S)0,0,s,S0),d,j);}
 ZK tv(K x,S s){D d=d1(xj);U(d)R rs(SQLTables(d,(S)0,0,(S)0,0,(S)0,0,s,S0),d,3);}
 K2(keys){D d=d1(xj);U(d)R rs(SQLPrimaryKeys(d,(S)0,0,(S)0,0,y->s,S0),d,4);}	K1(tables){R tv(x,"TABLE,SYNONYMS");}
@@ -27,9 +28,9 @@ ZI ut[]={0,KS,KF,KF,KI,KH,KF,KE,KF,KD,KV,KZ,KS,0,0,0,0, KJ,KH,KH,KS,KS,0,0};//KG
 ZI wt[]={0, 0, 8, 8, 4, 2, 8, 4, 8, 6, 6,16, 0,0,0,0,0,  8, 1, 1, 0, 0,0,0};
 ZH ct[]={0, 1, 8, 8, 4, 5, 8, 7, 8, 9,10,11, 1,1,0,0,0,-25,-6,-7, 1, 1,1,0};// -5/-25(odbc 2/3)
 ZS nu(I t){ZF f;ZE e;ZJ j=nj;ZI i=ni;ZH h=nh;ZC g;ZS ns;if(!ns)f/=f,e=f,ns=ss("");R t==KS?(S)&ns:t==KF||t==KZ?(S)&f:t==KE?(S)&e:t==KJ?(S)&j:t==KH?(S)&h:t==KG||t==KB?(S)&g:(S)&i;}
-ZK gb(D d,H j,I t){K x=0;H c=ct[t],g=c?c:-2;SQLINTEGER n=0;I e=SQLGetData(d,j,g,kG(x),n,&n);
+ZK gb(D d,H j,I t){K x=0;H c=ct[t],g=c?c:-2;SQLULEN n=0;I e=SQLGetData(d,j,g,kG(x),n,&n);
  if(t==22)n/=2;n+=c;if(x=ktn(c?KC:KG,e==1?n:0),xn)if(SQLGetData(d,j,g,kG(x),n,&n),c)--xn;R x;}
-K2(eval){K*k;S*b,s;SQLINTEGER*nb,*wb,w;H*tb,u,t,j,p,m;F f;C c[128];I n=xj<0;D d=d1(n?-xj:xj);U(d)x=y;Q(xt!=-KS&&xt!=KC,"type")
+K2(eval){K*k;S*b,s;SQLULEN w,*nb;SQLINTEGER*wb;H*tb,u,t,j,p,m;F f;C c[128];I n=xj<0;D d=d1(n?-xj:xj);U(d)x=y;Q(xt!=-KS&&xt!=KC,"type")
  Q1(xt==-KS?SQLColumns(d,(S)0,0,(S)0,0,xs,S0,(S)0,0):SQLExecDirect(d,xG,xn))SQLNumResultCols(d,&j);P(!j,(d0(d),knk(0)))
  b=malloc(j*SZ),tb=malloc(j*2),wb=malloc(j*SZ),nb=malloc(j*SZ),x=ktn(KS,j),y=ktn(0,j);// sqlserver: no bind past nonbind
  DO(j,Q1(SQLDescribeCol(d,(H)(i+1),c,128,&u,&t,&w,&p,&m))xS[i]=sn(c,u);
@@ -65,3 +66,4 @@ else ja(k,n?nu(u):u==KH&&wb[i]==1?(t=(H)*s,(S)&t):u==KS?(s=dtb(s,nb[i]),(S)&s):u
 guid                         -11
 ZI un(D d,H j){I u;SQLColAttribute(d,j,SQL_DESC_UNSIGNED,0,0,0,&u);R u;}
 */
+
