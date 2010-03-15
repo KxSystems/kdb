@@ -1,3 +1,4 @@
+2010.03.15  point to w32 or w64 
 2008.07.13  multiple open connections. also:  "DSN=host:port;UID=..;PWD=..;"
 [we can use odbc.k to load other databases into kdb+.]
 
@@ -7,7 +8,7 @@ from java use c.java
 from .net use c.cs
 
 we might still use odbc to get data into old excel/vb's.
-1. install: http://kx.com/q/c/odbc/odbc.exe
+1. install the apropriate version from: http://kx.com/q/w32/odbc.exe or http://kx.com/q/w64/odbc.exe
 2. connect: "DRIVER=kdb+;DBQ=host:port;UID=usr;PWD=pwd;"
 3. if you make a fileDSN, PWD has to added manually. odbcad32 deletes it.
 
