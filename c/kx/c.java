@@ -5,10 +5,11 @@ import java.net.*;import java.io.*;import java.sql.*;import java.lang.reflect.Ar
 //Flip t=td(c.k("select sum size by sym from trade"));O(n(t.x));O(n(t.y[0]));O(at(t.y[0],0)); //cols rows data
 public class c{
 /*public static void main(String[]args){try{c c=new c("",5001);
-// c.setEncoding("UTF-8");
 // O(c.k("0N!",c.k("0N!1999.01.01D-1")));
-// O("Unicode "+c.k("{x}",(String)c.k("{`$x}",(char[])c.k("\"c\"$0x52616e627920426ac3b6726b6c756e64204142"))));   
- c.close();}catch(Exception e){e.printStackTrace();}}*/
+//c.k("0N!",NULL('z'));
+//c.setEncoding("UTF-8");O("Unicode "+c.k("{`$x}","Ranby Björklund AB".toCharArray()));O("Unicode "+c.k("{x}",(String)c.k("{`$x}",(char[])c.k("\"c\"$0x52616e627920426ac3b6726b6c756e64204142"))));   
+ c.close();}catch(Exception e){e.printStackTrace();}}
+*/
 private static String e="ISO-8859-1";private static PrintStream out=System.out;
 public static void setEncoding(String e)throws UnsupportedEncodingException{c.e=e;out=new PrintStream(System.out,true,e);}
 public Socket s;DataInputStream i;OutputStream o;byte[]b,B;int j,J;boolean a,v6;
@@ -38,7 +39,8 @@ public java.util.TimeZone tz=java.util.TimeZone.getDefault();
 static long k=86400000L*10957,n=1000000000L;long o(long x){return tz.getOffset(x);}long lg(long x){return x+o(x);}long gl(long x){return x-o(x-o(x));}
 Date rd(){int i=ri();return new Date(i==ni?nj:gl(k+86400000L*i));}                             void w(Date d){long j=d.getTime();w(j==nj?ni:(int)(lg(j)/86400000-10957));}
 Time rt(){int i=ri();return new Time(i==ni?nj:gl(i));}                                         void w(Time t){long j=t.getTime();w(j==nj?ni:(int)(lg(j)%86400000));}
-Timestamp rz(){double f=rf();return new Timestamp(Double.isNaN(f)?nj:gl(k+(long)(8.64e7*f)));} void w(java.util.Date z){long j=z.getTime();w(j==nj?nf:(lg(j)-k)/8.64e7);}
+//Timestamp
+java.util.Date rz(){double f=rf();return new java.util.Date(Double.isNaN(f)?nj:gl(k+(long)(8.64e7*f)));} void w(java.util.Date z){long j=z.getTime();w(j==nj?nf:(lg(j)-k)/8.64e7);}
 Timestamp rp(){long j=rj(),d=j<0?(j+1)/n-1:j/n;Timestamp p=new Timestamp(j==nj?j:gl(k+1000*d));if(j!=nj)p.setNanos((int)(j-n*d));return p;}
 void w(Timestamp p){long j=p.getTime();w(j==nj?j:1000000*(lg(j)-k)+p.getNanos()%1000000);}
 
@@ -54,7 +56,7 @@ Object r()throws UnsupportedEncodingException{int i=0,n,t=b[j++];if(t<0)switch(t
   case 8:float[]E=new float[n];for(;i<n;i++)E[i]=re();return E;	        case 9:double[]F=new double[n];for(;i<n;i++)F[i]=rf();return F;
  case 10:char[]C=new String(b,j,n,e).toCharArray();j+=n;return C;       case 11:String[]S=new String[n];for(;i<n;i++)S[i]=rs();return S;
  case 12:Timestamp[]P=new Timestamp[n];for(;i<n;i++)P[i]=rp();return P; case 13:Month[]M=new Month[n];for(;i<n;i++)M[i]=rm();return M;
- case 14:Date[]D=new Date[n];for(;i<n;i++)D[i]=rd();return D;           case 15:Timestamp[]Z=new Timestamp[n];for(;i<n;i++)Z[i]=rz();return Z;
+ case 14:Date[]D=new Date[n];for(;i<n;i++)D[i]=rd();return D;           case 15:java.util.Date[]Z=new java.util.Date[n];for(;i<n;i++)Z[i]=rz();return Z;
  case 16:Timespan[]N=new Timespan[n];for(;i<n;i++)N[i]=rn();return N;   case 17:Minute[]U=new Minute[n];for(;i<n;i++)U[i]=ru();return U;
  case 18:Second[]V=new Second[n];for(;i<n;i++)V[i]=rv();return V;       case 19:Time[]T=new Time[n];for(;i<n;i++)T[i]=rt();return T;}return null;}
 
@@ -98,7 +100,7 @@ public Object k(String s,Object x,Object y)throws KException,IOException{Object[
 public Object k(String s,Object x,Object y,Object z)throws KException,IOException{Object[]a={cs(s),x,y,z};return k(a);}
 
 public static Object[]NULL={null,new Boolean(false),null,null,new Byte((byte)0),new Short(Short.MIN_VALUE),new Integer(ni),new Long(nj),new Float(nf),new Double(nf),new Character(' '),"",
- new Timestamp(nj),new Month(ni),new Date(nj),new Timestamp(nj),new Timespan(nj),new Minute(ni),new Second(ni),new Time(nj)};
+ new Timestamp(nj),new Month(ni),new Date(nj),new java.util.Date(nj),new Timespan(nj),new Minute(ni),new Second(ni),new Time(nj)};
 public static Object NULL(char c){return NULL[" b  xhijefcspmdznuvt".indexOf(c)];}
 
 public static boolean qn(Object x){int t=-t(x);return t>4&&x.equals(NULL[t]);}
@@ -110,7 +112,8 @@ public static Flip td(Object X)throws java.io.UnsupportedEncodingException{if(X 
 public static Object O(Object x){out.println(x);return x;}public static void O(int x){out.println(x);}public static void O(boolean x){out.println(x);}public static void O(long x){out.println(x);}public static void O(double x){out.println(x);}
 public static long t(){return System.currentTimeMillis();}static long t;public static void tm(){long u=t;t=t();if(u>0)O(t-u);}static String i2(int i){return new DecimalFormat("00").format(i);}
 }
-//2010.02.01 added unicode support for char vectors and symbols
+//2010.03.20 changed datetime to java.util.Date as it was incompatible with timestamp
+//2010.02.01 added unicode support for char vectors and symbol
 //2010.01.06 fixed 0Np
 //2009.12.07 removed v6 dependencies
 //2009.12.02 uncommented at, set and qn 
