@@ -17,9 +17,9 @@ w0:@[127#1;w;:;!#w:"i"$(" \t\r\n";",(){}*/+";34 95,/65 97+/:!26;".0123456789:";"
 w1:w[;0]?1_'w:("  +a0<a+'\"";"+ +a0<a+'\"";"a +bb<b+'\"";"0 +*1<e+'\"";"< +a0>a+'\"";"'tttttttut";"\"vvvvvvvvw"
  "b +bb<b+'\"";"1 +*1<e+'\"";"> +a0<a+'\"";"e +*1<*1'\"";"ttttttttut" ;"u +a0<a+t\"";"vvvvvvvvvw";"w +aw<a+'v")
 w:{(i_x)@&0<s i:&7>s:0 w1\w0 x};g:`create`insert`update`delete`select`drop;k:`from`where`group`having`order
-h:$`case`when`then`else`end`references`primary`left`right`inner,k,g,d:`date`time`timestamp;
+h:$`case`when`then`else`end`references`primary`left`right`inner,k,g,d:`date`time`timestamp
 v:{$["'"=t:*x;,`$x@&1b|':~t=x:-1_1_x;t in"{}(),";t;t="/";%;t in".0123456789+-*<>=";. x;"if"~f:_x;?;f in q;. f;f in h;`$f;`$x@&~x="\""]}
-e:{$[~#r::(v;`$)[-1_0b,b:"as"~/:r]@'r@:&~(_r::w x)in$`by`asc`temporary`outer`join`on;;6>si[g]r j::0;`.s[`$_3#$*r@:&~b]j;-6!c r j]}
+e:{$[~#r::v'r@:&~(_r::w x)in$`as`by`asc`temporary`outer`join`on;;6>si[g]r j::0;`.s[`$_3#$*r]j;-6!c r j]}
 
 wt:{x:|+1_{`when~r j}{(a n[];c n[])}\x;ls,'$[`else~r j;@[x;1;,;,a n[]];x]}
 cs:{$[@y;y x;(x'). y]};c1:{$[`when~x:r j;{cs[(+x)?'1b;y]},wt[];{cs[y?x;z]},|(|wt[]),,a x]}
@@ -68,7 +68,10 @@ q)select sum qty by p.color from sp
 s)select sp.s,sp.p,sp.qty from s,p,sp where sp.s=s.s and sp.p=p.p and p.city=s.city
 q)select from sp where s.city=p.city
 
+
 \
+2010.04.06 revert e to not allow reserved words as column names
+2009.12.01 f='x.y' (fix)
 2009.04.21 like'a%'
 2009.04.17 like'a*'
 2009.04.16 order by 1 etc.
