@@ -44,7 +44,7 @@ java.util.Date rz(){double f=rf();return new java.util.Date(Double.isNaN(f)?nj:g
 Timestamp rp(){long j=rj(),d=j<0?(j+1)/n-1:j/n;Timestamp p=new Timestamp(j==nj?j:gl(k+1000*d));if(j!=nj)p.setNanos((int)(j-n*d));return p;}
 void w(Timestamp p){long j=p.getTime();w(j==nj?j:1000000*(lg(j)-k)+p.getNanos()%1000000);}
 
-String rs()throws UnsupportedEncodingException{int i=j;for(;b[j++]!=0;);return new String(b,i,j-1-i,e);} void w(String s)throws UnsupportedEncodingException{int i=0,n=ns(s);byte[]b=s.getBytes(e);for(;i<n;)w(b[i++]);B[J++]=0;}
+String rs()throws UnsupportedEncodingException{int i=j;for(;b[j++]!=0;);return (i==j-1)?"":new String(b,i,j-1-i,e);}void w(String s)throws UnsupportedEncodingException{int i=0,n=ns(s);byte[]b=s.getBytes(e);for(;i<n;)w(b[i++]);B[J++]=0;}
 Object r()throws UnsupportedEncodingException{int i=0,n,t=b[j++];if(t<0)switch(t){case-1:return new Boolean(rb());case-4:return new Byte(b[j++]);case-5:return new Short(rh());
   case-6:return new Integer(ri());case-7:return new Long(rj());case-8:return new Float(re());case-9:return new Double(rf());case-10:return new Character(rc());case-11:return rs();
   case-12:return rp();case-13:return rm();case-14:return rd();case-15:return rz();case-16:return rn();case-17:return ru();case-18:return rv();case-19:return rt();}
@@ -112,6 +112,7 @@ public static Flip td(Object X)throws java.io.UnsupportedEncodingException{if(X 
 public static Object O(Object x){out.println(x);return x;}public static void O(int x){out.println(x);}public static void O(boolean x){out.println(x);}public static void O(long x){out.println(x);}public static void O(double x){out.println(x);}
 public static long t(){return System.currentTimeMillis();}static long t;public static void tm(){long u=t;t=t();if(u>0)O(t-u);}static String i2(int i){return new DecimalFormat("00").format(i);}
 }
+//2010.05.06 optimized rs() for reading null symbols 
 //2010.03.20 changed datetime to java.util.Date as it was incompatible with timestamp
 //2010.02.01 added unicode support for char vectors and symbol
 //2010.01.06 fixed 0Np
