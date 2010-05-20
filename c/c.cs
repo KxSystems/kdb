@@ -7,8 +7,8 @@
 //2006.10.05 truncate string at null
 //2006.09.29 NULL  c.Date class(sync with c.java)
 using System;using System.IO;using System.Net.Sockets; //csc c.cs  given >q trade.q -p 5001
-
-class c:TcpClient{
+namespace kx{
+public class c:TcpClient{
 /*public static void Main(string[]args){
 //c.ReceiveTimeout=1000;
 //c c=new c("localhost",5010);c.k(".u.sub[`trade;`MSFT.O`IBM.N]");while(true){object r=c.k();O(n(at(r,2)));}
@@ -132,4 +132,4 @@ public void ks(String s){w(0,cs(s));}
 public void ks(String s,Object x){Object[]a={cs(s),x};w(0,a);}
 public void ks(String s,Object x,Object y){Object[]a={cs(s),x,y};w(0,a);}
 }
-
+}
