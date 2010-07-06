@@ -1,3 +1,4 @@
+//2010.07.06 support mssql datetime (sql_type_date.. are 91 92 93 so map to 9 10 11
 //2010.01.18 SQLInteger->SQLULEN for v64 build
 //2008.03.24 load "" instead of () for null text
 //2007.05.04 fix null charstrings;read bool and byte as smallint
@@ -7,6 +8,7 @@
 //gcc -shared ../c/odbc.c -o odbc.so -lodbc -fPIC
 //usr/local/gcc-3.3.2/bin/gcc -G ../c/odbc.c -o odbc.so -lodbc   /-lodbcinst  [-m64 -fPIC]
 #include"d.h" // http://www.unixodbc.org
+extern V free(V*p);
 ZS err(I f,D d){ZC e[1006];I i;H j;SQLError(0,f?0:d,f?d:0,e,(SQLINTEGER*)&i,e+6,1000,&j);R e[5]=' ',e;}
 #define Q(x,s) P(x,krr(s))
 #define Q0(x) {I r=(x);if(r){S s=err(0,d);if(r!=1)R       krr(s);if(*s)O("%s\n",s);}}
@@ -34,6 +36,7 @@ K2(eval){K*k;S*b,s;SQLULEN w,*nb;SQLINTEGER*wb;H*tb,u,t,j,p,m;F f;C c[128];I n=x
  Q1(xt==-KS?SQLColumns(d,(S)0,0,(S)0,0,xs,S0,(S)0,0):SQLExecDirect(d,xG,xn))SQLNumResultCols(d,&j);P(!j,(d0(d),knk(0)))
  b=malloc(j*SZ),tb=malloc(j*2),wb=malloc(j*SZ),nb=malloc(j*SZ),x=ktn(KS,j),y=ktn(0,j);// sqlserver: no bind past nonbind
  DO(j,Q1(SQLDescribeCol(d,(H)(i+1),c,128,&u,&t,&w,&p,&m))xS[i]=sn(c,u);
+if(t>90)t-=82;
 Q(t<-11||t>12,xS[i])wb[i]=ut[tb[i]=t=t>0?t:12-t]==KS?w+1:wt[t];if(ut[t]==KS&&(n||wb[i]>9))tb[i]=13)
  DO(j,kK(y)[i]=ktn(ut[t=tb[i]],0);if(w=wb[i])Q1(SQLBindCol(d,(H)(i+1),ct[t],b[i]=malloc(w),w,nb+i)))
  for(;!SQLFetch(d);)DO(j,k=kK(y)+i;u=ut[t=tb[i]];s=b[i];n=SQL_NULL_DATA==nb[i];
