@@ -1,3 +1,4 @@
+//2010.08.05 Added KException for exceptions due to server error, authentication fail and func decode
 //2010.01.14 Exposed static var e (Encoding) as public
 //2010.01.12 Added support for unicode encoding, defaults to ASCII 
 //2010.01.11 Added null checks for qn for UDTs Date,Month,Minute,Second,KTimespan
@@ -18,12 +19,12 @@ public class c:TcpClient{
 //object[]x=new object[4];x[0]=t();x[1]="xx";x[2]=(double)93.5;x[3]=300;tm();for(int i=0;i<1000;++i)c.k("insert","trade",x);tm();
 //Flip r=td(c.k("select sum price by sym from trade"));O("cols: "+n(r.x));O("rows: "+n(r.y[0]));
  c.Close();
-}
-*/
+}*/
+
 public static System.Text.Encoding e=System.Text.Encoding.ASCII;
 byte[]b,B;int j,J;bool a;Stream s;public new void Close(){s.Close();base.Close();}
 public c(string h,int p):this(h,p,Environment.UserName){}
-public c(string h,int p,string u){Connect(h,p);s=this.GetStream();B=new byte[2+u.Length];J=0;w(u+"\x1");s.Write(B,0,J);if(1!=s.Read(B,0,1)){B=new byte[1+u.Length];Connect(h,p);s=this.GetStream();J=0;w(u);s.Write(B,0,J);if(1!=s.Read(B,0,1))throw new Exception("access");}}
+public c(string h,int p,string u){Connect(h,p);s=this.GetStream();B=new byte[2+u.Length];J=0;w(u+"\x1");s.Write(B,0,J);if(1!=s.Read(B,0,1)){B=new byte[1+u.Length];Connect(h,p);s=this.GetStream();J=0;w(u);s.Write(B,0,J);if(1!=s.Read(B,0,1))throw new KException("access");}}
 static int ns(string s){int i=s.IndexOf('\0');i=-1<i?i:s.Length;return e.GetBytes(s.Substring(0,i)).Length;}
 static TimeSpan t(){return DateTime.Now.TimeOfDay;}static TimeSpan v;static void tm(){TimeSpan u=v;v=t();O(v-u);}
 static void O(object x){Console.WriteLine(x);}static string i2(int i){return String.Format("{0:00}",i);}
@@ -110,7 +111,7 @@ object r(){int i=0,n,t=(sbyte)b[j++];if(t<0)switch(t){case-1:return rb();case-4:
  case-6:return ri();case-7:return rj();case-8:return re();case-9:return rf();case-10:return rc();case-11:return rs();
  case -12: return rp();case-13:return rm();case-14:return rd();case-15:return rz();case -16:return rn();case-17:return ru();
  case-18:return rv();case-19:return rt();}
- if(t>99){if(t==101&&b[j++]==0)return null;throw new Exception("func");}if(t==99)return new Dict(r(),r());j++;if(t==98)return new Flip((Dict)r());n=ri();switch(t){
+ if(t>99){if(t==101&&b[j++]==0)return null;throw new KException("func");}if(t==99)return new Dict(r(),r());j++;if(t==98)return new Flip((Dict)r());n=ri();switch(t){
   case 0:object[]L=new object[n];for(;i<n;i++)L[i]=r();return L;        case 1:bool[]B=new bool[n];for(;i<n;i++)B[i]=rb();return B;
   case 4:byte[]G=new byte[n];for(;i<n;i++)G[i]=b[j++];return G;         case 5:short[]H=new short[n];for(;i<n;i++)H[i]=rh();return H;
   case 6:int[]I=new int[n];for(;i<n;i++)I[i]=ri();return I;             case 7:long[]J=new long[n];for(;i<n;i++)J[i]=rj();return J;
@@ -122,7 +123,7 @@ object r(){int i=0,n,t=(sbyte)b[j++];if(t<0)switch(t){case-1:return rb();case-4:
   case 18:Second[]V=new Second[n];for(;i<n;i++)V[i]=rv();return V;      case 19:TimeSpan[]T=new TimeSpan[n];for(;i<n;i++)T[i]=rt();return T;}return null;}
 void w(int i,object x){int n=nx(x)+8;B=new byte[n];B[0]=1;B[1]=(byte)i;J=4;w(n);w(x);s.Write(B,0,n);}
 void read(byte[]b){int i=0,j,n=b.Length;for(;i<n;i+=j)if(0==(j=s.Read(b,i,Math.Min(65536,n-i))))throw new Exception("read");}
-public object k(){read(b=new byte[8]);a=b[0]==1;bool c=b[2]==1;j=4;read(b=new byte[ri()-8]);if(c)u();else j=0;if(b[0]==128){j=1;throw new Exception(rs());}return r();}
+public object k(){read(b=new byte[8]);a=b[0]==1;bool c=b[2]==1;j=4;read(b=new byte[ri()-8]);if(c)u();else j=0;if(b[0]==128){j=1;throw new KException(rs());}return r();}
 public object k(object x){w(1,x);return k();}
 public object k(string s){return k(cs(s));}char[]cs(string s){return s.ToCharArray();}
 public object k(string s,object x){object[]a={cs(s),x};return k(a);}
@@ -131,5 +132,9 @@ public object k(string s,object x,object y,object z){object[]a={cs(s),x,y,z};ret
 public void ks(String s){w(0,cs(s));}
 public void ks(String s,Object x){Object[]a={cs(s),x};w(0,a);}
 public void ks(String s,Object x,Object y){Object[]a={cs(s),x,y};w(0,a);}
+}
+public class KException:Exception{
+   public KException(){}
+   public KException(string message):base(message){}
 }
 }
