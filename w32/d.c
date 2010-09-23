@@ -1,7 +1,7 @@
 //WIN32: cl -DODBC   /LD d.c d.def script1.res /o\windows\system32\qodbc.dll \d\c.c advapi32.lib user32.lib wsock32.lib odbc32.lib odbccp32.lib 
 //WIN64: cl -D_WIN64 /LD d.c d.def script1.res /o\windows\system32\qodbc.dll c.obj advapi32.lib user32.lib wsock32.lib odbc32.lib odbccp32.lib bufferoverflowU.lib
 //gcc -shared ../c/c/d.c -o qodbc.so -lodbc -fPIC -w
-#include"../c/c/d.h" //mdac2.8 WIN64 
+#include"d.h" //mdac2.8 WIN64 
 Z struct{C e[100];S s;I i;}err={"[q][ODBC]"};ZA QS(S s,S e,I r){R strcpy(err.e+9,e),err.s=s,err.i=1,r;}ZI sns(S b,I n,S s){I i=strlen(s);if(b)memcpy(b,s,i=i<n?i:n-1),b[i]=0;R i;}
 A SQLError(D h,D h1,D h2,S s,SQLINTEGER*i,S s1,H j1,H*j2){P(!err.i,S1)R strcpy(s,err.s),*i=err.i,*j2=sns(s1,j1,err.e),err.i=0,0;}ZC b[99],q[99],u[99],p[99];
 #define Q1(e)  P(1,QS("HYC00",e,-1))
@@ -78,7 +78,8 @@ CS(SQL_DESC_SCHEMA_NAME,s="")CS(SQL_DESC_SEARCHABLE,*n=SQL_PRED_SEARCHABLE)CS(SQ
 CS(SQL_DESC_TYPE,*n=T0[t>KS?KZ:t])CS(SQL_DESC_TYPE_NAME,s=N0[t])CS(SQL_DESC_UNNAMED,*n=SQL_NAMED)CS(SQL_DESC_UNSIGNED,*n=SQL_FALSE)CS(SQL_DESC_UPDATABLE,*n=SQL_ATTR_WRITE)}
 if(s)*j2=sns(b,j1,s);R 0;}
 A SQLGetTypeInfo(D h,H j){R k1(h,"TypeInfo",j?si(j):(S)"",S0);}
-A SQLTables(D h,S d,H dj,S e,H ej,S t,H tj,S c,H cj){I f;Q(d&&sj(d,dj)||e&&sj(e,ej)||!c,"tables")if(t&&(tj=sj(t,tj))&&*t!='%')strncpy(b,t,tj);else tj=0;
+A SQLTables(D h,S d,H dj,S e,H ej,S t,H tj,S c,H cj){I f;
+Q(d&&sj(d,dj)&&*d!='%'||e&&sj(e,ej)||!c,"tables")if(t&&(tj=sj(t,tj))&&*t!='%')strncpy(b,t,tj);else tj=0;
  b[tj++]=',',strncpy(b+tj,c,cj=sj(c,cj)),b[tj+cj]=0,f=strcmp(b+1,"SQL_ALL_TABLE_TYPES");R k1(h,f?"Tables":"o([]TABLE_NAME:`;TABLE_TYPE:`TABLE`VIEW;REMARKS:`)",f?b:0,S0);}
 A SQLColumns(D h,S d,H dj,S e,H ej,S t,H tj,S c,H cj){Q(c,"column")R k1(h,"Columns",t,tj);}
 A SQLPrimaryKeys(D h,S d,H dj,S e,H ej,S t,H tj){R k1(h,"Key",t,tj);}
