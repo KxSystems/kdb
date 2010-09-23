@@ -79,7 +79,7 @@ CS(SQL_DESC_TYPE,*n=T0[t>KS?KZ:t])CS(SQL_DESC_TYPE_NAME,s=N0[t])CS(SQL_DESC_UNNA
 if(s)*j2=sns(b,j1,s);R 0;}
 A SQLGetTypeInfo(D h,H j){R k1(h,"TypeInfo",j?si(j):(S)"",S0);}
 A SQLTables(D h,S d,H dj,S e,H ej,S t,H tj,S c,H cj){I f;
-Q(d&&sj(d,dj)&&*d!='%'||e&&sj(e,ej)||!c,"tables")if(t&&(tj=sj(t,tj))&&*t!='%')strncpy(b,t,tj);else tj=0;
+Q(d&&(dj=sj(d,dj))&&(!(*d=='%'&&dj==1))||e&&sj(e,ej)||!c,"tables")if(t&&(tj=sj(t,tj))&&*t!='%')strncpy(b,t,tj);else tj=0;
  b[tj++]=',',strncpy(b+tj,c,cj=sj(c,cj)),b[tj+cj]=0,f=strcmp(b+1,"SQL_ALL_TABLE_TYPES");R k1(h,f?"Tables":"o([]TABLE_NAME:`;TABLE_TYPE:`TABLE`VIEW;REMARKS:`)",f?b:0,S0);}
 A SQLColumns(D h,S d,H dj,S e,H ej,S t,H tj,S c,H cj){Q(c,"column")R k1(h,"Columns",t,tj);}
 A SQLPrimaryKeys(D h,S d,H dj,S e,H ej,S t,H tj){R k1(h,"Key",t,tj);}
