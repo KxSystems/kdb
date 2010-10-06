@@ -7,7 +7,7 @@ public class c{
 /*public static void main(String[]args){try{c c=new c("",5001);
 // O(c.k("0N!",c.k("0N!1999.01.01D-1")));
 //c.k("0N!",NULL('z'));
-//c.setEncoding("UTF-8");O("Unicode "+c.k("{`$x}","Ranby Björklund AB".toCharArray()));O("Unicode "+c.k("{x}",(String)c.k("{`$x}",(char[])c.k("\"c\"$0x52616e627920426ac3b6726b6c756e64204142"))));   
+//c.setEncoding("UTF-8");O("Unicode "+c.k("{`$x}","Ranby BjÃ¶rklund AB".toCharArray()));O("Unicode "+c.k("{x}",(String)c.k("{`$x}",(char[])c.k("\"c\"$0x52616e627920426ac3b6726b6c756e64204142"))));   
  c.close();}catch(Exception e){e.printStackTrace();}}
 */
 private static String e="ISO-8859-1";private static PrintStream out=System.out;
@@ -34,7 +34,7 @@ long rj(){int x=ri(),y=ri();return a?x&0xffffffffL|(long)y<<32:(long)x<<32|y&0xf
 float re(){return Float.intBitsToFloat(ri());}                                                            void w(float e){w(Float.floatToIntBits(e));}
 double rf(){return Double.longBitsToDouble(rj());}                                                        void w(double f){w(Double.doubleToLongBits(f));}
 Month rm(){return new Month(ri());}   void w(Month m){w(m.i);} Minute ru(){return new Minute(ri());}      void w(Minute u){w(u.i);}
-Second rv(){return new Second(ri());} void w(Second v){w(v.i);}Timespan rn(){return new Timespan(rj());}  void w(Timespan n){w(n.j);}
+Second rv(){return new Second(ri());} void w(Second v){w(v.i);}Timespan rn(){return new Timespan(rj());}  void w(Timespan n){if(!v6)throw new RuntimeException("Timespan not valid pre kdb+2.6");w(n.j);}
 public java.util.TimeZone tz=java.util.TimeZone.getDefault();
 static long k=86400000L*10957,n=1000000000L;long o(long x){return tz.getOffset(x);}long lg(long x){return x+o(x);}long gl(long x){return x-o(x-o(x));}
 Date rd(){int i=ri();return new Date(i==ni?nj:gl(k+86400000L*i));}                             void w(Date d){long j=d.getTime();w(j==nj?ni:(int)(lg(j)/86400000-10957));}
@@ -42,7 +42,7 @@ Time rt(){int i=ri();return new Time(i==ni?nj:gl(i));}                          
 //Timestamp
 java.util.Date rz(){double f=rf();return new java.util.Date(Double.isNaN(f)?nj:gl(k+(long)(8.64e7*f)));} void w(java.util.Date z){long j=z.getTime();w(j==nj?nf:(lg(j)-k)/8.64e7);}
 Timestamp rp(){long j=rj(),d=j<0?(j+1)/n-1:j/n;Timestamp p=new Timestamp(j==nj?j:gl(k+1000*d));if(j!=nj)p.setNanos((int)(j-n*d));return p;}
-void w(Timestamp p){long j=p.getTime();w(j==nj?j:1000000*(lg(j)-k)+p.getNanos()%1000000);}
+void w(Timestamp p){long j=p.getTime();if(!v6)throw new RuntimeException("Timestamp not valid pre kdb+2.6");w(j==nj?j:1000000*(lg(j)-k)+p.getNanos()%1000000);}
 
 String rs()throws UnsupportedEncodingException{int i=j;for(;b[j++]!=0;);return (i==j-1)?"":new String(b,i,j-1-i,e);}void w(String s)throws UnsupportedEncodingException{int i=0,n=ns(s);byte[]b=s.getBytes(e);for(;i<n;)w(b[i++]);B[J++]=0;}
 Object r()throws UnsupportedEncodingException{int i=0,n,t=b[j++];if(t<0)switch(t){case-1:return new Boolean(rb());case-4:return new Byte(b[j++]);case-5:return new Short(rh());
@@ -112,6 +112,7 @@ public static Flip td(Object X)throws java.io.UnsupportedEncodingException{if(X 
 public static Object O(Object x){out.println(x);return x;}public static void O(int x){out.println(x);}public static void O(boolean x){out.println(x);}public static void O(long x){out.println(x);}public static void O(double x){out.println(x);}
 public static long t(){return System.currentTimeMillis();}static long t;public static void tm(){long u=t;t=t();if(u>0)O(t-u);}static String i2(int i){return new DecimalFormat("00").format(i);}
 }
+//2010.10.06 block sending timestamp/timespan types to versions prior to kdb+2.6 
 //2010.05.06 optimized rs() for reading null symbols 
 //2010.03.20 changed datetime to java.util.Date as it was incompatible with timestamp
 //2010.02.01 added unicode support for char vectors and symbol
