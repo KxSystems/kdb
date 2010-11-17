@@ -1,3 +1,8 @@
+//2010.11.17 Block sending new timetypes to version of kdb+ prior to v2.6 (use prior release of c.cs for older kdb+ versions)
+//           Max buffer size (default 64kB) used for reading is now a parameter to the c constructor
+//           Date, Month, Minute, Second, KTimeSpan are now serializable, implement IComparable
+//            and have default constructors for xml serialization.
+//           Added NULL(Type t)
 //2010.08.05 Added KException for exceptions due to server error, authentication fail and func decode
 //2010.01.14 Exposed static var e (Encoding) as public
 //2010.01.12 Added support for unicode encoding, defaults to ASCII 
@@ -21,10 +26,13 @@ public class c:TcpClient{
  c.Close();
 }*/
 
+private const int DefaultMaxBufferSize=65536;
+private readonly int _maxBufferSize=DefaultMaxBufferSize;
 public static System.Text.Encoding e=System.Text.Encoding.ASCII;
-byte[]b,B;int j,J;bool a;Stream s;public new void Close(){s.Close();base.Close();}
+byte[]b,B;int j,J;bool a,v6;Stream s;public new void Close(){s.Close();base.Close();}
 public c(string h,int p):this(h,p,Environment.UserName){}
-public c(string h,int p,string u){Connect(h,p);s=this.GetStream();B=new byte[2+u.Length];J=0;w(u+"\x1");s.Write(B,0,J);if(1!=s.Read(B,0,1)){B=new byte[1+u.Length];Connect(h,p);s=this.GetStream();J=0;w(u);s.Write(B,0,J);if(1!=s.Read(B,0,1))throw new KException("access");}}
+public c(string h,int p,string u):this(h,p,u,DefaultMaxBufferSize){}
+public c(string h,int p,string u,int maxBufferSize){_maxBufferSize=maxBufferSize;Connect(h,p);s=this.GetStream();B=new byte[2+u.Length];J=0;w(u+"\x1");s.Write(B,0,J);if(1!=s.Read(B,0,1)){B=new byte[1+u.Length];Connect(h,p);s=this.GetStream();J=0;w(u);s.Write(B,0,J);if(1!=s.Read(B,0,1))throw new KException("access");}v6=B[0]==1;}
 static int ns(string s){int i=s.IndexOf('\0');i=-1<i?i:s.Length;return e.GetBytes(s.Substring(0,i)).Length;}
 static TimeSpan t(){return DateTime.Now.TimeOfDay;}static TimeSpan v;static void tm(){TimeSpan u=v;v=t();O(v-u);}
 static void O(object x){Console.WriteLine(x);}static string i2(int i){return String.Format("{0:00}",i);}
@@ -32,6 +40,7 @@ static int ni=Int32.MinValue;static long nj=Int64.MinValue,o=(long)8.64e11*73011
 static object[]NU={null,false,null,null,(byte)0,Int16.MinValue,ni,nj,(Single)nf,nf,' ',"",new DateTime(0),
  new Month(ni),new Date(ni),new DateTime(0),new KTimespan(nj),new Minute(ni),new Second(ni),new TimeSpan(ni)};
 static object NULL(char c){return NU[" b  xhijefcspmdznuvt".IndexOf(c)];}
+public static object NULL(Type t){for(int i=0;i<NU.Length;i++)if(NU[i]!=null&&t==NU[i].GetType())return NU[i];return null;}
 public static bool qn(object x){int t=-c.t(x);return t>4&&x.Equals(NU[t]);}
 private void u(){int n=0,r=0,f=0,s=8,p=s;short i=0;j=0;byte[]dst=new byte[ri()];int d=j;int[]aa=new int[256];
 while(s<dst.Length){if(i==0){f=0xff&(int)b[d++];i=1;}if((f&i)!=0){r=aa[0xff&(int)b[d++]];dst[s++]=dst[r++];dst[s++]=dst[r++];n=0xff&(int)b[d++];for(int m=0;m<n;m++)dst[s+m]=dst[r+m];}
@@ -39,24 +48,33 @@ else dst[s++]=b[d++];
 while(p<s-1)aa[(0xff&(int)dst[p])^(0xff&(int)dst[p+1])]=p++;if((f&i)!=0)p=s+=n;i*=2;if(i==256)i=0;}
 b=dst;j=8;}
 static DateTime za=DateTime.MinValue,zw=DateTime.MaxValue;
-public class Date{public int i;public Date(int x){i=x;}
+[Serializable]public class Date:IComparable{public int i;private Date(){}public Date(int x){i=x;}
  public DateTime DateTime(){return i==-int.MaxValue?za:i==int.MaxValue?zw:new DateTime(i==ni?0L:(long)8.64e11*i+o);}
- public Date(long x){i=x==0L?ni:(int)(x/(long)8.64e11)-730119;}
- public Date(DateTime z):this(z.Ticks){}public override string ToString(){return i==ni?"":this.DateTime().ToString("d");}
+ public Date(long x){i=x==0L?ni:(int)(x/(long)8.64e11)-730119;}public Date(DateTime z):this(z.Ticks){}
+ public override string ToString(){return i==ni?"":this.DateTime().ToString("d");}
  public override bool Equals(object o){if(o==null)return false;if(this.GetType()!=o.GetType())return false;Date d=(Date)o;return i==d.i;}
- public override int GetHashCode(){return i;}}
-public class Month{public int i;public Month(int x){i=x;}public override string ToString(){int m=24000+i,y=m/12;return i==ni?"":i2(y/100)+i2(y%100)+"-"+i2(1+m%12);}
+ public override int GetHashCode(){return i;}
+ public int CompareTo(object o){if(o==null)return 1;Date other=o as Date;if(other==null)return 1;return i.CompareTo(other.i);}}
+[Serializable]public class Month:IComparable{public int i;private Month(){}public Month(int x){i=x;}
+ public override string ToString(){int m=24000+i,y=m/12;return i==ni?"":i2(y/100)+i2(y%100)+"-"+i2(1+m%12);}
  public override bool Equals(object o){if(o==null)return false;if(this.GetType()!=o.GetType())return false;Month m=(Month)o;return i==m.i;}
- public override int GetHashCode(){return i;}}
-public class Minute{public int i;public Minute(int x){i=x;}public override string ToString(){return i==ni?"":i2(i/60)+":"+i2(i%60);}
+ public override int GetHashCode(){return i;}
+ public int CompareTo(object o){if(o==null)return 1;Month other=o as Month;if(other==null)return 1;return i.CompareTo(other.i);}}
+[Serializable]public class Minute:IComparable{public int i;private Minute(){}public Minute(int x){i=x;}
+ public override string ToString(){return i==ni?"":i2(i/60)+":"+i2(i%60);}
  public override bool Equals(object o){if(o==null)return false;if(this.GetType()!=o.GetType())return false;Minute m=(Minute)o;return i==m.i;}
- public override int GetHashCode(){return i;}}
-public class Second{public int i;public Second(int x){i=x;}public override string ToString(){return i==ni?"":new Minute(i/60).ToString()+':'+i2(i%60);}
+ public override int GetHashCode(){return i;}
+ public int CompareTo(object o){if(o==null)return 1;Minute other=o as Minute;if(other==null)return 1;return i.CompareTo(other.i);}}
+[Serializable]public class Second:IComparable{public int i;private Second(){}public Second(int x){i=x;}
+ public override string ToString(){return i==ni?"":new Minute(i/60).ToString()+':'+i2(i%60);}
  public override bool Equals(object o){if(o==null)return false;if(this.GetType()!=o.GetType())return false;Second s=(Second)o;return i==s.i;}
- public override int GetHashCode(){return i;}}
-public class KTimespan{public TimeSpan t;public KTimespan(long x){t=new TimeSpan(x==nj?nj:x/100);}public override string ToString(){return qn(t)?"":t.ToString();}
+ public override int GetHashCode(){return i;}
+ public int CompareTo(object o){if(o==null)return 1;Second other=o as Second;if(other==null)return 1;return i.CompareTo(other.i);}}
+[Serializable]public class KTimespan:IComparable{public TimeSpan t;private KTimespan(){}public KTimespan(long x){t=new TimeSpan(x==nj?nj:x/100);}
+ public override string ToString(){return qn(t)?"":t.ToString();}
  public override bool Equals(object o){if(o==null)return false;if(this.GetType()!=o.GetType())return false;KTimespan n=(KTimespan)o;return t.Ticks==n.t.Ticks;}
- public override int GetHashCode(){return t.GetHashCode();}}
+ public override int GetHashCode(){return t.GetHashCode();}
+ public int CompareTo(object o){if(o==null)return 1;KTimespan other=o as KTimespan;if(other==null)return 1;return t.CompareTo(other.t);}}
 public class Dict{public object x;public object y;public Dict(object X,object Y){x=X;y=Y;}}
 static int find(string[]x,string y){int i=0;for(;i<x.Length&&!x[i].Equals(y);)++i;return i;}
 public class Flip{public string[]x;public object[]y;public Flip(Dict X){x=(string[])X.x;y=(object[])X.y;}public object at(string s){return y[find(x,s)];}}
@@ -85,8 +103,8 @@ void w(string s){byte[]b=e.GetBytes(s);foreach(byte i in b)w(i);B[J++]=0;}
 string rs(){int k=j;for(;b[j]!=0;++j);string s=e.GetString(b,k,j-k);j++;return s;}
 void w(Date d){w(d.i);}Date rd(){return new Date(ri());}   void w(Minute u){w(u.i);}Minute ru(){return new Minute(ri());}    
 void w(Month m){w(m.i);}Month rm(){return new Month(ri());}void w(Second v){w(v.i);}Second rv(){return new Second(ri());}
-void w(TimeSpan t){w(qn(t)?ni:(int)(t.Ticks/10000));}TimeSpan rt(){int i=ri();return new TimeSpan(qn(i)?ni:10000L*i);}
-void w(DateTime p){w(qn(p)?nj:(100*(p.Ticks-o)));}
+void w(TimeSpan t){if(!v6)throw new KException("Timespan not valid pre kdb+2.6");w(qn(t)?ni:(int)(t.Ticks/10000));}TimeSpan rt(){int i=ri();return new TimeSpan(qn(i)?ni:10000L*i);}
+void w(DateTime p){if(!v6)throw new KException("Timestamp not valid pre kdb+2.6");w(qn(p)?nj:(100*(p.Ticks-o)));}
 DateTime rz(){double f=rf();return Double.IsInfinity(f)?(f<0?za:zw):new DateTime(qn(f)?0:10000*(long)Math.Round(8.64e7*f)+o);}
 void w(KTimespan t){w(qn(t)?nj:(t.t.Ticks*100));} KTimespan rn(){return new KTimespan(rj());}
 DateTime rp(){long j=rj(),d=j<0?(j+1)/100-1:j/100;DateTime p=new DateTime(j==nj?0:o+d);return p;}
@@ -122,7 +140,7 @@ object r(){int i=0,n,t=(sbyte)b[j++];if(t<0)switch(t){case-1:return rb();case-4:
   case 16:KTimespan[]N=new KTimespan[n];for(;i<n;i++)N[i]=rn();return N;case 17:Minute[]U=new Minute[n];for(;i<n;i++)U[i]=ru();return U;
   case 18:Second[]V=new Second[n];for(;i<n;i++)V[i]=rv();return V;      case 19:TimeSpan[]T=new TimeSpan[n];for(;i<n;i++)T[i]=rt();return T;}return null;}
 void w(int i,object x){int n=nx(x)+8;B=new byte[n];B[0]=1;B[1]=(byte)i;J=4;w(n);w(x);s.Write(B,0,n);}
-void read(byte[]b){int i=0,j,n=b.Length;for(;i<n;i+=j)if(0==(j=s.Read(b,i,Math.Min(65536,n-i))))throw new Exception("read");}
+void read(byte[]b){int i=0,j,n=b.Length;for(;i<n;i+=j)if(0==(j=s.Read(b,i,Math.Min(_maxBufferSize,n-i))))throw new Exception("read");}
 public object k(){read(b=new byte[8]);a=b[0]==1;bool c=b[2]==1;j=4;read(b=new byte[ri()-8]);if(c)u();else j=0;if(b[0]==128){j=1;throw new KException(rs());}return r();}
 public object k(object x){w(1,x);return k();}
 public object k(string s){return k(cs(s));}char[]cs(string s){return s.ToCharArray();}
