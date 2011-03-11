@@ -1,3 +1,4 @@
+//2011.03.11 64bit was not detecting SQL_NULL_DATA correctly
 //2010.07.06 support mssql datetime (sql_type_date.. are 91 92 93 so map to 9 10 11
 //2010.01.18 SQLInteger->SQLULEN for v64 build
 //2008.03.24 load "" instead of () for null text
@@ -32,14 +33,14 @@ ZH ct[]={0, 1, 8, 8, 4, 5, 8, 7, 8, 9,10,11, 1,1,0,0,0,-25,-6,-7, 1, 1,1,0};// -
 ZS nu(I t){ZF f;ZE e;ZJ j=nj;ZI i=ni;ZH h=nh;ZC g;ZS ns;if(!ns)f/=f,e=f,ns=ss("");R t==KS?(S)&ns:t==KF||t==KZ?(S)&f:t==KE?(S)&e:t==KJ?(S)&j:t==KH?(S)&h:t==KG||t==KB?(S)&g:(S)&i;}
 ZK gb(D d,H j,I t){K x=0;H c=ct[t],g=c?c:-2;SQLULEN n=0;I e=SQLGetData(d,j,g,kG(x),n,&n);
  if(t==22)n/=2;n+=c;if(x=ktn(c?KC:KG,e==1?n:0),xn)if(SQLGetData(d,j,g,kG(x),n,&n),c)--xn;R x;}
-K2(eval){K*k;S*b,s;SQLULEN w,*nb;SQLINTEGER*wb;H*tb,u,t,j,p,m;F f;C c[128];I n=xj<0;D d=d1(n?-xj:xj);U(d)x=y;Q(xt!=-KS&&xt!=KC,"type")
+K2(eval){K*k;S*b,s;SQLULEN w;SQLLEN*nb;SQLINTEGER*wb;H*tb,u,t,j,p,m;F f;C c[128];I n=xj<0;D d=d1(n?-xj:xj);U(d)x=y;Q(xt!=-KS&&xt!=KC,"type")
  Q1(xt==-KS?SQLColumns(d,(S)0,0,(S)0,0,xs,S0,(S)0,0):SQLExecDirect(d,xG,xn))SQLNumResultCols(d,&j);P(!j,(d0(d),knk(0)))
  b=malloc(j*SZ),tb=malloc(j*2),wb=malloc(j*SZ),nb=malloc(j*SZ),x=ktn(KS,j),y=ktn(0,j);// sqlserver: no bind past nonbind
  DO(j,Q1(SQLDescribeCol(d,(H)(i+1),c,128,&u,&t,&w,&p,&m))xS[i]=sn(c,u);
 if(t>90)t-=82;
 Q(t<-11||t>12,xS[i])wb[i]=ut[tb[i]=t=t>0?t:12-t]==KS?w+1:wt[t];if(ut[t]==KS&&(n||wb[i]>9))tb[i]=13)
  DO(j,kK(y)[i]=ktn(ut[t=tb[i]],0);if(w=wb[i])Q1(SQLBindCol(d,(H)(i+1),ct[t],b[i]=malloc(w),w,nb+i)))
- for(;!SQLFetch(d);)DO(j,k=kK(y)+i;u=ut[t=tb[i]];s=b[i];n=SQL_NULL_DATA==nb[i];
+ for(;!SQLFetch(d);)DO(j,k=kK(y)+i;u=ut[t=tb[i]];s=b[i];n=SQL_NULL_DATA==(int)nb[i];
 if(!u)jk(k,n?ktn(ct[t]?KC:KG,0):wb[i]?kp(s):gb(d,(H)(i+1),t));
 else ja(k,n?nu(u):u==KH&&wb[i]==1?(t=(H)*s,(S)&t):u==KS?(s=dtb(s,nb[i]),(S)&s):u<KD?s:u==KZ?(f=ds(s)+(vs(s+6)+*(I*)(s+12)/1e9)/8.64e4,(S)&f):(w=u==KD?ds(s):vs(s),(S)&w))) 
  if(!SQLMoreResults(d))O("more\n");DO(j,if(wb[i])free(b[i]))R free(b),free(tb),free(wb),free(nb),d0(d),xT(xD(x,y));}
