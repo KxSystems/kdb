@@ -1,4 +1,4 @@
-/ help.q 2009.10.15T12:40:44.820
+/ help.q 2011.06.07T13:44:00.971
 \d .help
 DIR:TXT:()!()
 display:{if[not 10h=abs type x;x:string x];$[1=count i:where(key DIR)like x,"*";-1 each TXT[(key DIR)[i]];show DIR];}
@@ -28,14 +28,15 @@ TXT,:(enlist`attributes)!enlist(
  )
 DIR,:(enlist`attributes)!enlist`$"data attributes"
 TXT,:(enlist`cmdline)!enlist(
- "q [f] [-b] [-c r c] [-C r c] [-l] [-L][-o N] [-p N] [-P N] [-q] [-r :H:P] ";
- "      [-s N] [-t N] [-T N] [-u|U F] [-w N] [-W N] [-z 0|1]";
+ "q [f] [-b] [-c r c] [-C r c] [-g 0|1] [-l] [-L][-o N] [-p N] [-P N] [-q]";
+ "      [-r :H:P] [-s N] [-t N] [-T N] [-u|U F] [-w N] [-W N] [-z 0|1]";
  "";
  "f load script (*.q, *.k, *.s), file or directory";
  "";
  "-b               block client write access ";
  "-c r c           console maxRows maxCols";
  "-C r c           http display maxRows maxCols ";
+ "-g 1             enable immediate garbage collect";
  "-l               log updates to filesystem ";
  "-L               as -l, but sync logging";
  "-o N             offset hours (from GMT: affects .z.Z)";
@@ -56,40 +57,40 @@ TXT,:(enlist`cmdline)!enlist(
  )
 DIR,:(enlist`cmdline)!enlist`$"command line parameters"
 TXT,:(enlist`data)!enlist(
- "char-size--type-literal------------q---------sql--------java-------.net---  ";
- "b    1     1    0b                 boolean              Boolean    boolean   ";
- "x    1     4    0x0                byte                 Byte       byte      ";
- "h    2     5    0h                 short     smallint   Short      int16     ";
- "i    4     6    0                  int       int        Integer    int32     ";
- "j    8     7    0j                 long      bigint     Long       int64     ";
- "e    4     8    0e                 real      real       Float      single    ";
- "f    8     9    0.0                float     float      Double     double    ";
- "c    1     10   \" \"                char                 Character  char";
- "s    .     11   `                  symbol    varchar    String     string    ";
- "p    8     12   dateDtimespan      timestamp";
- "m    4     13   2000.01m           month";
- "d    4     14   2000.01.01         date      date       Date                 ";
- "z    8     15   dateTtime          datetime  timestamp  Timestamp  DateTime";
- "n    8     16   00:00:00.000000000 timespan";
- "u    4     17   00:00              minute";
- "v    4     18   00:00:00           second";
- "t    4     19   00:00:00.000       time      time       Time       TimeSpan ";
- "*    4     20.. `s$`               enum";
- "           98                      table";
- "           99                      dict";
- "           100                     lambda";
- "           101                     unary prim";
- "           102                     binary prim";
- "           103                     ternary(operator)";
- "           104                     projection";
- "           105                     composition";
- "           106                     f'";
- "           107                     f/";
- "           108                     f\\";
- "           109                     f':";
- "           110                     f/:";
- "           111                     f\\:";
- "           112                     dynamic load";
+ "char-size--type-literal--------------q---------sql--------java-------.net---  ";
+ "b    1     1    0b                   boolean              Boolean    boolean   ";
+ "x    1     4    0x0                  byte                 Byte       byte      ";
+ "h    2     5    0h                   short     smallint   Short      int16     ";
+ "i    4     6    0                    int       int        Integer    int32     ";
+ "j    8     7    0j                   long      bigint     Long       int64     ";
+ "e    4     8    0e                   real      real       Float      single    ";
+ "f    8     9    0.0                  float     float      Double     double    ";
+ "c    1     10   \" \"                  char                 Character  char";
+ "s    .     11   `                    symbol    varchar    String     string    ";
+ "p    8     12   dateDtimespan        timestamp";
+ "m    4     13   2000.01m             month";
+ "d    4     14   2000.01.01           date      date       Date                 ";
+ "z    8     15   dateTtime            datetime  timestamp  Timestamp  DateTime";
+ "n    8     16   0D00:00:00.000000000 timespan";
+ "u    4     17   00:00                minute";
+ "v    4     18   00:00:00             second";
+ "t    4     19   00:00:00.000         time      time       Time       TimeSpan ";
+ "*    4     20.. `s$`                 enum";
+ "           98                        table";
+ "           99                        dict";
+ "           100                       lambda";
+ "           101                       unary prim";
+ "           102                       binary prim";
+ "           103                       ternary(operator)";
+ "           104                       projection";
+ "           105                       composition";
+ "           106                       f'";
+ "           107                       f/";
+ "           108                       f\\";
+ "           109                       f':";
+ "           110                       f/:";
+ "           111                       f\\:";
+ "           112                       dynamic load";
  "";
  "the nested types are 77+t (e.g. 78 is boolean. 96 is time.)";
  "";
@@ -99,9 +100,12 @@ TXT,:(enlist`data)!enlist(
  "The rest use type extensions, e.g. 0Nd. No null for boolean or byte.";
  "0Wd 0Wz 0Wt  placeholder infinite dates/times/datetimes (no math)";
  "";
- "date.(year month week mm dd)";
  "dict:`a`b!.. table:([]x:..;y:..) or +`x`y!..";
- "time.(minute second mm ss) milliseconds=time mod 1000"
+ "date.(datetime dd mm month timestamp uu week year) / .z.d";
+ "datetime.(date dd hh minute mm month second ss time timespan timestamp uu week year) / .z.z";
+ "time.(hh minute mm second ss timespan uu) milliseconds=time mod 1000 / .z.t";
+ "timespan.(hh minute mm second ss time uu) / .z.n";
+ "timestamp.(date datetime dd hh minute mm month second ss time timespan uu week year) / .z.p"
  )
 DIR,:(enlist`data)!enlist`$"data types"
 TXT,:(enlist`define)!enlist(
@@ -189,6 +193,7 @@ TXT,:(enlist`errors)!enlist(
  "from         select a b  badly formed select statement";
  "glim                     `g# limit, kdb+ currently limited to 99 concurrent `g#'s ";
  "hwr                      handle write error, can't write inside a peach";
+ "insert                   attempt to insert a record with a key that already exists ";
  "length       ()+!1       incompatible lengths";
  "limit        0W#2        tried to generate a list longer than 2,000,000,000           ";
  "loop         a::a        dependency or transitive closure loop";
@@ -203,6 +208,7 @@ TXT,:(enlist`errors)!enlist(
  "pl                       peach can't handle parallel lambda's (2.3 only)";
  "Q7                       nyi op on file nested array";
  "rank         +[2;3;4]    invalid rank or valence";
+ "rb                       encountered a problem whilst doing a blocking read";
  "s-fail       `s#2 1      cannot apply `s# to data (not ascending values) ";
  "splay                    nyi op on splayed table";
  "stack        {.z.s[]}[]  ran out of stack space";
@@ -291,6 +297,25 @@ TXT,:(enlist`syscmd)!enlist(
  "ctrl-c       (stop)"
  )
 DIR,:(enlist`syscmd)!enlist`$"system commands"
+TXT,:(enlist`temporal)!enlist(
+ "`timestamp$x ~ 2009.11.05D20:39:35.614334000 ~ \"p\"$x ~ x.timestamp";
+ "`datetime$x ~ 2009.11.05T20:39:35.614 ~ \"z\"$x ~ x.datetime";
+ "`year$x ~ 2009 ~ x.year";
+ "`month$x ~ 2009.11m ~ \"m\"$x ~ x.month";
+ "`mm$`date$x ~ 11 ~ x.mm";
+ "`week$x ~ 2009.11.02 ~ x.week";
+ "`date$x ~ 2009.11.05 ~ \"d\"$x ~ x.date";
+ "`dd$x ~ 5 ~ x.dd";
+ "`hh$x ~ 20 ~ x.hh";
+ "`minute$x ~ 20:39 ~ \"u\"$x ~ x.minute";
+ "`mm$`time$x ~ 39 ~ x.mm";
+ "`uu$x ~ 39 ~ x.uu";
+ "`second$x ~ 20:39:35 ~ \"v\"$x ~ x.second";
+ "`ss$x ~ 35 ~ x.ss";
+ "`time$x ~ 20:39:35.614 ~ \"t\"$x ~ x.time";
+ "`timespan$x ~ 0D20:39:35.614334000 ~ \"n\"$x ~ x.timespan"
+ )
+DIR,:(enlist`temporal)!enlist`$"temporal - date & time casts"
 TXT,:(enlist`verbs)!enlist(
  "verb-infix-------prefix";
  "s:x  gets     :x idem";
