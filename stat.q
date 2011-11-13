@@ -11,7 +11,8 @@ xn:{$[.5>x;0-.z.s 1-x;.92>x;
 / random normal distribution, e.g. nor 10
 nor:{$[x=2*n:x div 2;raze sqrt[-2*log n?1f]*/:(sin;cos)@\:(2*pi)*n?1f;-1_.z.s 1+x]}
 
-/ builtins: avg var dev med wavg cov cor avgs 
+/ builtins: avg var dev med wavg cov cor avgs
+mode:{where g=max g:count each group x}
 
 / covariance matrix (8 times faster than x cov/:\:x)
 cvm:{(x+flip(not n=\:n)*x:(n#'0.0),'(x$/:'(n:til count x)_\:x)%count first x)-a*\:a:avg each x}
