@@ -1,6 +1,9 @@
 #ifndef KX
 #define KX
 typedef char*S,C;typedef unsigned char G;typedef short H;typedef int I;typedef long long J;typedef float E;typedef double F;typedef void V;
+#ifdef __cplusplus
+extern"C"{
+#endif
 #if KXVER>=3
 typedef struct k0{signed char m,a,t;C u;I r;union{G g;H h;I i;J j;E e;F f;S s;struct k0*k;struct{J n;G G0[1];};};}*K;
 extern K ktn(I,J),kpn(S,J);
@@ -9,6 +12,9 @@ extern K ktn(I,J),kpn(S,J);
 typedef struct k0{I r;H t,u;union{G g;H h;I i;J j;E e;F f;S s;struct k0*k;struct{I n;G G0[1];};};}*K;
 extern K ktn(I,I),kpn(S,I);
 #define DO(n,x)	{I i=0,_i=(n);for(;i<_i;++i){x;}}
+#endif
+#ifdef __cplusplus
+}
 #endif
 //#include<string.h>
 // vector accessors, e.g. kF(x)[i] for float&datetime
