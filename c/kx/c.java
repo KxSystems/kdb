@@ -40,7 +40,7 @@ static long k=86400000L*10957,n=1000000000L;long o(long x){return tz.getOffset(x
 Date rd(){int i=ri();return new Date(i==ni?nj:gl(k+86400000L*i));}                             void w(Date d){long j=d.getTime();w(j==nj?ni:(int)(lg(j)/86400000-10957));}
 Time rt(){int i=ri();return new Time(i==ni?nj:gl(i));}                                         void w(Time t){long j=t.getTime();w(j==nj?ni:(int)(lg(j)%86400000));}
 //Timestamp
-java.util.Date rz(){double f=rf();return new java.util.Date(Double.isNaN(f)?nj:gl(k+(long)(8.64e7*f)));} void w(java.util.Date z){long j=z.getTime();w(j==nj?nf:(lg(j)-k)/8.64e7);}
+java.util.Date rz(){double f=rf();return new java.util.Date(Double.isNaN(f)?nj:gl(k+Math.round(8.64e7*f)));} void w(java.util.Date z){long j=z.getTime();w(j==nj?nf:(lg(j)-k)/8.64e7);}
 Timestamp rp(){long j=rj(),d=j<0?(j+1)/n-1:j/n;Timestamp p=new Timestamp(j==nj?j:gl(k+1000*d));if(j!=nj)p.setNanos((int)(j-n*d));return p;}
 void w(Timestamp p){long j=p.getTime();if(!v6)throw new RuntimeException("Timestamp not valid pre kdb+2.6");w(j==nj?j:1000000*(lg(j)-k)+p.getNanos()%1000000);}
 
@@ -112,6 +112,7 @@ public static Flip td(Object X)throws java.io.UnsupportedEncodingException{if(X 
 public static Object O(Object x){out.println(x);return x;}public static void O(int x){out.println(x);}public static void O(boolean x){out.println(x);}public static void O(long x){out.println(x);}public static void O(double x){out.println(x);}
 public static long t(){return System.currentTimeMillis();}static long t;public static void tm(){long u=t;t=t();if(u>0)O(t-u);}static String i2(int i){return new DecimalFormat("00").format(i);}
 }
+//2012.01.06 read datetime, rz(), was truncating mS rather than rounding
 //2010.10.06 block sending timestamp/timespan types to versions prior to kdb+2.6 
 //2010.05.06 optimized rs() for reading null symbols 
 //2010.03.20 changed datetime to java.util.Date as it was incompatible with timestamp
