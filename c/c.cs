@@ -1,3 +1,4 @@
+//2012.01.25 rz() clamp datetime to valid range
 //2010.11.17 Block sending new timetypes to version of kdb+ prior to v2.6 (use prior release of c.cs for older kdb+ versions)
 //           Max buffer size (default 64kB) used for reading is now a parameter to the c constructor
 //           Date, Month, Minute, Second, KTimeSpan are now serializable, implement IComparable
@@ -105,7 +106,7 @@ void w(Date d){w(d.i);}Date rd(){return new Date(ri());}   void w(Minute u){w(u.
 void w(Month m){w(m.i);}Month rm(){return new Month(ri());}void w(Second v){w(v.i);}Second rv(){return new Second(ri());}
 void w(TimeSpan t){if(!v6)throw new KException("Timespan not valid pre kdb+2.6");w(qn(t)?ni:(int)(t.Ticks/10000));}TimeSpan rt(){int i=ri();return new TimeSpan(qn(i)?ni:10000L*i);}
 void w(DateTime p){if(!v6)throw new KException("Timestamp not valid pre kdb+2.6");w(qn(p)?nj:(100*(p.Ticks-o)));}
-DateTime rz(){double f=rf();return Double.IsInfinity(f)?(f<0?za:zw):new DateTime(qn(f)?0:10000*(long)Math.Round(8.64e7*f)+o);}
+DateTime rz(){double f=rf();return Double.IsInfinity(f)?(f<0?za:zw):new DateTime(qn(f)?0:Math.Min(Math.Max(10000*(long)Math.Round(8.64e7*f)+o,DateTime.MinValue.Ticks),DateTime.MaxValue.Ticks));}
 void w(KTimespan t){w(qn(t)?nj:(t.t.Ticks*100));} KTimespan rn(){return new KTimespan(rj());}
 DateTime rp(){long j=rj(),d=j<0?(j+1)/100-1:j/100;DateTime p=new DateTime(j==nj?0:o+d);return p;}
 void w(object x){int t=c.t(x);w((byte)t);if(t<0)switch(t){case-1:w((bool)x);return;case-4:w((byte)x);return;
