@@ -1,3 +1,4 @@
+//2012.01.26 refactored clamp into clampDT, for Date.DateTime()
 //2012.01.25 rz() clamp datetime to valid range
 //2010.11.17 Block sending new timetypes to version of kdb+ prior to v2.6 (use prior release of c.cs for older kdb+ versions)
 //           Max buffer size (default 64kB) used for reading is now a parameter to the c constructor
@@ -49,8 +50,9 @@ else dst[s++]=b[d++];
 while(p<s-1)aa[(0xff&(int)dst[p])^(0xff&(int)dst[p+1])]=p++;if((f&i)!=0)p=s+=n;i*=2;if(i==256)i=0;}
 b=dst;j=8;}
 static DateTime za=DateTime.MinValue,zw=DateTime.MaxValue;
+private static long clampDT(long j){return Math.Min(Math.Max(j,za.Ticks),zw.Ticks);}
 [Serializable]public class Date:IComparable{public int i;private Date(){}public Date(int x){i=x;}
- public DateTime DateTime(){return i==-int.MaxValue?za:i==int.MaxValue?zw:new DateTime(i==ni?0L:(long)8.64e11*i+o);}
+ public DateTime DateTime(){return i==-int.MaxValue?za:i==int.MaxValue?zw:new DateTime(i==ni?0L:clampDT((long)8.64e11*i+o));}
  public Date(long x){i=x==0L?ni:(int)(x/(long)8.64e11)-730119;}public Date(DateTime z):this(z.Ticks){}
  public override string ToString(){return i==ni?"":this.DateTime().ToString("d");}
  public override bool Equals(object o){if(o==null)return false;if(this.GetType()!=o.GetType())return false;Date d=(Date)o;return i==d.i;}
@@ -106,7 +108,7 @@ void w(Date d){w(d.i);}Date rd(){return new Date(ri());}   void w(Minute u){w(u.
 void w(Month m){w(m.i);}Month rm(){return new Month(ri());}void w(Second v){w(v.i);}Second rv(){return new Second(ri());}
 void w(TimeSpan t){if(!v6)throw new KException("Timespan not valid pre kdb+2.6");w(qn(t)?ni:(int)(t.Ticks/10000));}TimeSpan rt(){int i=ri();return new TimeSpan(qn(i)?ni:10000L*i);}
 void w(DateTime p){if(!v6)throw new KException("Timestamp not valid pre kdb+2.6");w(qn(p)?nj:(100*(p.Ticks-o)));}
-DateTime rz(){double f=rf();return Double.IsInfinity(f)?(f<0?za:zw):new DateTime(qn(f)?0:Math.Min(Math.Max(10000*(long)Math.Round(8.64e7*f)+o,DateTime.MinValue.Ticks),DateTime.MaxValue.Ticks));}
+DateTime rz(){double f=rf();return Double.IsInfinity(f)?(f<0?za:zw):new DateTime(qn(f)?0:clampDT(10000*(long)Math.Round(8.64e7*f)+o));}
 void w(KTimespan t){w(qn(t)?nj:(t.t.Ticks*100));} KTimespan rn(){return new KTimespan(rj());}
 DateTime rp(){long j=rj(),d=j<0?(j+1)/100-1:j/100;DateTime p=new DateTime(j==nj?0:o+d);return p;}
 void w(object x){int t=c.t(x);w((byte)t);if(t<0)switch(t){case-1:w((bool)x);return;case-4:w((byte)x);return;
