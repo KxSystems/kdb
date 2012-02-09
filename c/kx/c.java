@@ -15,7 +15,7 @@ public static void setEncoding(String e)throws UnsupportedEncodingException{c.e=
 public Socket s;DataInputStream i;OutputStream o;byte[]b,B;int j,J;boolean a,v6;
 void io(Socket x)throws IOException{s=x;i=new DataInputStream(s.getInputStream());o=s.getOutputStream();}public void close()throws IOException{s.close();i.close();o.close();}
 public c(ServerSocket s)throws IOException{io(s.accept());i.read(b=new byte[99]);o.write(b,0,1);} //c c=new c(new ServerSocket(5010));while(true)c.w(2,c.k());
-public c(String h,int p,String u)throws KException,IOException{B=new byte[2+ns(u)];io(new Socket(h,p));J=0;w(u+"\1");o.write(B);if(1!=i.read(B,0,1)){B=new byte[1+ns(u)];io(new Socket(h,p));J=0;w(u);o.write(B);if(1!=i.read(B,0,1))throw new KException("access");}v6=B[0]==1;}
+public c(String h,int p,String u)throws KException,IOException{B=new byte[2+ns(u)];io(new Socket(h,p));J=0;w(u+"\1");o.write(B);if(1!=i.read(B,0,1)){close();B=new byte[1+ns(u)];io(new Socket(h,p));J=0;w(u);o.write(B);if(1!=i.read(B,0,1)){close();throw new KException("access");}}v6=B[0]==1;}
 public c(String h,int p)throws KException,IOException{this(h,p,System.getProperty("user.name"));}
 public static class Month{public int i;public Month(int x){i=x;}public String toString(){int m=i+24000,y=m/12;return i==ni?"":i2(y/100)+i2(y%100)+"-"+i2(1+m%12);}}
 public static class Minute{public int i;public Minute(int x){i=x;}public String toString(){return i==ni?"":i2(i/60)+":"+i2(i%60);}}
@@ -112,6 +112,7 @@ public static Flip td(Object X)throws java.io.UnsupportedEncodingException{if(X 
 public static Object O(Object x){out.println(x);return x;}public static void O(int x){out.println(x);}public static void O(boolean x){out.println(x);}public static void O(long x){out.println(x);}public static void O(double x){out.println(x);}
 public static long t(){return System.currentTimeMillis();}static long t;public static void tm(){long u=t;t=t();if(u>0)O(t-u);}static String i2(int i){return new DecimalFormat("00").format(i);}
 }
+//2012.02.09 close() if connect fails
 //2012.01.06 read datetime, rz(), was truncating mS rather than rounding
 //2010.10.06 block sending timestamp/timespan types to versions prior to kdb+2.6 
 //2010.05.06 optimized rs() for reading null symbols 
