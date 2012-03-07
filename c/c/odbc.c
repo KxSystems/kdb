@@ -7,6 +7,7 @@
 //cl -DWIN32  /LD /Oy odbc.c odbc.def q.lib odbc32.lib user32.lib
 //cl -D_WIN64 /LD /Oy odbc.c odbc.def q.lib odbc32.lib user32.lib bufferoverflowU.lib
 //gcc -shared ../c/odbc.c -o odbc.so -lodbc -fPIC
+//gcc -bundle -undefined dynamic_lookup odbc.c -o odbc.so -fPIC -lodbc -framework CoreFoundation
 //usr/local/gcc-3.3.2/bin/gcc -G ../c/odbc.c -o odbc.so -lodbc   /-lodbcinst  [-m64 -fPIC]
 #include"d.h" // http://www.unixodbc.org
 extern V free(V*p);
