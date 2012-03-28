@@ -6,7 +6,7 @@ Z struct{C e[100];S s;I i;}err={"[q][ODBC]"};ZA QS(S s,S e,I r){R strcpy(err.e+9
 A SQLError(D h,D h1,D h2,S s,SQLINTEGER*i,S s1,H j1,H*j2){P(!err.i,S1)R strcpy(s,err.s),*i=err.i,*j2=sns(s1,j1,err.e),err.i=0,0;}ZC b[99],q[99],u[99],p[99];
 #define Q1(e)  P(1,QS("HYC00",e,-1))
 #define Q(x,e) P(x,QS("HY000",e,-1))
-#if WIN32||_WIN64 
+#if defined (WIN32)|| defined (_WIN64)
 ZS mb(S s){R MessageBox(0,s,"kdb+",MB_OK|MB_TASKMODAL),s;}Z HINSTANCE hi;BOOL APIENTRY DllMain(HANDLE h,DWORD i,LPVOID l){if(i==DLL_PROCESS_ATTACH)hi=h;R 1;}
 BOOL CALLBACK cbc(HWND h,UINT m,WPARAM w,LPARAM l){if(m==WM_COMMAND)SW(w){case IDOK:GetDlgItemText(h,1000,b,99),b[m=strlen(b)]=':',++m,GetDlgItemText(h,1001,b+m,99-m);case IDCANCEL:EndDialog(h,w);R 1;}R 0;}
 ZS dlg(I i){R*b=0,IDOK==DialogBox(hi,MAKEINTRESOURCE(i),0,(DLGPROC)cbc)?b:0;}
@@ -51,18 +51,19 @@ u=ut(u==99?U0[t]:u);if(!u||nu(x,i))*n=SQL_NULL_DATA;else SW(*n=B0[u],u){
   t==KS?strlen(strcpy(b,kS(x)[i])):t==KD?Td(1,b,xI[i]):t==KZ?Tz(1,b,xF[i]):Tv(1,b,vt(t,xI[i])))
  CS(KD,Td(0,b,xI[i]))CS(KV,Tv(0,b,vt(t,xI[i])))CS(KZ,Tz(0,b,t==KZ?xF[i]:t==KD?xI[i]:(t==KT?xI[i]/8.64e7:vt(t,xI[i])/8.64e4)-36526))
  CD:memcpy(b,xG+i**n,*n);}R 0;}//BGJE
-A SQLGetData(D d,UH j,H u,V*b,L w,L*n){I h=(I)(L)d;R gd(h,--j,bi[h],u,b,w,n);}
-A SQLBindCol(D d,UH j,H u,V*b,L w,L*n){I h=(I)(L)d;P(!tk[h],0)if(!tb[h])b1(h);tb[h][--j]=b;R tu[h][j]=u,tw[h][j]=w,tn[h][j]=n,0;}
-A SQLExtendedFetch(D d,UH j,L k,L*i1,UH*j1){I h=(I)(L)d;L w;SW(j){CS(SQL_FETCH_NEXT,bi[h]+=s9[h])CS(SQL_FETCH_FIRST,bi[h]=0)
+A SQLGetData(D d,UH j,H u,V*b,SQLLEN w,SQLLEN*n){I h=(I)(L)d;R gd(h,--j,bi[h],u,b,w,n);}
+A SQLBindCol(D d,UH j,H u,V*b,SQLLEN w,SQLLEN*n){I h=(I)(L)d;P(!tk[h],0)if(!tb[h])b1(h);tb[h][--j]=b;R tu[h][j]=u,tw[h][j]=w,tn[h][j]=n,0;}
+A SQLExtendedFetch(D d,UH j,SQLLEN k,SQLULEN*i1,UH*j1)
+{I h=(I)(L)d;L w;SW(j){CS(SQL_FETCH_NEXT,bi[h]+=s9[h])CS(SQL_FETCH_FIRST,bi[h]=0)
   CS(SQL_FETCH_LAST,bi[h]=ti[h]>s9[h]?ti[h]-s9[h]:0)CS(SQL_FETCH_PRIOR,bi[h]-=s9[h])CS(SQL_FETCH_ABSOLUTE,bi[h]=k-1)CS(SQL_FETCH_RELATIVE,bi[h]+=k)}
  P(bi[h]>=ti[h],S1)k=ti[h]-bi[h]<s9[h]?ti[h]-bi[h]:s9[h];if(i1)*i1=k;if(j1)DO(s9[h],j1[i]=i<k?SQL_ROW_SUCCESS:SQL_ROW_NOROW)
- if(!s11[h]||!tb[h])R 0;DO(k,for(j=0;j<tj[h];++j)if(w=tw[h][j],tb[h][j])gd(h,j,bi[h]+i,tu[h][j],tb[h][j]+i*(s5[h]?s5[h]:w),w,tn[h][j]+i*(s5[h]?s5[h]:4)/4))R 0;}
+ if(!s11[h]||!tb[h])R 0;DO(k,for(j=0;j<tj[h];++j)if(w=tw[h][j],tb[h][j])gd(h,j,bi[h]+i,tu[h][j],tb[h][j]+i*(s5[h]?s5[h]:w),w,tn[h][j]+i*(s5[h]?s5[h]:SZ)/SZ))R 0;}
 A SQLFetch(D d){R SQLExtendedFetch(d,SQL_FETCH_NEXT,(L)0,(L*)0,(UH*)0);} 
 A SQLPrepare(D d,S s,SQLINTEGER n){Q(memchr(s,'?',sj(s,n)),"?")R k1(d,"ex",s,n);} A SQLExecute(D d){R 0;}
 A SQLExecDirect(D d,S s,SQLINTEGER n){R k1(d,"ex",s,n);}                          A SQLMoreResults(D h){R S1;}         
-A SQLNumResultCols(D h,H*j){R*j=tj[(I)(L)h],0;}                             A SQLRowCount(D h,L*n){R*n=ti[(I)(L)h],0;} 
-A SQLDescribeCol(D d,UH j,S s,H j1,H*j2,H*u,L*c,H*p,H*n){I h=(I)(L)d,t=td[h][--j]->t;R*j2=sns(s,j1,tf[h][j]),*u=T0[t],*c=C0[t],*p=0,*n=t?SQL_NULLABLE:0,0;}
-A SQLColAttributes(D d,UH j,UH f,V*b,H j1,H*j2,L*n){I h=(I)(L)d,t=td[h][--j]->t;S s=0;SW(f){CD:Q1(ssi("attr ",f))
+A SQLNumResultCols(D h,H*j){R*j=tj[(I)(L)h],0;}                             A SQLRowCount(D h,SQLLEN*n){R*n=ti[(I)(L)h],0;} 
+A SQLDescribeCol(D d,UH j,S s,H j1,H*j2,H*u,SQLULEN*c,H*p,H*n){I h=(I)(L)d,t=td[h][--j]->t;R*j2=sns(s,j1,tf[h][j]),*u=T0[t],*c=C0[t],*p=0,*n=t?SQL_NULLABLE:0,0;}
+A SQLColAttributes(D d,UH j,UH f,V*b,H j1,H*j2,SQLLEN *n){I h=(I)(L)d,t=td[h][--j]->t;S s=0;SW(f){CD:Q1(ssi("attr ",f))
 case SQL_COLUMN_COUNT:CS(SQL_DESC_COUNT,*n=tj[h])
 /*SQL_COLUMN_DISPLAY_SIZE:*/CS(SQL_DESC_DISPLAY_SIZE,*n=D0[t])
 case SQL_COLUMN_LENGTH:CS(SQL_DESC_LENGTH,*n=B0[t])
