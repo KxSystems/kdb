@@ -1,7 +1,7 @@
 /calc nav for sets of portfolios,ETFs,indices,..
 
 /one day of ([]time;sym;price) sorted by time
-n:10000000;S:10000?`4
+n:10000000;S:-10000?`4
 t:([]time:09:30:00.0+til n;sym:n?S;price:n?1.0)
 
 /calc price deltas once
