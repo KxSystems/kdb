@@ -1,4 +1,4 @@
-//2012.05.29 for use with kdb+v3.0, changed handshake and added Guid
+//2012.05.29 for use with kdb+v3.0, changed handshake and added Guid. boolean v6->vt tracks type capability.
 //2012.01.26 refactored clamp into clampDT, for Date.DateTime()
 //2012.01.25 rz() clamp datetime to valid range
 //2010.11.17 Block sending new timetypes to version of kdb+ prior to v2.6 (use prior release of c.cs for older kdb+ versions)
@@ -27,15 +27,15 @@ public class c:TcpClient{
 //object[]x=new object[4];x[0]=t();x[1]="xx";x[2]=(double)93.5;x[3]=300;tm();for(int i=0;i<1000;++i)c.k("insert","trade",x);tm();
 //Flip r=td(c.k("select sum price by sym from trade"));O("cols: "+n(r.x));O("rows: "+n(r.y[0]));
  c.Close();
-}*/
-
+}
+*/
 private const int DefaultMaxBufferSize=65536;
 private readonly int _maxBufferSize=DefaultMaxBufferSize;
 public static System.Text.Encoding e=System.Text.Encoding.ASCII;
-byte[]b,B;int j,J;bool a,v6;Stream s;public new void Close(){s.Close();base.Close();}
+byte[]b,B;int j,J,vt;bool a;Stream s;public new void Close(){s.Close();base.Close();}
 public c(string h,int p):this(h,p,Environment.UserName){}
 public c(string h,int p,string u):this(h,p,u,DefaultMaxBufferSize){}
-public c(string h,int p,string u,int maxBufferSize){_maxBufferSize=maxBufferSize;Connect(h,p);s=this.GetStream();B=new byte[2+u.Length];J=0;w(u+"\x2");s.Write(B,0,J);if(1!=s.Read(B,0,1)){B=new byte[1+u.Length];Connect(h,p);s=this.GetStream();J=0;w(u);s.Write(B,0,J);if(1!=s.Read(B,0,1))throw new KException("access");}v6=B[0]>=1;}
+public c(string h,int p,string u,int maxBufferSize){_maxBufferSize=maxBufferSize;Connect(h,p);s=this.GetStream();B=new byte[2+u.Length];J=0;w(u+"\x3");s.Write(B,0,J);if(1!=s.Read(B,0,1)){B=new byte[1+u.Length];Connect(h,p);s=this.GetStream();J=0;w(u);s.Write(B,0,J);if(1!=s.Read(B,0,1))throw new KException("access");}vt=Math.Min(B[0],(byte)3);}
 static int ns(string s){int i=s.IndexOf('\0');i=-1<i?i:s.Length;return e.GetBytes(s.Substring(0,i)).Length;}
 static TimeSpan t(){return DateTime.Now.TimeOfDay;}static TimeSpan v;static void tm(){TimeSpan u=v;v=t();O(v-u);}
 static void O(object x){Console.WriteLine(x);}static string i2(int i){return String.Format("{0:00}",i);}
@@ -99,7 +99,7 @@ void w(bool x){B[J++]=(byte)(x?1:0);}bool rb(){return 1==b[j++];}void w(byte x){
 void w(short h){B[J++]=(byte)h;B[J++]=(byte)(h>>8);}short rh(){int x=b[j++],y=b[j++];return(short)(a?x&0xff|y<<8:x<<8|y&0xff);}
 void w(int i){w((short)i);w((short)(i>>16));}int ri(){int x=rh(),y=rh();return a?x&0xffff|y<<16:x<<16|y&0xffff;}
 private byte[]gip={3,2,1,0,5,4,7,6,8,9,10,11,12,13,14,15};
-void w(Guid g){byte[]b=g.ToByteArray();for(int i=0;i<b.Length;i++)w(b[gip[i]]);}
+void w(Guid g){byte[]b=g.ToByteArray();if(vt<3)throw new KException("Guid not valid pre kdb+3.0");for(int i=0;i<b.Length;i++)w(b[gip[i]]);}
 Guid rg(){bool oa=a;a=false;int i=ri();short h1=rh(),h2=rh();a=oa;byte[]b=new byte[8];for(int j=0;j<8;j++)b[j]=rx();return new Guid(i,h1,h2,b);}
 void w(long j){w((int)j);w((int)(j>>32));}long rj(){int x=ri(),y=ri();return a?x&0xffffffffL|(long)y<<32:(long)x<<32|y&0xffffffffL;}
 void w(float e){byte[]b=BitConverter.GetBytes(e);foreach(byte i in b)w(i);}float re(){byte c;float e;
@@ -110,8 +110,8 @@ void w(string s){byte[]b=e.GetBytes(s);foreach(byte i in b)w(i);B[J++]=0;}
 string rs(){int k=j;for(;b[j]!=0;++j);string s=e.GetString(b,k,j-k);j++;return s;}
 void w(Date d){w(d.i);}Date rd(){return new Date(ri());}   void w(Minute u){w(u.i);}Minute ru(){return new Minute(ri());}    
 void w(Month m){w(m.i);}Month rm(){return new Month(ri());}void w(Second v){w(v.i);}Second rv(){return new Second(ri());}
-void w(TimeSpan t){if(!v6)throw new KException("Timespan not valid pre kdb+2.6");w(qn(t)?ni:(int)(t.Ticks/10000));}TimeSpan rt(){int i=ri();return new TimeSpan(qn(i)?ni:10000L*i);}
-void w(DateTime p){if(!v6)throw new KException("Timestamp not valid pre kdb+2.6");w(qn(p)?nj:(100*(p.Ticks-o)));}
+void w(TimeSpan t){if(vt<1)throw new KException("Timespan not valid pre kdb+2.6");w(qn(t)?ni:(int)(t.Ticks/10000));}TimeSpan rt(){int i=ri();return new TimeSpan(qn(i)?ni:10000L*i);}
+void w(DateTime p){if(vt<1)throw new KException("Timestamp not valid pre kdb+2.6");w(qn(p)?nj:(100*(p.Ticks-o)));}
 DateTime rz(){double f=rf();return Double.IsInfinity(f)?(f<0?za:zw):new DateTime(qn(f)?0:clampDT(10000*(long)Math.Round(8.64e7*f)+o));}
 void w(KTimespan t){w(qn(t)?nj:(t.t.Ticks*100));} KTimespan rn(){return new KTimespan(rj());}
 DateTime rp(){long j=rj(),d=j<0?(j+1)/100-1:j/100;DateTime p=new DateTime(j==nj?0:o+d);return p;}

@@ -12,10 +12,10 @@ public class c{
 */
 private static String e="ISO-8859-1";private static PrintStream out=System.out;
 public static void setEncoding(String e)throws UnsupportedEncodingException{c.e=e;out=new PrintStream(System.out,true,e);}
-public Socket s;DataInputStream i;OutputStream o;byte[]b,B;int j,J;boolean a,v6;
+public Socket s;DataInputStream i;OutputStream o;byte[]b,B;int j,J,vt;boolean a;
 void io(Socket x)throws IOException{s=x;i=new DataInputStream(s.getInputStream());o=s.getOutputStream();}public void close()throws IOException{if(null!=s){s.close();s=null;};if(null!=i){i.close();i=null;}if(null!=o){o.close();o=null;}}
 public c(ServerSocket s)throws IOException{io(s.accept());i.read(b=new byte[99]);o.write(b,0,1);} //c c=new c(new ServerSocket(5010));while(true)c.w(2,c.k());
-public c(String h,int p,String u)throws KException,IOException{B=new byte[2+ns(u)];io(new Socket(h,p));J=0;w(u+"\2");o.write(B);if(1!=i.read(B,0,1)){close();B=new byte[1+ns(u)];io(new Socket(h,p));J=0;w(u);o.write(B);if(1!=i.read(B,0,1)){close();throw new KException("access");}}v6=B[0]>=1;}
+public c(String h,int p,String u)throws KException,IOException{B=new byte[2+ns(u)];io(new Socket(h,p));J=0;w(u+"\3");o.write(B);if(1!=i.read(B,0,1)){close();B=new byte[1+ns(u)];io(new Socket(h,p));J=0;w(u);o.write(B);if(1!=i.read(B,0,1)){close();throw new KException("access");}}vt=Math.min(B[0],3);}
 public c(String h,int p)throws KException,IOException{this(h,p,System.getProperty("user.name"));}
 protected c(){};
 public static class Month{public int i;public Month(int x){i=x;}public String toString(){int m=i+24000,y=m/12;return i==ni?"":i2(y/100)+i2(y%100)+"-"+i2(1+m%12);}public boolean equals(final Object o){return(o instanceof Month)?((Month)o).i==i:false;}}
@@ -34,12 +34,12 @@ boolean rb(){return 1==b[j++];}void w(boolean x){w((byte)(x?1:0));}  char rc(){r
 short rh(){int x=b[j++],y=b[j++];return(short)(a?x&0xff|y<<8:x<<8|y&0xff);}                               void w(short h){w((byte)(h>>8));w((byte)h);}
 int ri(){int x=rh(),y=rh();return a?x&0xffff|y<<16:x<<16|y&0xffff;}                                       void w(int i){w((short)(i>>16));w((short)i);}
 UUID rg(){boolean oa=a;a=false;UUID g=new UUID(rj(),rj());a=oa;return g;}
-void w(UUID uuid){w(uuid.getMostSignificantBits());w(uuid.getLeastSignificantBits());}
+void w(UUID uuid){if(vt<3)throw new RuntimeException("Guid not valid pre kdb+3.0");w(uuid.getMostSignificantBits());w(uuid.getLeastSignificantBits());}
 long rj(){int x=ri(),y=ri();return a?x&0xffffffffL|(long)y<<32:(long)x<<32|y&0xffffffffL;}                void w(long j){w((int)(j>>32));w((int)j);}
 float re(){return Float.intBitsToFloat(ri());}                                                            void w(float e){w(Float.floatToIntBits(e));}
 double rf(){return Double.longBitsToDouble(rj());}                                                        void w(double f){w(Double.doubleToLongBits(f));}
 Month rm(){return new Month(ri());}   void w(Month m){w(m.i);} Minute ru(){return new Minute(ri());}      void w(Minute u){w(u.i);}
-Second rv(){return new Second(ri());} void w(Second v){w(v.i);}Timespan rn(){return new Timespan(rj());}  void w(Timespan n){if(!v6)throw new RuntimeException("Timespan not valid pre kdb+2.6");w(n.j);}
+Second rv(){return new Second(ri());} void w(Second v){w(v.i);}Timespan rn(){return new Timespan(rj());}  void w(Timespan n){if(vt<1)throw new RuntimeException("Timespan not valid pre kdb+2.6");w(n.j);}
 public java.util.TimeZone tz=java.util.TimeZone.getDefault();
 static long k=86400000L*10957,n=1000000000L;long o(long x){return tz.getOffset(x);}long lg(long x){return x+o(x);}long gl(long x){return x-o(x-o(x));}
 Date rd(){int i=ri();return new Date(i==ni?nj:gl(k+86400000L*i));}                             void w(Date d){long j=d.getTime();w(j==nj?ni:(int)(lg(j)/86400000-10957));}
@@ -47,7 +47,7 @@ Time rt(){int i=ri();return new Time(i==ni?nj:gl(i));}                          
 //Timestamp
 java.util.Date rz(){double f=rf();return new java.util.Date(Double.isNaN(f)?nj:gl(k+Math.round(8.64e7*f)));} void w(java.util.Date z){long j=z.getTime();w(j==nj?nf:(lg(j)-k)/8.64e7);}
 Timestamp rp(){long j=rj(),d=j<0?(j+1)/n-1:j/n;Timestamp p=new Timestamp(j==nj?j:gl(k+1000*d));if(j!=nj)p.setNanos((int)(j-n*d));return p;}
-void w(Timestamp p){long j=p.getTime();if(!v6)throw new RuntimeException("Timestamp not valid pre kdb+2.6");w(j==nj?j:1000000*(lg(j)-k)+p.getNanos()%1000000);}
+void w(Timestamp p){long j=p.getTime();if(vt<1)throw new RuntimeException("Timestamp not valid pre kdb+2.6");w(j==nj?j:1000000*(lg(j)-k)+p.getNanos()%1000000);}
 
 String rs()throws UnsupportedEncodingException{int i=j;for(;b[j++]!=0;);return (i==j-1)?"":new String(b,i,j-1-i,e);}void w(String s)throws UnsupportedEncodingException{int i=0,n=ns(s);byte[]b=s.getBytes(e);for(;i<n;)w(b[i++]);B[J++]=0;}
 Object r()throws UnsupportedEncodingException{int i=0,n,t=b[j++];if(t<0)switch(t){case-1:return new Boolean(rb());case(-2):return rg();case-4:return new Byte(b[j++]);case-5:return new Short(rh());
@@ -120,7 +120,7 @@ public static Flip td(Object X)throws java.io.UnsupportedEncodingException{if(X 
 public static Object O(Object x){out.println(x);return x;}public static void O(int x){out.println(x);}public static void O(boolean x){out.println(x);}public static void O(long x){out.println(x);}public static void O(double x){out.println(x);}
 public static long t(){return System.currentTimeMillis();}static long t;public static void tm(){long u=t;t=t();if(u>0)O(t-u);}static String i2(int i){return new DecimalFormat("00").format(i);}
 }
-//2012.05.29 for use with kdb+v3.0, changed handshake and added UUID
+//2012.05.29 for use with kdb+v3.0, changed handshake and added UUID. boolean v6->vt reflects type version
 //2012.03.01 added equals() for Month,Minute,Second,Timespan. null checks in close().
 //                 empty constructor c() and changed w(int,Object) to protected
 //2012.02.09 close() if connect fails
