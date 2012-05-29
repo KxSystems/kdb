@@ -15,7 +15,7 @@ public static void setEncoding(String e)throws UnsupportedEncodingException{c.e=
 public Socket s;DataInputStream i;OutputStream o;byte[]b,B;int j,J;boolean a,v6;
 void io(Socket x)throws IOException{s=x;i=new DataInputStream(s.getInputStream());o=s.getOutputStream();}public void close()throws IOException{if(null!=s){s.close();s=null;};if(null!=i){i.close();i=null;}if(null!=o){o.close();o=null;}}
 public c(ServerSocket s)throws IOException{io(s.accept());i.read(b=new byte[99]);o.write(b,0,1);} //c c=new c(new ServerSocket(5010));while(true)c.w(2,c.k());
-public c(String h,int p,String u)throws KException,IOException{B=new byte[2+ns(u)];io(new Socket(h,p));J=0;w(u+"\2");o.write(B);if(1!=i.read(B,0,1)){close();B=new byte[1+ns(u)];io(new Socket(h,p));J=0;w(u);o.write(B);if(1!=i.read(B,0,1)){close();throw new KException("access");}}v6=B[0]==1;}
+public c(String h,int p,String u)throws KException,IOException{B=new byte[2+ns(u)];io(new Socket(h,p));J=0;w(u+"\2");o.write(B);if(1!=i.read(B,0,1)){close();B=new byte[1+ns(u)];io(new Socket(h,p));J=0;w(u);o.write(B);if(1!=i.read(B,0,1)){close();throw new KException("access");}}v6=B[0]>=1;}
 public c(String h,int p)throws KException,IOException{this(h,p,System.getProperty("user.name"));}
 protected c(){};
 public static class Month{public int i;public Month(int x){i=x;}public String toString(){int m=i+24000,y=m/12;return i==ni?"":i2(y/100)+i2(y%100)+"-"+i2(1+m%12);}public boolean equals(final Object o){return(o instanceof Month)?((Month)o).i==i:false;}}
@@ -109,7 +109,7 @@ public Object k(String s,Object x,Object y,Object z)throws KException,IOExceptio
 
 public static Object[]NULL={null,new Boolean(false),new UUID(0,0),null,new Byte((byte)0),new Short(Short.MIN_VALUE),new Integer(ni),new Long(nj),new Float(nf),new Double(nf),new Character(' '),"",
  new Timestamp(nj),new Month(ni),new Date(nj),new java.util.Date(nj),new Timespan(nj),new Minute(ni),new Second(ni),new Time(nj)};
-public static Object NULL(char c){return NULL[" b  xhijefcspmdznuvt".indexOf(c)];}
+public static Object NULL(char c){return NULL[" bg xhijefcspmdznuvt".indexOf(c)];}
 
 public static boolean qn(Object x){int t=-t(x);return t>4&&x.equals(NULL[t]);}
 public static Object at(Object x,int i){return qn(x=Array.get(x,i))?null:x;}
