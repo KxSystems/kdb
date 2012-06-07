@@ -1,3 +1,4 @@
+//2012.06.07 fixed scoping of GUID 
 //2012.05.29 for use with kdb+v3.0, changed handshake and added Guid. boolean v6->vt tracks type capability.
 //2012.01.26 refactored clamp into clampDT, for Date.DateTime()
 //2012.01.25 rz() clamp datetime to valid range
@@ -141,7 +142,7 @@ object r(){int i=0,n,t=(sbyte)b[j++];if(t<0)switch(t){case-1:return rb();case-2:
  if(t>99){if(t==101&&b[j++]==0)return null;throw new KException("func");}if(t==99)return new Dict(r(),r());j++;if(t==98)return new Flip((Dict)r());n=ri();switch(t){
   case 0:object[]L=new object[n];for(;i<n;i++)L[i]=r();return L;        case 1:bool[]B=new bool[n];for(;i<n;i++)B[i]=rb();return B;
   case 2:{Guid[]G=new Guid[n];for(;i<n;i++)G[i]=rg();return G;}
-  case 4:byte[]G=new byte[n];for(;i<n;i++)G[i]=b[j++];return G;         case 5:short[]H=new short[n];for(;i<n;i++)H[i]=rh();return H;
+  case 4:{byte[]G=new byte[n];for(;i<n;i++)G[i]=b[j++];return G;}       case 5:short[]H=new short[n];for(;i<n;i++)H[i]=rh();return H;
   case 6:int[]I=new int[n];for(;i<n;i++)I[i]=ri();return I;             case 7:long[]J=new long[n];for(;i<n;i++)J[i]=rj();return J;
   case 8:float[]E=new float[n];for(;i<n;i++)E[i]=re();return E;         case 9:double[]F=new double[n];for(;i<n;i++)F[i]=rf();return F;
   case 10:char[] C=e.GetChars(b,j,n);j+=n;return C;                     case 11:String[]S=new String[n];for(;i<n;i++)S[i]=rs();return S;
