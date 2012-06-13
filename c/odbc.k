@@ -6,7 +6,7 @@ o:`mdb`mdf!("driver=Microsoft Access Driver (*.mdb);dbq="
             "driver=sql server;server=(local);trusted_connection=yes;database=")
 open:{if[~r:@[open1;$[0<@x;x;1=#p:`\:x;x;`dsn~a:*|p;";"/:1_0:$[@!f:`$":",$x;f;`/:d,x];o[a],-4_$x];{e::x;0}];'e];*|h,:r}
 close:{if[~x in h;'`invalid];h_:h?x;close1 x}
-eval:{if[~x in h;'`invalid];$[@t:eval1[x]y;+@[t;f@&{&/x=_x}'t f@:&15h=@:'t f:!t:+t;_:];t]} / datetime->date
+eval:{if[~x in h;'`invalid];$[@t:eval1[x]y;+@[t;f@&{&/x=_x}'t f@:&15h=@:'t f:!t:+t;"d"$];t]} / datetime->date
 fkeys:{$[#y:fkeys1[x]y;y[;&~x in t@&=':t:x@<x:y 1];y]}	/ singleton fkeys
 
 fkey:{[f;p;t](f;p)[;&(~t=p)&f in g@&~(_g:!+0!. t)in`id`name]}
