@@ -1,5 +1,6 @@
+// 2012.06.20 Fix up browser compatibility. Strings starting with ` encode as symbol type.
 // 2012.05.15 Provisional test release, subject to change
-// for use with websockets and kdb+v3.0t, (de)serializing kdb+ ipc formatted data within javascript within a browser.
+// for use with websockets and kdb+v3.0, (de)serializing kdb+ ipc formatted data within javascript within a browser.
 // e.g. on kdb+ process, set .z.ws:{neg[.z.w] -8!value -9!x;}
 // and then within javascript websocket.send(serialize("10+20"));
 // ws.onmessage=function(e){var arrayBuffer=e.data;if(arrayBuffer){var v=deserialize(arrayBuffer);...
@@ -49,7 +50,7 @@ function deserialize(x){
       rInt8(); // check type is 99 here
     // read the arrays and then flip them into an array of dicts
       var x=r(),y=r();
-      var A=new Array(x.length);
+      var A=new Array(y[0].length);
       for(var j=0;j<y[0].length;j++){
         var o={};
         for(var i=0;i<x.length;i++)
@@ -75,9 +76,9 @@ function serialize(x){var a=1,pos=0,ub,bb=new Uint8Array(8),ib=new Int32Array(bb
       case'object':return 1+calcN(getKeys(x),'symbols')+calcN(getVals(x),null);
       case'boolean':return 2;
       case'number':return 9;
-      case'array':{var n=6;for(var i in x)n+=calcN(x[i],null);return n;}
-      case'symbols':{var n=6;for(var i in x)n+=calcN(x[i],'symbol');return n;}
-      case'string':return 6+x.length;
+      case'array':{var n=6;for(var i=0;i<x.length;i++)n+=calcN(x[i],null);return n;}
+      case'symbols':{var n=6;for(var i=0;i<x.length;i++)n+=calcN(x[i],'symbol');return n;}
+      case'string':return x.length+(x[0]=='`'?1:6);
       case'date':return 9;
       case'symbol':return 2+x.length;}
     throw "bad type "+t;}
@@ -91,10 +92,10 @@ function serialize(x){var a=1,pos=0,ub,bb=new Uint8Array(8),ib=new Int32Array(bb
       case 'number':{wb(-9);fb[0]=x;wn(8);}break;
       case 'date':{wb(-15);fb[0]=(x.getTime()/86400000)-10957;wn(8);}break;
       case 'symbol':{wb(-11);for(var i=0;i<x.length;i++)wb(x[i].charCodeAt());wb(0);}break;
-      case 'string':{wb(10);wb(0);ib[0]=x.length;wn(4);for(var i=0;i<x.length;i++)wb(x[i].charCodeAt());}break;
+      case 'string':if(x[0]=='`'){w(x.substr(1),'symbol');}else{wb(10);wb(0);ib[0]=x.length;wn(4);for(var i=0;i<x.length;i++)wb(x[i].charCodeAt());}break;
       case 'object':{wb(99);w(getKeys(x),'symbols');w(getVals(x),null);}break;
-      case 'array':{wb(0);wb(0);ib[0]=x.length;wn(4);for(var i in x)w(x[i],null);}break;
-      case 'symbols':{wb(0);wb(0);ib[0]=x.length;wn(4);for(var i in x)w(x[i],'symbol');}break;}}
+      case 'array':{wb(0);wb(0);ib[0]=x.length;wn(4);for(var i=0;i<x.length;i++)w(x[i],null);}break;
+      case 'symbols':{wb(0);wb(0);ib[0]=x.length;wn(4);for(var i=0;i<x.length;i++)w(x[i],'symbol');}break;}}
   var n=calcN(x,null);
   var ab=new ArrayBuffer(8+n);
   ub=new Uint8Array(ab);
