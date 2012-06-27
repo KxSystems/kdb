@@ -15,7 +15,18 @@ typedef long L;
 static void*GetForegroundWindow(){return 0;}extern void*malloc();
 #endif
 typedef unsigned char*S,C,G;typedef short H;typedef float E;typedef double F;typedef void V;
+#if KXVER>=3
+typedef struct k0{signed char m,a,t;C u;I r;union{G g;H h;I i;J j;E e;F f;S s;struct k0*k;struct{J n;G G0[1];};};}*K;
+typedef struct{G g[16];}U;
+#define kU(x) ((U*)kG(x))
+#define xU ((U*)xG)
+extern K ku(U),ktn(I,J),kpn(S,J);
+#define DO(n,x)	{J i=0,_i=(n);for(;i<_i;++i){x;}}
+#else
 typedef struct k0{I r;H t,u;union{G g;H h;I i;J j;E e;F f;S s;struct k0*k;struct{I n;G G0[1];};};}*K;
+extern K ktn(I,I),kpn(S,I);
+#define DO(n,x)	{I i=0,_i=(n);for(;i<_i;++i){x;}}
+#endif
 typedef V*D;typedef unsigned short UH;
 #include<sqlext.h>
 #include<odbcinst.h>
@@ -64,7 +75,7 @@ extern"C"{
 #endif
 extern I khpu(char*,I,char*),khp(char*,I),ymd(I,I,I),dj(I);extern V r0(K),sd0(I);extern S sn(S,I),ss(S);
 extern K ka(I),kb(I),kg(I),kh(I),ki(I),kj(J),ke(F),kf(F),kc(I),ks(S),kd(I),kz(F),kt(I),sd1(I,K(*)(I)),dl(V*f,I),
- ktn(I,I),knk(I,...),kp(S),kpn(S,I),ja(K*,S),js(K*,S),jk(K*,K),k(I,char*,...),xT(K),xD(K,K),ktd(K),r1(K),krr(S),orr(S),dot(K,K);
+ knk(I,...),kp(S),ja(K*,S),js(K*,S),jk(K*,K),k(I,char*,...),xT(K),xD(K,K),ktd(K),r1(K),krr(S),orr(S),dot(K,K);
 #ifdef __cplusplus 
 }
 #endif
@@ -78,7 +89,6 @@ extern K ka(I),kb(I),kg(I),kh(I),ki(I),kj(J),ke(F),kf(F),kc(I),ks(S),kd(I),kz(F)
 #define SW switch
 #define CS(n,x)	case n:x;break;
 #define CD default
-#define DO(n,x)	{I i=0,_i=(n);for(;i<_i;++i){x;}}
 
 #define ZV Z V
 #define ZK Z K
