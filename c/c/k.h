@@ -63,7 +63,7 @@ extern"C"{
 #endif
 extern I khpun(const S,I,const S,I),khpu(const S,I,const S),khp(const S,I),ymd(I,I,I),dj(I);extern V r0(K),sd0(I),m9(),kclose(I);extern S sn(S,I),ss(S);
 extern K ktj(I,J),ka(I),kb(I),kg(I),kh(I),ki(I),kj(J),ke(F),kf(F),kc(I),ks(S),kd(I),kz(F),kt(I),sd1(I,K(*)(I)),dl(V*f,I),
- knk(I,...),kp(S),ja(K*,V*),js(K*,S),jk(K*,K),k(I,const S,...),xT(K),xD(K,K),ktd(K),r1(K),krr(S),orr(S),dot(K,K),b9(I,K),d9(K);
+ knk(I,...),kp(S),ja(K*,V*),js(K*,S),jk(K*,K),k(I,const S,...),xT(K),xD(K,K),ktd(K),r1(K),krr(const S),orr(const S),dot(K,K),b9(I,K),d9(K);
 #ifdef __cplusplus 
 }
 #endif
@@ -73,17 +73,15 @@ extern K ktj(I,J),ka(I),kb(I),kg(I),kh(I),ki(I),kj(J),ke(F),kf(F),kc(I),ks(S),kd
 #define wh ((I)0x7FFF)
 #define ni ((I)0x80000000)
 #define wi ((I)0x7FFFFFFF)
+#define nj ((J)0x8000000000000000LL) 
+#define wj 0x7FFFFFFFFFFFFFFFLL
 #ifdef WIN32
-#define nj ((J)0x8000000000000000)
-#define wj ((J)0x7FFFFFFFFFFFFFFF)
 #define nf (log(-1.0))
 #define wf (-log(0.0))
 #define isnan _isnan
 #define finite _finite
 extern double log();
 #else  
-#define nj 0x8000000000000000LL
-#define wj 0x7FFFFFFFFFFFFFFFLL
 #define nf (0/0.0)
 #define wf (1/0.0)
 #define closesocket(x) close(x)
