@@ -38,7 +38,7 @@ sel:{j+:d:(?:)~r j::x+1;s:$[(*)~x:r j;i();nm[a]x];if[~`from~r j;'`from];x:$[3>k:
  if[#o:$[m:#g;+/g~'m#o;0]_o:b[`order]l{[s;x]x:a x;if[-6=@x;x:s x-1];$[`desc~r j;i(>:;x);x]}[. s];if[1<#o;'`nyio];o:f$[(>:)~*o:*o;o;(<:;o)]];m:b[`limit]i
  v:$[#s;(!s)#;];if[#k:(f'*:'g)^(*&s~\:)'g;g:k#s;$[#s:k_s;s[u]:(*:;)'s u:&0>@:'s;[s:g;g:1b]]];v st[x;w;$[#g;g;d];s;h;o;m]}
 
-t:(`char`varchar`tinyint`smallint`bigint`timestamp!`symbol`symbol`byte`short`long`datetime),t!t:`boolean`int`real`float`date`time
+t:(`char`varchar`tinyint`smallint`bigint`timestamp!`symbol`symbol`byte`short`long`timestamp),t!t:`boolean`int`real`float`date`time
 cre:{j::3;if[`select~r j;:.[r 2;();:;sel j]];c:+p l{(p;x;$[`references~r j+:2*p:`primary~r j+:3*`symbol=a:t@_i n[];i n[];a])};.[r 2;();:;(+/*c)!+c[1]!c[2]$\:()]}
 ins:{j::3;t:r 2;f:$["("~r j;l[i]n[];!+0!. t];t insert f!(@:'(0!. t)f)$-6!'l[a]r j::2+r?`values;}
 upd:{j::3;![r 1;wh[];0b;(!).+l[{|(a n[];i x)}]r j];};del:{j::3;![r 2;wh[];0b;0#`];};dro:{.[`.;();_;r 2];}
@@ -70,6 +70,7 @@ q)select from sp where s.city=p.city
 
 
 \
+2012.11.26 map sql timestamp to kdb+ timestamp
 2010.04.06 revert e to not allow reserved words as column names
 2009.12.01 f='x.y' (fix)
 2009.04.21 like'a%'
