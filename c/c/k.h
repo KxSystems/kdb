@@ -4,6 +4,9 @@ typedef char*S,C;typedef unsigned char G;typedef short H;typedef int I;typedef l
 #ifdef __cplusplus
 extern"C"{
 #endif
+#ifndef KXVER
+#error "Set KXVER=3 for kdb+3.0 or standalone c-api after 2011-04-20. Otherwise set KXVER=2"
+#endif
 #if KXVER>=3
 typedef struct k0{signed char m,a,t;C u;I r;union{G g;H h;I i;J j;E e;F f;S s;struct k0*k;struct{J n;G G0[1];};};}*K;
 typedef struct{G g[16];}U;
