@@ -1,3 +1,4 @@
+// 2013.02.13 Keyed tables were not being decoded correctly.
 // 2012.06.20 Fix up browser compatibility. Strings starting with ` encode as symbol type.
 // 2012.05.15 Provisional test release, subject to change
 // for use with websockets and kdb+v3.0, (de)serializing kdb+ ipc formatted data within javascript within a browser.
@@ -7,7 +8,8 @@
 // note ws.binaryType = 'arraybuffer';
 
 function deserialize(x){
-  var a=x[0],pos=8,j2p32=Math.pow(2,32),ub=new Uint8Array(x),sb=new Int8Array(x),bb=new Uint8Array(8),hb=new Int16Array(bb.buffer),ib=new Int32Array(bb.buffer),eb=new Float32Array(bb.buffer),fb=new Float64Array(bb.buffer);
+  var flip,a=x[0],pos=8,j2p32=Math.pow(2,32),ub=new Uint8Array(x),sb=new Int8Array(x),bb=new Uint8Array(8),hb=new Int16Array(bb.buffer),ib=new Int32Array(bb.buffer),eb=new Float32Array(bb.buffer),fb=new Float64Array(bb.buffer);
+  function extend(d,s){for(var property in s)if(s.hasOwnProperty(property))d[property]=s[property];return d;};
   function rBool(){return rInt8()==1;}
   function rChar(){return String.fromCharCode(rInt8());}
   function rInt8(){return sb[pos++];}
@@ -32,6 +34,7 @@ function deserialize(x){
   function r(){
     var fns=[r,rBool,rGuid,null,rUInt8,rInt16,rInt32,rInt64,rFloat32,rFloat64,rChar,rSymbol,rTimestamp,rMonth,rDate,rDateTime,rTimespan,rMinute,rSecond,rTime];
     var i=0,n,t=rInt8();
+    flip=false;
     if(t<0&&t>-20)return fns[-t]();
     if(t>99){
       if(t==100){rSymbol();return r();}
@@ -40,16 +43,22 @@ function deserialize(x){
       else for(n=rInt32();i<n;i++)r();
       return"func";}
     if(99==t){
-      var x=r(),y=r(),o={};
+      var x=r(),y=r(),o={}; // dicts must be simple
+      if(flip) // not foolproof. allow structure of flip!flip only
+        for(var i=0,o=new Array(x[0].length);i<x.length;i++) // flip from keyed table
+          o[i]=extend(x[i],y[i]);
+      else 
         for(var i=0;i<x.length;i++)
           o[x[i]]=y[i];
-      return o;}
+      return o;
+    }
     pos++;
     if(98==t){
  //    return r(); // better as array of dicts?
       rInt8(); // check type is 99 here
     // read the arrays and then flip them into an array of dicts
       var x=r(),y=r();
+      flip=true;
       var A=new Array(y[0].length);
       for(var j=0;j<y[0].length;j++){
         var o={};
