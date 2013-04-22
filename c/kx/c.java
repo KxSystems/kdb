@@ -70,7 +70,7 @@ Object r()throws UnsupportedEncodingException{int i=0,n,t=b[j++];if(t<0)switch(t
 public static int t(Object x){return
  x instanceof Boolean?-1:x instanceof UUID?-2:x instanceof Byte?-4:x instanceof Short?-5:x instanceof Integer?-6:x instanceof Long?-7:x instanceof Float?-8:x instanceof Double?-9:x instanceof Character?-10:x instanceof String?-11:
 x instanceof Date?-14:x instanceof Time?-19:x instanceof Timestamp?-12:x instanceof java.util.Date?-15:x instanceof Timespan?-16: x instanceof Month?-13:x instanceof Minute?-17:x instanceof Second?-18:
- x instanceof boolean[]?1:x instanceof byte[]?4:x instanceof short[]?5:x instanceof int[]?6:x instanceof long[]?7:x instanceof float[]?8:x instanceof double[]?9:x instanceof char[]?10:x instanceof String[]?11:
+ x instanceof boolean[]?1:x instanceof UUID[]?2:x instanceof byte[]?4:x instanceof short[]?5:x instanceof int[]?6:x instanceof long[]?7:x instanceof float[]?8:x instanceof double[]?9:x instanceof char[]?10:x instanceof String[]?11:
 x instanceof Date[]?14:x instanceof Time[]?19:x instanceof Timestamp[]?12:x instanceof java.util.Date[]?15:x instanceof Timespan[]?16:x instanceof Month[]?13:x instanceof Minute[]?17:x instanceof Second[]?18:
  x instanceof Flip?98:x instanceof Dict?99:0;}
 
@@ -120,6 +120,7 @@ public static Flip td(Object X)throws java.io.UnsupportedEncodingException{if(X 
 public static Object O(Object x){out.println(x);return x;}public static void O(int x){out.println(x);}public static void O(boolean x){out.println(x);}public static void O(long x){out.println(x);}public static void O(double x){out.println(x);}
 public static long t(){return System.currentTimeMillis();}static long t;public static void tm(){long u=t;t=t();if(u>0)O(t-u);}static String i2(int i){return new DecimalFormat("00").format(i);}
 }
+//2013.04.22 added x instanceof UUID[]?:
 //2012.05.29 for use with kdb+v3.0, changed handshake and added UUID. boolean v6->vt reflects type version
 //2012.03.01 added equals() for Month,Minute,Second,Timespan. null checks in close().
 //                 empty constructor c() and changed w(int,Object) to protected
