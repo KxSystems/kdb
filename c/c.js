@@ -1,3 +1,4 @@
+// 2013.04.29 Dict decodes to map, except for keyed tables.
 // 2013.02.13 Keyed tables were not being decoded correctly.
 // 2012.06.20 Fix up browser compatibility. Strings starting with ` encode as symbol type.
 // 2012.05.15 Provisional test release, subject to change
@@ -41,8 +42,14 @@ function deserialize(x){
       else for(n=rInt32();i<n;i++)r();
       return"func";}
     if(99==t){
-      var a=new Array(2);
-      return a[0]=r(),a[1]=r(),a;
+      var flip=98==ub[pos],x=r(),y=r(),o;
+      if(!flip){
+        o={};
+        for(var i=0;i<x.length;i++)
+          o[x[i]]=y[i];
+      }else
+        o=new Array(2),o[0]=x,o[1]=y;
+      return o;
     }
     pos++;
     if(98==t){
