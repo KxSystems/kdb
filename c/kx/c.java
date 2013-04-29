@@ -18,12 +18,12 @@ public c(ServerSocket s)throws IOException{io(s.accept());i.read(b=new byte[99])
 public c(String h,int p,String u)throws KException,IOException{B=new byte[2+ns(u)];io(new Socket(h,p));J=0;w(u+"\3");o.write(B);if(1!=i.read(B,0,1)){close();B=new byte[1+ns(u)];io(new Socket(h,p));J=0;w(u);o.write(B);if(1!=i.read(B,0,1)){close();throw new KException("access");}}vt=Math.min(B[0],3);}
 public c(String h,int p)throws KException,IOException{this(h,p,System.getProperty("user.name"));}
 protected c(){};
-public static class Month{public int i;public Month(int x){i=x;}public String toString(){int m=i+24000,y=m/12;return i==ni?"":i2(y/100)+i2(y%100)+"-"+i2(1+m%12);}public boolean equals(final Object o){return(o instanceof Month)?((Month)o).i==i:false;}}
+public static class Month{public int i;public Month(int x){i=x;}public String toString(){int m=i+24000,y=m/12;return i==ni?"":i2(y/100)+i2(y%100)+"-"+i2(1+m%12);}public boolean equals(final Object o){return(o instanceof Month)?((Month)o).i==i:false;}public int hashCode(){return i;}}
 public static class Minute{public int i;public Minute(int x){i=x;}public String toString(){return i==ni?"":i2(i/60)+":"+i2(i%60);}
-public boolean equals(final Object o){return(o instanceof Minute)?((Minute)o).i==i:false;}}
-public static class Second{public int i;public Second(int x){i=x;}public String toString(){return i==ni?"":new Minute(i/60).toString()+':'+i2(i%60);}public boolean equals(final Object o){return(o instanceof Second)?((Second)o).i==i:false;}}
+public boolean equals(final Object o){return(o instanceof Minute)?((Minute)o).i==i:false;}public int hashCode(){return i;}}
+public static class Second{public int i;public Second(int x){i=x;}public String toString(){return i==ni?"":new Minute(i/60).toString()+':'+i2(i%60);}public boolean equals(final Object o){return(o instanceof Second)?((Second)o).i==i:false;}public int hashCode(){return i;}}
 public static class Timespan{public long j;public Timespan(long x){j=x;}public String toString(){return j==nj?"":j+"";}
-public boolean equals(final Object o){return(o instanceof Timespan)?((Timespan)o).j==j:false;}}
+public boolean equals(final Object o){return(o instanceof Timespan)?((Timespan)o).j==j:false;}public int hashCode(){return(int)(j^(j>>>32));}}
 public static class Dict{public Object x;public Object y;public Dict(Object X,Object Y){x=X;y=Y;}}
 public static class Flip{public String[]x;public Object[]y;public Flip(Dict X){x=(String[])X.x;y=(Object[])X.y;}public Object at(String s){return y[find(x,s)];}}
 public static class KException extends Exception{KException(String s){super(s);}}
@@ -120,6 +120,7 @@ public static Flip td(Object X)throws java.io.UnsupportedEncodingException{if(X 
 public static Object O(Object x){out.println(x);return x;}public static void O(int x){out.println(x);}public static void O(boolean x){out.println(x);}public static void O(long x){out.println(x);}public static void O(double x){out.println(x);}
 public static long t(){return System.currentTimeMillis();}static long t;public static void tm(){long u=t;t=t();if(u>0)O(t-u);}static String i2(int i){return new DecimalFormat("00").format(i);}
 }
+//2013.04.29 added hashCode() to temporal classes
 //2013.04.22 added x instanceof UUID[]?:
 //2012.05.29 for use with kdb+v3.0, changed handshake and added UUID. boolean v6->vt reflects type version
 //2012.03.01 added equals() for Month,Minute,Second,Timespan. null checks in close().
