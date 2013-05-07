@@ -1,12 +1,12 @@
 \d .odbc / h:open{`userdsn[`usr`pwd]|`*.{dsn|mdb|mdf|syb}|""|"DRIVER=...;DBQ=..."}
-h:();`open1`close1`eval1`fkeys1`keys`tables`views{.odbc[x]:`odbc 2:(`$(-"1"=*|$x)_$x;y)}'1 1 2 2 2 1 1;
+h:();`open1`close1`eval1`fkeys1`keys`tables`views{.odbc[x]:`odbc 2:(`$(-"1"=*|$x)_$x;y)}'2 1 3 2 2 1 1;
 
 d:`$":",$["Windows_NT"~getenv`OS;getenv[`commonprogramfiles],"/odbc/data sources";"/etc/ODBCDataSources"]
 o:`mdb`mdf!("driver=Microsoft Access Driver (*.mdb);dbq="
             "driver=sql server;server=(local);trusted_connection=yes;database=")
-open:{if[~r:@[open1;$[0<@x;x;1=#p:`\:x;x;`dsn~a:*|p;";"/:1_0:$[@!f:`$":",$x;f;`/:d,x];o[a],-4_$x];{e::x;0}];'e];*|h,:r}
+open:{$[~@x;[s:last x;x:*x];s:0];if[~r:@[open1[;s];$[0<@x;x;1=#p:`\:x;x;`dsn~a:*|p;";"/:1_0:$[@!f:`$":",$x;f;`/:d,x];o[a],-4_$x];{e::x;0}];'e];*|h,:r}
 close:{if[~x in h;'`invalid];h_:h?x;close1 x}
-eval:{if[~x in h;'`invalid];$[@t:eval1[x]y;+@[t;f@&{&/x="d"$x}'t f@:&15h=@:'t f:!t:+t;"d"$];t]} / datetime->date
+eval:{$[1=#x;s:0;[s:last x;x:*x]];if[~x in h;'`invalid];$[@t:eval1[x;;s]y;+@[t;f@&{&/x="d"$x}'t f@:&15h=@:'t f:!t:+t;"d"$];t]} / datetime->date
 fkeys:{$[#y:fkeys1[x]y;y[;&~x in t@&=':t:x@<x:y 1];y]}	/ singleton fkeys
 
 fkey:{[f;p;t](f;p)[;&(~t=p)&f in g@&~(_g:!+0!. t)in`id`name]}

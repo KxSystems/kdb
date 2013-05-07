@@ -1,3 +1,4 @@
+//2013.05.07 added timeout(in Secs). e.g. h:.odbc.open(`northwind;timeout);.odbc.eval[(h;timeout);"select * from Orders"]
 //2011.03.11 64bit was not detecting SQL_NULL_DATA correctly
 //2010.07.06 support mssql datetime (sql_type_date.. are 91 92 93 so map to 9 10 11
 //2010.01.18 SQLInteger->SQLULEN for v64 build
@@ -7,7 +8,6 @@
 //cl -DWIN32  /LD /Oy odbc.c odbc.def q.lib odbc32.lib user32.lib
 //cl -D_WIN64 /LD /Oy odbc.c odbc.def q.lib odbc32.lib user32.lib bufferoverflowU.lib
 //gcc -shared ../c/odbc.c -o odbc.so -lodbc -fPIC
-//gcc -bundle -undefined dynamic_lookup odbc.c -o odbc.so -fPIC -lodbc -framework CoreFoundation
 //usr/local/gcc-3.3.2/bin/gcc -G ../c/odbc.c -o odbc.so -lodbc   /-lodbcinst  [-m64 -fPIC]
 #include"d.h" // http://www.unixodbc.org
 extern V free(V*p);
@@ -15,8 +15,9 @@ ZS err(I f,D d){ZC e[1006];I i;H j;SQLError(0,f?0:d,f?d:0,e,(SQLINTEGER*)&i,e+6,
 #define Q(x,s) P(x,krr(s))
 #define Q0(x) {I r=(x);if(r){S s=err(0,d);if(r!=1)R       krr(s);if(*s)O("%s\n",s);}}
 #define Q1(x) {I r=(x);if(r){S s=err(1,d);if(r!=1)R d0(d),krr(s);if(*s)O("%s\n",s);}}
-K1(open){Z D d9;H j=xt==KS;D d,v=GetForegroundWindow();ZC b[1024];
- if(!d9)SQLAllocEnv(&d9);Q0(SQLAllocConnect(d9,&d))Q(!j&&xt!=-KS&&xt!=KC,"type")Q(j&&xn!=3,"length")
+K2(open){Z D d9;H j=xt==KS;D d,v=GetForegroundWindow();ZC b[1024];
+ if(!d9)SQLAllocEnv(&d9);Q0(SQLAllocConnect(d9,&d))Q(y->t!=-KJ||!j&&xt!=-KS&&xt!=KC,"type")Q(j&&xn!=3,"length")
+ if(y->j)SQLSetConnectAttr(d,SQL_LOGIN_TIMEOUT,(SQLPOINTER)(SQLULEN)y->j,0);
  Q0(xt==KC?SQLDriverConnect(d,v,xG,(H)xn,b,(H)1024,&j,v?SQL_DRIVER_COMPLETE:SQL_DRIVER_NOPROMPT):
   SQLConnect(d,j?*xS:xs,S0,j?xS[1]:0,S0,j?xS[2]:0,S0))R kj((J)(L)d);}
 K1(close){D d=(D)(L)xj;R SQLDisconnect(d),SQLFreeConnect(d),knk(0);}ZV d0(D d){SQLFreeStmt(d,SQL_DROP);}
@@ -34,7 +35,8 @@ ZH ct[]={0, 1, 8, 8, 4, 5, 8, 7, 8, 9,10,11, 1,1,0,0,0,-25,-6,-7, 1, 1,1,0};// -
 ZS nu(I t){ZF f;ZE e;ZJ j=nj;ZI i=ni;ZH h=nh;ZC g;ZS ns;if(!ns)f/=f,e=f,ns=ss("");R t==KS?(S)&ns:t==KF||t==KZ?(S)&f:t==KE?(S)&e:t==KJ?(S)&j:t==KH?(S)&h:t==KG||t==KB?(S)&g:(S)&i;}
 ZK gb(D d,H j,I t){K x=0;H c=ct[t],g=c?c:-2;SQLULEN n=0;I e=SQLGetData(d,j,g,kG(x),n,&n);
  if(t==22)n/=2;n+=c;if(x=ktn(c?KC:KG,e==1?n:0),xn)if(SQLGetData(d,j,g,kG(x),n,&n),c)--xn;R x;}
-K2(eval){K*k;S*b,s;SQLULEN w;SQLLEN*nb;SQLINTEGER*wb;H*tb,u,t,j,p,m;F f;C c[128];I n=xj<0;D d=d1(n?-xj:xj);U(d)x=y;Q(xt!=-KS&&xt!=KC,"type")
+K eval(K x,K y,K z){K*k;S*b,s;SQLULEN w;SQLLEN*nb;SQLINTEGER*wb;H*tb,u,t,j,p,m;F f;C c[128];I n=xj<0;D d=d1(n?-xj:xj);U(d)x=y;Q(z->t!=-KJ||xt!=-KS&&xt!=KC,"type")
+ if(z->j)SQLSetStmtAttr(d,SQL_ATTR_QUERY_TIMEOUT,(SQLPOINTER)(SQLULEN)z->j,0);
  Q1(xt==-KS?SQLColumns(d,(S)0,0,(S)0,0,xs,S0,(S)0,0):SQLExecDirect(d,xG,xn))SQLNumResultCols(d,&j);P(!j,(d0(d),knk(0)))
  b=malloc(j*SZ),tb=malloc(j*2),wb=malloc(j*SZ),nb=malloc(j*SZ),x=ktn(KS,j),y=ktn(0,j);// sqlserver: no bind past nonbind
  DO(j,Q1(SQLDescribeCol(d,(H)(i+1),c,128,&u,&t,&w,&p,&m))xS[i]=sn(c,u);
