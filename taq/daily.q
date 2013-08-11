@@ -1,3 +1,4 @@
+/ 2013.08.11 compatible with kdb+3.x
 / 2011.08.10 build over multiple partitions
 /book regNMS
 /q taq/daily.q f:/taq 2000.10.02
@@ -11,8 +12,8 @@ system"l ",.z.x 0;d:.z.x 1
 / nbbo and total sizes from quotes
 f:{j:(i:group e){where deltas x,y}'count e:x`ex;
     flip`bid`bsize`ask`asize!(
-    t;sum((0,'x[i;`bsize])@'j)*b=\:t:max b:(0.0e,'x[i;`bid])@'j;
-    t;sum((0,'x[i;`asize])@'j)*a=\:t:min a:(1e9e,'x[i;`ask])@'j)}
+    t;sum((0i,'x[i;`bsize])@'j)*b=\:t:max b:(0.0e,'x[i;`bid])@'j;
+    t;sum((0i,'x[i;`asize])@'j)*a=\:t:min a:(1e9e,'x[i;`ask])@'j)}
 
 / select from x where ex in"CNPT"
 / keep only new nbbo's(60%); set 0 asks to infinity(1e9e)
