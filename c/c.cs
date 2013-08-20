@@ -1,3 +1,4 @@
+//2013.08.20 null val for TimeStamp -> nj
 //2012.06.07 fixed scoping of GUID 
 //2012.05.29 for use with kdb+v3.0, changed handshake and added Guid. boolean v6->vt tracks type capability.
 //2012.01.26 refactored clamp into clampDT, for Date.DateTime()
@@ -42,7 +43,7 @@ static TimeSpan t(){return DateTime.Now.TimeOfDay;}static TimeSpan v;static void
 static void O(object x){Console.WriteLine(x);}static string i2(int i){return String.Format("{0:00}",i);}
 static int ni=Int32.MinValue;static long nj=Int64.MinValue,o=(long)8.64e11*730119;static double nf=Double.NaN;
 static object[]NU={null,false,new Guid(),null,(byte)0,Int16.MinValue,ni,nj,(Single)nf,nf,' ',"",new DateTime(0),
- new Month(ni),new Date(ni),new DateTime(0),new KTimespan(nj),new Minute(ni),new Second(ni),new TimeSpan(ni)};
+ new Month(ni),new Date(ni),new DateTime(0),new KTimespan(nj),new Minute(ni),new Second(ni),new TimeSpan(nj)};
 static object NULL(char c){return NU[" bg xhijefcspmdznuvt".IndexOf(c)];}
 public static object NULL(Type t){for(int i=0;i<NU.Length;i++)if(NU[i]!=null&&t==NU[i].GetType())return NU[i];return null;}
 public static bool qn(object x){int t=-c.t(x);return t>4&&x.Equals(NU[t]);}
@@ -111,7 +112,7 @@ void w(string s){byte[]b=e.GetBytes(s);foreach(byte i in b)w(i);B[J++]=0;}
 string rs(){int k=j;for(;b[j]!=0;++j);string s=e.GetString(b,k,j-k);j++;return s;}
 void w(Date d){w(d.i);}Date rd(){return new Date(ri());}   void w(Minute u){w(u.i);}Minute ru(){return new Minute(ri());}    
 void w(Month m){w(m.i);}Month rm(){return new Month(ri());}void w(Second v){w(v.i);}Second rv(){return new Second(ri());}
-void w(TimeSpan t){if(vt<1)throw new KException("Timespan not valid pre kdb+2.6");w(qn(t)?ni:(int)(t.Ticks/10000));}TimeSpan rt(){int i=ri();return new TimeSpan(qn(i)?ni:10000L*i);}
+void w(TimeSpan t){if(vt<1)throw new KException("Timespan not valid pre kdb+2.6");w(qn(t)?ni:(int)(t.Ticks/10000));}TimeSpan rt(){int i=ri();return new TimeSpan(qn(i)?nj:10000L*i);}
 void w(DateTime p){if(vt<1)throw new KException("Timestamp not valid pre kdb+2.6");w(qn(p)?nj:(100*(p.Ticks-o)));}
 DateTime rz(){double f=rf();return Double.IsInfinity(f)?(f<0?za:zw):new DateTime(qn(f)?0:clampDT(10000*(long)Math.Round(8.64e7*f)+o));}
 void w(KTimespan t){w(qn(t)?nj:(t.t.Ticks*100));} KTimespan rn(){return new KTimespan(rj());}
