@@ -1,3 +1,4 @@
+//2013.09.16 za represents -0Wd, not 0Nd
 //2013.08.20 null val for TimeStamp -> nj
 //2012.06.07 fixed scoping of GUID 
 //2012.05.29 for use with kdb+v3.0, changed handshake and added Guid. boolean v6->vt tracks type capability.
@@ -52,7 +53,7 @@ while(s<dst.Length){if(i==0){f=0xff&(int)b[d++];i=1;}if((f&i)!=0){r=aa[0xff&(int
 else dst[s++]=b[d++];
 while(p<s-1)aa[(0xff&(int)dst[p])^(0xff&(int)dst[p+1])]=p++;if((f&i)!=0)p=s+=n;i*=2;if(i==256)i=0;}
 b=dst;j=8;}
-static DateTime za=DateTime.MinValue,zw=DateTime.MaxValue;
+static DateTime za=DateTime.MinValue.AddTicks(1),zw=DateTime.MaxValue;
 private static long clampDT(long j){return Math.Min(Math.Max(j,za.Ticks),zw.Ticks);}
 [Serializable]public class Date:IComparable{public int i;private Date(){}public Date(int x){i=x;}
  public DateTime DateTime(){return i==-int.MaxValue?za:i==int.MaxValue?zw:new DateTime(i==ni?0L:clampDT((long)8.64e11*i+o));}
