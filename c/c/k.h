@@ -13,6 +13,7 @@ typedef struct{G g[16];}U;
 #define kU(x) ((U*)kG(x))
 #define xU ((U*)xG)
 extern K ku(U),ktn(I,J),kpn(S,J);
+extern I setm(I);
 #define DO(n,x)	{J i=0,_i=(n);for(;i<_i;++i){x;}}
 #else
 typedef struct k0{I r;H t,u;union{G g;H h;I i;J j;E e;F f;S s;struct k0*k;struct{I n;G G0[1];};};}*K;
