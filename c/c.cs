@@ -1,3 +1,5 @@
+//2013.12.10 remove retry logic on authentication fail. For kdb+2.5 and prior, use
+//             B=new byte[1+u.Length];Connect(h,p);s=this.GetStream();J=0;w(u);s.Write(B,0,J);if(1!=s.Read(B,0,1))...
 //2013.09.16 za represents -0Wd, not 0Nd
 //2013.08.20 null val for TimeStamp -> nj
 //2012.06.07 fixed scoping of GUID 
@@ -38,7 +40,7 @@ public static System.Text.Encoding e=System.Text.Encoding.ASCII;
 byte[]b,B;int j,J,vt;bool a;Stream s;public new void Close(){s.Close();base.Close();}
 public c(string h,int p):this(h,p,Environment.UserName){}
 public c(string h,int p,string u):this(h,p,u,DefaultMaxBufferSize){}
-public c(string h,int p,string u,int maxBufferSize){_maxBufferSize=maxBufferSize;Connect(h,p);s=this.GetStream();B=new byte[2+u.Length];J=0;w(u+"\x3");s.Write(B,0,J);if(1!=s.Read(B,0,1)){B=new byte[1+u.Length];Connect(h,p);s=this.GetStream();J=0;w(u);s.Write(B,0,J);if(1!=s.Read(B,0,1))throw new KException("access");}vt=Math.Min(B[0],(byte)3);}
+public c(string h,int p,string u,int maxBufferSize){_maxBufferSize=maxBufferSize;Connect(h,p);s=this.GetStream();B=new byte[2+u.Length];J=0;w(u+"\x3");s.Write(B,0,J);if(1!=s.Read(B,0,1))throw new KException("access");vt=Math.Min(B[0],(byte)3);}
 static int ns(string s){int i=s.IndexOf('\0');i=-1<i?i:s.Length;return e.GetBytes(s.Substring(0,i)).Length;}
 static TimeSpan t(){return DateTime.Now.TimeOfDay;}static TimeSpan v;static void tm(){TimeSpan u=v;v=t();O(v-u);}
 static void O(object x){Console.WriteLine(x);}static string i2(int i){return String.Format("{0:00}",i);}
