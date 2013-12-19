@@ -116,7 +116,7 @@ public static Object[]NULL={null,new Boolean(false),new UUID(0,0),null,new Byte(
  new Timestamp(nj),new Month(ni),new Date(nj),new java.util.Date(nj),new Timespan(nj),new Minute(ni),new Second(ni),new Time(nj)};
 public static Object NULL(char c){return NULL[" bg xhijefcspmdznuvt".indexOf(c)];}
 
-public static boolean qn(Object x){int t=-t(x);return t>4&&x.equals(NULL[t]);}
+public static boolean qn(Object x){int t=-t(x);return(t==2||t>4)&&x.equals(NULL[t]);}
 public static Object at(Object x,int i){return qn(x=Array.get(x,i))?null:x;}
 public static void set(Object x,int i,Object y){Array.set(x,i,null==y?NULL[t(x)]:y);}
 
@@ -125,6 +125,7 @@ public static Flip td(Object X)throws java.io.UnsupportedEncodingException{if(X 
 public static Object O(Object x){out.println(x);return x;}public static void O(int x){out.println(x);}public static void O(boolean x){out.println(x);}public static void O(long x){out.println(x);}public static void O(double x){out.println(x);}
 public static long t(){return System.currentTimeMillis();}static long t;public static void tm(){long u=t;t=t();if(u>0)O(t-u);}static String i2(int i){return new DecimalFormat("00").format(i);}static String i9(int i){return new DecimalFormat("000000000").format(i);}
 }
+//2013.12.19 qn did not detect null guid
 //2013.05.01 added compareTo() to temporal classes, timespan.toString(), kr, ke
 //2013.04.29 added hashCode() to temporal classes
 //2013.04.22 added x instanceof UUID[]?:

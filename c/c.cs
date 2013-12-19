@@ -1,3 +1,4 @@
+//2013.12.19 qn did not detect null guid
 //2013.12.10 remove retry logic on authentication fail. For kdb+2.5 and prior, use
 //             B=new byte[1+u.Length];Connect(h,p);s=this.GetStream();J=0;w(u);s.Write(B,0,J);if(1!=s.Read(B,0,1))...
 //2013.09.16 za represents -0Wd, not 0Nd
@@ -49,7 +50,7 @@ static object[]NU={null,false,new Guid(),null,(byte)0,Int16.MinValue,ni,nj,(Sing
  new Month(ni),new Date(ni),new DateTime(0),new KTimespan(nj),new Minute(ni),new Second(ni),new TimeSpan(nj)};
 static object NULL(char c){return NU[" bg xhijefcspmdznuvt".IndexOf(c)];}
 public static object NULL(Type t){for(int i=0;i<NU.Length;i++)if(NU[i]!=null&&t==NU[i].GetType())return NU[i];return null;}
-public static bool qn(object x){int t=-c.t(x);return t>4&&x.Equals(NU[t]);}
+public static bool qn(object x){int t=-c.t(x);return(t==2||t>4)&&x.Equals(NU[t]);}
 private void u(){int n=0,r=0,f=0,s=8,p=s;short i=0;j=0;byte[]dst=new byte[ri()];int d=j;int[]aa=new int[256];
 while(s<dst.Length){if(i==0){f=0xff&(int)b[d++];i=1;}if((f&i)!=0){r=aa[0xff&(int)b[d++]];dst[s++]=dst[r++];dst[s++]=dst[r++];n=0xff&(int)b[d++];for(int m=0;m<n;m++)dst[s+m]=dst[r+m];}
 else dst[s++]=b[d++];
