@@ -11,7 +11,7 @@ insert into i[(i's)]values(a's);update i set{i=a}'s where c;delete from i where 
 \d .q
 ifnull:{y^x};between:within;addmonths:.Q.addmonths
 \d .s SQL w(word) w0(class) w1(transition) v(value)
-q:$`ifnull`addmonths`between`or`and`not`like`in`sum`min`max`avg`count`distinct`log`exp`abs;ls:.q.enlist
+q:$`ifnull`addmonths`between`or`and`not`like`in`sum`min`max`avg`count`distinct`log`exp`abs;ls:$[.z.K>3.1;enlist;.q.enlist]
 
 w0:@[127#1;w;:;!#w:"i"$(" \t\r\n";",(){}*/+";34 95,/65 97+/:!26;".0123456789:";"<=>"),"e-'\""];si:{x?$[-11=@y;y;`]}
 w1:w[;0]?1_'w:("  +a0<a+'\"";"+ +a0<a+'\"";"a +bb<b+'\"";"0 +*1<e+'\"";"< +a0>a+'\"";"'tttttttut";"\"vvvvvvvvw"
