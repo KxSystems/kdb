@@ -1,3 +1,4 @@
+//2014.01.29 make method n public
 //2013.12.19 qn did not detect null guid
 //2013.12.10 remove retry logic on authentication fail. For kdb+2.5 and prior, use
 //             B=new byte[1+u.Length];Connect(h,p);s=this.GetStream();J=0;w(u);s.Write(B,0,J);if(1!=s.Read(B,0,1))...
@@ -96,7 +97,7 @@ static int t(object x){return x is bool?-1:x is Guid?-2:x is byte?-4:x is short?
  x is bool[]?1:x is Guid[]?2:x is byte[]?4:x is short[]?5:x is int[]?6:x is long[]?7:x is float[]?8:x is double[]?9:x is char[]?10:
  x is DateTime[]?12:x is DateTime[]?15:x is KTimespan[]?16:x is TimeSpan[]?19:x is Flip?98:x is Dict?99:0;}
 static int[]nt={0,1,16,0,1,2,4,8,4,8,1,0,8,4,4,8,8,4,4,4};// x.GetType().IsArray
-static int n(object x){return x is Dict?n(((Dict)x).x):x is Flip?n(((Flip)x).y[0]):x is char[]?e.GetBytes((char[])x).Length:((Array)x).Length;}
+public static int n(object x){return x is Dict?n(((Dict)x).x):x is Flip?n(((Flip)x).y[0]):x is char[]?e.GetBytes((char[])x).Length:((Array)x).Length;}
 static int nx(object x){int i=0,n,t=c.t(x),j;if(t==99)return 1+nx(((Dict)x).x)+nx(((Dict)x).y);if(t==98)return 3+nx(((Flip)x).x)+nx(((Flip)x).y);
  if(t<0)return t==-11?2+ns((string)x):1+nt[-t];j=6;n=c.n(x);if(t==0)for(;i<n;++i)j+=nx(((object[])x)[i]);else j+=n*nt[t];return j;}
 public static object at(object x,int i){object r=((Array)x).GetValue(i);return qn(r)?null:r;} 
