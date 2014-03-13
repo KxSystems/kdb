@@ -3,7 +3,8 @@
 //gcc -shared ../c/c/d.c -o qodbc.so -lodbc -fPIC -w
 #include"d.h" //mdac2.8 WIN64 
 Z struct{C e[100];S s;I i;}err={"[q][ODBC]"};ZA QS(S s,S e,I r){R strcpy(err.e+9,e),err.s=s,err.i=1,r;}ZI sns(S b,I n,S s){I i=strlen(s);if(b)memcpy(b,s,i=i<n?i:n-1),b[i]=0;R i;}
-A SQLError(D h,D h1,D h2,S s,SQLINTEGER*i,S s1,H j1,H*j2){P(!err.i,S1)R strcpy(s,err.s),*i=err.i,*j2=sns(s1,j1,err.e),err.i=0,0;}ZC b[99],q[99],u[99],p[99];
+ZV qj2(H*p,H n){if(p)*p=n;}
+A SQLError(D h,D h1,D h2,S s,SQLINTEGER*i,S s1,H j1,H*j2){P(!err.i,S1)R strcpy(s,err.s),*i=err.i,qj2(j2,sns(s1,j1,err.e)),err.i=0,0;}ZC b[99],q[99],u[99],p[99];
 #define Q1(e)  P(1,QS("HYC00",e,-1))
 #define Q(x,e) P(x,QS("HY000",e,-1))
 #if defined (WIN32)|| defined (_WIN64)
@@ -16,11 +17,10 @@ ZS dlg(I i){R 0;}
 BOOL INSTAPI ConfigDSN(HWND h,WORD j,LPCSTR d,LPCSTR s){SW(j){CS(ODBC_REMOVE_DSN,R SQLRemoveDSNFromIni(s+4))CS(ODBC_ADD_DSN,if(dlg(111))SQLWriteDSNToIni(b,d))}R 0;}
 ZS g1(S s,S a,S v){L n;U(s=strstr(s,a))R s+=4,strncpy(v,s,n=(S)strchr(s,';')-s),v[n]=0,v;}ZV av(S s,S a,S v){s+=strlen(strcat(s,a)),*s++='=',s+=strlen(strcpy(s,v)),*s++=';',*s=0;}
 #define N 10 //1env,2dbc,3stmt,4desc  -1(fail) 0(success)1(successwithinfo) 0-noprompt 1-complete 2-prompt 3-required
-ZI c[N];A SQLDisconnect(D d){I h=(I)(L)d;R closesocket(c[h]),c[h]=0;}ZI sj(S s,I j){R j<0?strlen(s):j;}ZS ssj(S s,S t,I j){R!t||j<0?t:(strncpy(s,t,j)[j]=0,s);}
+ZI c[N];A SQLDisconnect(D d){I h=(I)(L)d;R kclose(c[h]),c[h]=0;}ZI sj(S s,I j){R j<0?strlen(s):j;}ZS ssj(S s,S t,I j){R!t||j<0?t:(strncpy(s,t,j)[j]=0,s);}
 ZA dq(D d,S q,S u,S p){S s=strchr(q,':');I a;Q(!s,"host:port")*s=0,a=khpu(q,atoi(s+1),u&&*u?strcat(strcat(strcpy(b,u),":"),p):(S)""),*s=':';Q(a<0,q)Q(!a,"access")R c[(I)(L)d]=a,0;}
 A SQLConnect(D d,S s,H j,S a,H aj,S b,H bj){R dq(d,ssj(q,s,j),ssj(u,a,aj),ssj(p,b,bj));}
-A SQLDriverConnect(D d,HWND w,S s,H j0,S r,H j,H*j2,UH f){Q(!g1(s,"DBQ",q)&&!g1(s,"DSN",q),"DBQ")if(g1(s,"UID",u))g1(s,"PWD",p);else*u=0;
- if(r){if(strcpy(r,"DRIVER=kdb+;"),av(r,"DBQ",q),*u)av(r,"UID",u),av(r,"PWD",p);av(r,"DSN","default"),*j2=strlen(r);}R dq(d,q,u,p);}
+A SQLDriverConnect(D d,HWND w,S s,H j0,S r,H j,H*j2,UH f){Q(!g1(s,"DBQ",q)&&!g1(s,"DSN",q),"DBQ")if(g1(s,"UID",u))g1(s,"PWD",p);else*u=0;if(r){if(strcpy(r,"DRIVER=kdb+;"),av(r,"DBQ",q),*u)av(r,"UID",u),av(r,"PWD",p);av(r,"DSN","default"),qj2(j2,strlen(r));}R dq(d,q,u,p);}
 ZK*td[N],tk[N];ZS*tf[N],*tb[N];Z L*tw[N],**tn[N];ZI tc[N],*tu[N],ti[N],tj[N],bi[N],s[N],s0[N],s3[N],s5[N],s6[N],s9[N],s11[N],sb[13]={0,0,0,0,0,0,0,SQL_CONCUR_READ_ONLY};
 A SQLAllocHandle(H j,D d,D*h1){I*p,h=0;Q(j>3,"desc")if(j>1){for(p=j>2?s:c;p[h];++h)Q(h==N,"limit")if(j>2)tc[h]=c[(I)(L)d],s[h]=s9[h]=1,s11[h]=SQL_RD_ON;}R*h1=(D)(L)h,0;}
 ZV b1(I h){I j=tj[h];tb[h]=(S*)malloc(j*SZ),tu[h]=(I*)malloc(j*4),tw[h]=(L*)malloc(j*SZ),tn[h]=(L**)malloc(j*SZ);DO(j,tb[h][i]=0)}
@@ -47,22 +47,23 @@ if(!t){Q(u!=1,ssi("utype",u))x=xK[i],*n=t=xt==KC?xn:0;P(!w,1)Q(w<=t,"gd")R memcp
 u=ut(u==99?U0[t]:u);if(!u||nu(x,i))*n=SQL_NULL_DATA;else SW(*n=B0[u],u){
  CS(KH,*(H*)b=t==KH?xH[i]:xG[i])CS(KI,*(I*)b=t==KI?xI[i]:t==KH?xH[i]:xG[i])
  CS(KF,*(F*)b=t==KF?xF[i]:t==KE?xE[i]:t==KJ?xJ[i]:t==KI?xI[i]:t==KH?xH[i]:xG[i])
- CS(KS,*n=t<KE?sprintf(b,"%I64d",t<KH?xG[i]:t==KH?xH[i]:t==KI?xI[i]:xJ[i]):t<KC?sprintf(b,"%.2f",t<KF?xE[i]:xF[i]):t==KC?(*b=xG[i],1):
+ CS(KS,*n=t<KE?sprintf(b,"%lld",t<KH?xG[i]:t==KH?xH[i]:t==KI?xI[i]:xJ[i]):t<KC?sprintf(b,"%.2f",t<KF?xE[i]:xF[i]):t==KC?(*b=xG[i],b[1]=0,1):
   t==KS?strlen(strcpy(b,kS(x)[i])):t==KD?Td(1,b,xI[i]):t==KZ?Tz(1,b,xF[i]):Tv(1,b,vt(t,xI[i])))
  CS(KD,Td(0,b,xI[i]))CS(KV,Tv(0,b,vt(t,xI[i])))CS(KZ,Tz(0,b,t==KZ?xF[i]:t==KD?xI[i]:(t==KT?xI[i]/8.64e7:vt(t,xI[i])/8.64e4)-36526))
  CD:memcpy(b,xG+i**n,*n);}R 0;}//BGJE
 A SQLGetData(D d,UH j,H u,V*b,SQLLEN w,SQLLEN*n){I h=(I)(L)d;R gd(h,--j,bi[h],u,b,w,n);}
 A SQLBindCol(D d,UH j,H u,V*b,SQLLEN w,SQLLEN*n){I h=(I)(L)d;P(!tk[h],0)if(!tb[h])b1(h);tb[h][--j]=b;R tu[h][j]=u,tw[h][j]=w,tn[h][j]=n,0;}
-A SQLExtendedFetch(D d,UH j,SQLLEN k,SQLULEN*i1,UH*j1)
+ZA XSQLExtendedFetch(D d,UH j,SQLLEN k,SQLULEN*i1,UH*j1)
 {I h=(I)(L)d;L w;SW(j){CS(SQL_FETCH_NEXT,bi[h]+=s9[h])CS(SQL_FETCH_FIRST,bi[h]=0)
   CS(SQL_FETCH_LAST,bi[h]=ti[h]>s9[h]?ti[h]-s9[h]:0)CS(SQL_FETCH_PRIOR,bi[h]-=s9[h])CS(SQL_FETCH_ABSOLUTE,bi[h]=k-1)CS(SQL_FETCH_RELATIVE,bi[h]+=k)}
  P(bi[h]>=ti[h],S1)k=ti[h]-bi[h]<s9[h]?ti[h]-bi[h]:s9[h];if(i1)*i1=k;if(j1)DO(s9[h],j1[i]=i<k?SQL_ROW_SUCCESS:SQL_ROW_NOROW)
  if(!s11[h]||!tb[h])R 0;DO(k,for(j=0;j<tj[h];++j)if(w=tw[h][j],tb[h][j])gd(h,j,bi[h]+i,tu[h][j],tb[h][j]+i*(s5[h]?s5[h]:w),w,tn[h][j]+i*(s5[h]?s5[h]:SZ)/SZ))R 0;}
-A SQLFetch(D d){R SQLExtendedFetch(d,SQL_FETCH_NEXT,(L)0,(L*)0,(UH*)0);} 
+A SQLExtendedFetch(D d,UH j,SQLLEN k,SQLULEN*i1,UH*j1){R XSQLExtendedFetch(d,j,k,i1,j1);} // unixodbc shadows direct call
+A SQLFetch(D d){R XSQLExtendedFetch(d,SQL_FETCH_NEXT,(L)0,(L*)0,(UH*)0);} 
 A SQLPrepare(D d,S s,SQLINTEGER n){Q(memchr(s,'?',sj(s,n)),"?")R k1(d,"ex",s,n);} A SQLExecute(D d){R 0;}
 A SQLExecDirect(D d,S s,SQLINTEGER n){R k1(d,"ex",s,n);}                          A SQLMoreResults(D h){R S1;}         
 A SQLNumResultCols(D h,H*j){R*j=tj[(I)(L)h],0;}                             A SQLRowCount(D h,SQLLEN*n){R*n=ti[(I)(L)h],0;} 
-A SQLDescribeCol(D d,UH j,S s,H j1,H*j2,H*u,SQLULEN*c,H*p,H*n){I h=(I)(L)d,t=td[h][--j]->t;R*j2=sns(s,j1,tf[h][j]),*u=T0[t],*c=C0[t],*p=0,*n=t?SQL_NULLABLE:0,0;}
+A SQLDescribeCol(D d,UH j,S s,H j1,H*j2,H*u,SQLULEN*c,H*p,H*n){I h=(I)(L)d,t=td[h][--j]->t;R qj2(j2,sns(s,j1,tf[h][j])),*u=T0[t],*c=C0[t],*p=0,*n=t?SQL_NULLABLE:0,0;}
 A SQLColAttributes(D d,UH j,UH f,V*b,H j1,H*j2,SQLLEN *n){I h=(I)(L)d,t=td[h][--j]->t;S s=0;SW(f){CD:Q1(ssi("attr ",f))
 case SQL_COLUMN_COUNT:CS(SQL_DESC_COUNT,*n=tj[h])
 /*SQL_COLUMN_DISPLAY_SIZE:*/CS(SQL_DESC_DISPLAY_SIZE,*n=D0[t])
@@ -77,7 +78,7 @@ CS(SQL_DESC_FIXED_PREC_SCALE,*n=SQL_FALSE)CS(SQL_DESC_LITERAL_PREFIX,s="'")CS(SQ
 CS(SQL_DESC_LOCAL_TYPE_NAME,s=N0[t])CS(SQL_DESC_NUM_PREC_RADIX,*n=10)CS(SQL_DESC_OCTET_LENGTH,*n=B0[t])
 CS(SQL_DESC_SCHEMA_NAME,s="")CS(SQL_DESC_SEARCHABLE,*n=SQL_PRED_SEARCHABLE)CS(SQL_DESC_TABLE_NAME,s="")
 CS(SQL_DESC_TYPE,*n=T0[t>KS?KZ:t])CS(SQL_DESC_TYPE_NAME,s=N0[t])CS(SQL_DESC_UNNAMED,*n=SQL_NAMED)CS(SQL_DESC_UNSIGNED,*n=SQL_FALSE)CS(SQL_DESC_UPDATABLE,*n=SQL_ATTR_WRITE)}
-if(s)*j2=sns(b,j1,s);R 0;}
+if(s)qj2(j2,sns(b,j1,s));;R 0;}
 A SQLGetTypeInfo(D h,H j){R k1(h,"TypeInfo",j?si(j):(S)"",S0);}
 A SQLTables(D h,S d,H dj,S e,H ej,S t,H tj,S c,H cj){I f;
 Q(d&&(dj=sj(d,dj))&&(!(*d=='%'&&dj==1))||e&&sj(e,ej)||!c,"tables")if(t&&(tj=sj(t,tj))&&*t!='%')strncpy(b,t,tj);else tj=0;
