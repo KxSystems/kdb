@@ -79,7 +79,7 @@ extern K ktj(I,J),ka(I),kb(I),kg(I),kh(I),ki(I),kj(J),ke(F),kf(F),kc(I),ks(S),kd
 #define wi ((I)0x7FFFFFFF)
 #define nj ((J)0x8000000000000000LL) 
 #define wj 0x7FFFFFFFFFFFFFFFLL
-#ifdef WIN32
+#if WIN32 || _WIN32
 #define nf (log(-1.0))
 #define wf (-log(0.0))
 #define isnan _isnan
