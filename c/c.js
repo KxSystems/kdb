@@ -1,3 +1,4 @@
+// 2014.03.18 Serialize date now adjusts for timezone.
 // 2013.04.29 Dict decodes to map, except for keyed tables.
 // 2013.02.13 Keyed tables were not being decoded correctly.
 // 2012.06.20 Fix up browser compatibility. Strings starting with ` encode as symbol type.
@@ -97,7 +98,7 @@ function serialize(x){var a=1,pos=0,ub,bb=new Uint8Array(8),ib=new Int32Array(bb
       case 'null':{wb(101);wb(0);}break;
       case 'boolean':{wb(-1);wb(x?1:0);}break;
       case 'number':{wb(-9);fb[0]=x;wn(8);}break;
-      case 'date':{wb(-15);fb[0]=(x.getTime()/86400000)-10957;wn(8);}break;
+      case 'date':{wb(-15);fb[0]=((x.getTime()-(new Date(x)).getTimezoneOffset()*60000)/86400000)-10957;wn(8);}break;
       case 'symbol':{wb(-11);for(var i=0;i<x.length;i++)wb(x[i].charCodeAt());wb(0);}break;
       case 'string':if(x[0]=='`'){w(x.substr(1),'symbol');}else{wb(10);wb(0);ib[0]=x.length;wn(4);for(var i=0;i<x.length;i++)wb(x[i].charCodeAt());}break;
       case 'object':{wb(99);w(getKeys(x),'symbols');w(getVals(x),null);}break;
