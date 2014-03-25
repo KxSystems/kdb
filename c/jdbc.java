@@ -1,10 +1,13 @@
+//2014.03.25 allow calling connection close() even if already closed, use jdk1.7 api
+//           jdk1.7 specific parts are sections after //1.7
 //2012.11.26 getRow(), use jdk6 api, return char[] as String to support Aqua Data Studio for lists of char vectors.
 //           java.sql.timestamp now maps to kdb+timestamp; use latest http://kx.com/q/s.k
 //           jdk1.6 specific parts are sections after //4
 //           For compiling for earlier jdks, remove those sections
 //2007.04.20 c.java sql.date/time/timestamp
 //jar cf jdbc.jar *.class   url(jdbc:q:host:port) isql(new service resources jdbc.jar)
-import kx.*;import java.io.*;import java.math.*;import java.sql.*;import java.net.URL;import java.util.Calendar;import java.util.Map;import java.util.Properties;
+//javac -Xbootclasspath:/System/Library/Java/JavaVirtualMachines/1.6.0.jdk/Contents/Classes/classes.jar -target 1.6 -source 1.6 jdbc.java 
+import kx.*;import java.io.*;import java.math.*;import java.sql.*;import java.net.URL;import java.util.Calendar;import java.util.Map;import java.util.Properties;import java.util.logging.Logger;import java.util.concurrent.Executor;
 public class jdbc implements Driver{static int V=2,v=0;static void O(String s){System.out.println(s);}
 public int getMajorVersion(){return V;}public int getMinorVersion(){return v;}public boolean jdbcCompliant(){return false;}
 public boolean acceptsURL(String s){return s.startsWith("jdbc:q:");}
@@ -39,7 +42,7 @@ public class co implements Connection{private c c;public co(String s,Object u,Ob
  public int getTransactionIsolation()throws SQLException{return i;}
  public SQLWarning getWarnings()throws SQLException{return null;}
  public void clearWarnings()throws SQLException{}
- public void close()throws SQLException{try{c.close();}catch(IOException e){q(e);}finally{c=null;}}
+ public void close()throws SQLException{if(isClosed())return;try{c.close();}catch(IOException e){q(e);}finally{c=null;}}
  public Statement createStatement(int resultSetType,int resultSetConcurrency)throws SQLException{return new st(this);}
  public PreparedStatement prepareStatement(String s,int resultSetType,int resultSetConcurrency)throws SQLException{return new ps(this,s);}
  public CallableStatement prepareCall(String s,int resultSetType,int resultSetConcurrency)throws SQLException{return new cs(this,s);}
@@ -73,6 +76,12 @@ public class co implements Connection{private c c;public co(String s,Object u,Ob
  public Struct createStruct(String string, Object[] os)throws SQLException{q();return null;}
  public <T> T unwrap(Class<T> type)throws SQLException{q();return null;}
  public boolean isWrapperFor(Class<?> type)throws SQLException{q();return false;}
+//1.7
+ public int getNetworkTimeout()throws SQLFeatureNotSupportedException{throw new SQLFeatureNotSupportedException("nyi");}
+ public void setNetworkTimeout(Executor executor,int milliseconds)throws SQLFeatureNotSupportedException{throw new SQLFeatureNotSupportedException("nyi");}
+ public void abort(Executor executor)throws SQLFeatureNotSupportedException{throw new SQLFeatureNotSupportedException("nyi");}
+ public void setSchema(String s){}
+ public String getSchema(){return null;}
 }
 
 public class st implements Statement{private co co;private Object r;private int R,T;
@@ -118,6 +127,10 @@ public class st implements Statement{private co co;private Object r;private int 
  public boolean isPoolable()throws SQLException{if(isClosed())throw new SQLException("Closed");return poolable;}
  public <T> T unwrap(Class<T> type)throws SQLException{q();return null;}
  public boolean isWrapperFor(Class<?> type)throws SQLException{q();return false;}
+//1.7
+ boolean _closeOnCompletion=false;
+ public void closeOnCompletion(){_closeOnCompletion=true;}
+ public boolean isCloseOnCompletion(){return _closeOnCompletion;}
 }
 
 public class ps extends st implements PreparedStatement{private String s;public ps(co co,String x){super(co);s=x;}
@@ -296,6 +309,9 @@ public class cs extends ps implements CallableStatement{
  public void setClob(String string, Reader reader)throws SQLException{q();}
  public void setBlob(String string, InputStream in)throws SQLException{q();}
  public void setNClob(String string, Reader reader)throws SQLException{q();}
+//1.7
+ public <T>T getObject(String s,Class<T> t)throws SQLFeatureNotSupportedException{throw new SQLFeatureNotSupportedException("nyi");}
+ public <T>T getObject(int parameterIndex,Class<T>t)throws SQLFeatureNotSupportedException{throw new SQLFeatureNotSupportedException("nyi");} 
 }
 
 public class rs implements ResultSet{private st st;private String[]f;private Object o,d[];private int r,n;
@@ -489,6 +505,9 @@ public class rs implements ResultSet{private st st;private String[]f;private Obj
  public void updateNClob(String string, Reader reader)throws SQLException{q();}
  public <T> T unwrap(Class<T> type)throws SQLException{q();return null;}
  public boolean isWrapperFor(Class<?> type)throws SQLException{q();return false;}
+//1.7
+ public <T>T getObject(String parameterName,Class<T>t)throws SQLFeatureNotSupportedException{throw new SQLFeatureNotSupportedException("nyi");}
+ public <T>T getObject(int columnIndex,Class<T>t)throws SQLFeatureNotSupportedException{throw new SQLFeatureNotSupportedException("nyi");}
 }
 
 public class rm implements ResultSetMetaData{private String[]f;private Object[]d;
@@ -707,7 +726,13 @@ public class dm implements DatabaseMetaData{private co co;public dm(co x){co=x;}
  public ResultSet getFunctionColumns(String string, String string1, String string2, String string3)throws SQLException{q();return null;}
  public <T> T unwrap(Class<T> type)throws SQLException{q();return null;}
  public boolean isWrapperFor(Class<?> type)throws SQLException{q();return false;}
-}}
+//1.7
+ public boolean generatedKeyAlwaysReturned(){return false;}
+ public ResultSet getPseudoColumns(String catalog,String schemaPattern,String tableNamePattern,String columnNamePattern)throws SQLFeatureNotSupportedException{throw new SQLFeatureNotSupportedException("nyi");}
+}
+//1.7
+ public Logger getParentLogger()throws SQLFeatureNotSupportedException{throw new SQLFeatureNotSupportedException("nyi");}
+}
 
 /*
 class ar implements Array{
