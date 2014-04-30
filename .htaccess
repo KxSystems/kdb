@@ -4,3 +4,6 @@
 RewriteEngine Off
 
 </IfModule>
+
+Options +Indexes
+
