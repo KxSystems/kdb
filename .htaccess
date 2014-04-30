@@ -1,6 +1,6 @@
-# ReadmeName .license_footer.html
-# HeaderName .license_header.html
+<IfModule mod_rewrite.c>
 
-# IndexOptions FancyIndexing NameWidth=24 DescriptionWidth=32 SuppressHTMLPreamble
-# IndexOptions FoldersFirst
-Options +Indexes
+#Disable rewriting
+RewriteEngine Off
+
+</IfModule>
