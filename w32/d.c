@@ -148,7 +148,9 @@ CS(SQL_ACCESSIBLE_PROCEDURES,s="N")
  CS(SQL_FETCH_DIRECTION,i=0x3F)CS(SQL_LOCK_TYPES,i=SQL_LCK_NO_CHANGE)CS(SQL_ODBC_API_CONFORMANCE,h=SQL_OAC_LEVEL2)
  CS(SQL_POSITIONED_STATEMENTS,i=0)CS(SQL_POS_OPERATIONS,i=SQL_POS_POSITION)
  CS(SQL_SCROLL_CONCURRENCY,i=SQL_SCCO_READ_ONLY)CS(SQL_STATIC_SENSITIVITY,i=0)}
-R s?(*h2=sns(v,h1,s)):i!=-2?(*h2=4,*(I*)v=i):(*h2=2,*(UH*)v=h),0;}
+R s?(qj2(h2,sns(v,h1,s))):i!=-2?(qj2(h2,4),*(I*)v=i):(qj2(h2,2),*(UH*)v=h),0;}
+
+
 //ZI g2(){S s;U(dlg(111))if(strcpy(q,b),*u=0,dlg(110))s=strchr(b,':'),*s++=0,strcpy(u,b),strcpy(p,s);R 1;}
 //ZV g0(S s,S a,S v){v[SQLGetPrivateProfileString(s,a,"",v,99,"odbc.ini")]=0;}ZV g3(S a,S v){SQLWritePrivateProfileString(q,a,v,"odbc.ini");}if(g3("DBQ",q),*u){g3("UID",u);g3("PWD",p);})}R 0;}
 //if(!strncmp(s,"DSN=",4))*strchr(s+=4,';')=0,g0(s,"DBQ",q),g0(s,"UID",u),g0(s,"PWD",p);else if(strstr(s,"DBQ="))g1(s,"DBQ",q),g1(s,"UID",u),g1(s,"PWD",p);else Q(!g2(),"DBQ")
