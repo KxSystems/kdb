@@ -1,12 +1,12 @@
 //see http://code.kx.com/wiki/Cookbook/ExtendingWithC
-//gcc -DKXVER=3 curl.c -o curl.so -lcurl -shared
+//gcc -DKXVER=3 curl.c -o curl.so -lcurl -fPIC -shared
 //{x set`:./curl 2:x,y}'[`cget`cpost;1 2]
 //cget"http://kx.com"
 #include<curl/curl.h>
 #include"k.h"
 #define so(c,o,v) curl_easy_setopt(c,CURLOPT_##o,v)
 
-Z size_t wr(S p,size_t s,size_t n,V*d){K*x=d;*x=jv(x,kpn(p,s*n));R s*n;}
+Z size_t wr(S p,size_t s,size_t n,V*d){K*x=d,y;jv(x,y=kpn(p,s*n));r0(y);R s*n;}
 K cpost(K x,K y){C e[CURL_ERROR_SIZE];K r,a;CURL*c;if(xt!=KC||y&&y->t!=KC)R krr("type");if(!(c=curl_easy_init()))R krr("curl");
 r=ktn(KC,0),a=ktn(KC,xn+1);DO(xn,kC(a)[i]=kC(x)[i])kC(a)[xn]=0;
 if(y)so(c,POST,1L),so(c,POSTFIELDS,kC(y)),so(c,POSTFIELDSIZE,y->n);
