@@ -64,8 +64,11 @@ extern K ktn(I,I),kpn(S,I);
 
 #ifdef __cplusplus
 extern"C"{
+extern V m9();
+#else
+extern V m9(V);
 #endif
-extern I khpun(const S,I,const S,I),khpu(const S,I,const S),khp(const S,I),okx(K),ymd(I,I,I),dj(I);extern V r0(K),sd0(I),m9(V),kclose(I);extern S sn(S,I),ss(S);
+extern I khpun(const S,I,const S,I),khpu(const S,I,const S),khp(const S,I),okx(K),ymd(I,I,I),dj(I);extern V r0(K),sd0(I),kclose(I);extern S sn(S,I),ss(S);
 extern K ktj(I,J),ka(I),kb(I),kg(I),kh(I),ki(I),kj(J),ke(F),kf(F),kc(I),ks(S),kd(I),kz(F),kt(I),sd1(I,K(*)(I)),dl(V*f,I),
  knk(I,...),kp(S),ja(K*,V*),js(K*,S),jk(K*,K),jv(K*k,K),k(I,const S,...),xT(K),xD(K,K),ktd(K),r1(K),krr(const S),orr(const S),dot(K,K),b9(I,K),d9(K);
 #ifdef __cplusplus 
