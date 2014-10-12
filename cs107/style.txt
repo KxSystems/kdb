@@ -1,0 +1,19 @@
+c programming style guide (use c.h)
+
+brevity, locality and consistency. to get it right keep it short and clear.
+
+https://www.kernel.org/doc/Documentation/CodingStyle
+
+1. indentation: 1 space (most simple functions should be on 1 line.)
+2. braces: same line (braces are largely redundant. see above.)
+3. spaces: only for indent.
+4. names: i,j(index) m,n(count) s,t(string) ..
+5. types: I F C S (c.h)
+6. funcs: short. usually one line. no globals.
+7. exit: P Q R
+8. comments: WHAT but not HOW. (code says how)
+
+nothing extra. no extra ()'s or {}'s ,e.g.  if(x)a=2; NOT if( x == true ){ a = 2 ; }
+don't generalize.
+don't optimize.
+
