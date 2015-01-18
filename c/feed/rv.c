@@ -5,6 +5,12 @@
 //s32>/usr/local/gcc-3.3.2/bin/gcc -G ../c/feed/rv.c -o rv.so -I/dat/tibrv/7.5.2/include -L/dat/tibrv/7.5.2/lib -ltibrv
 //s64>/usr/local/gcc-3.3.2/bin/gcc -G -m64 ../c/feed/rv.c -o rv.so -I/dat/tibrv/7.5.2/include -L/dat/tibrv/7.5.2/lib -ltibrv64
 #include"../c/k.h"
+#include<string.h>
+#if _WIN64
+typedef __int64 L;
+#else
+typedef long L;
+#endif
 #include"tibrv/tibrv.h"  //missing KC KM KD KU KV KT  3z,8s,9b 14..25  (22-none) 1msg 7opaque 26port 27addr 32encr 47xml
 extern V*malloc(),free();
 ZI tr(I t){R t==24?8:t/2-3;}ZJ o=10957*86400,j9=(J)1e9;Z tibrvMsgField f;Z tibrv_status s;
