@@ -6,8 +6,8 @@ S:100#first flip idesc select count i by sym from trade where date=d
 \ts select last bid by sym from quote where date=d,sym in S
 \ts select max price by sym,ex from trade where date=d,sym in S
 \ts select sum size by sym,time.hh from trade where date=d,sym in S
-\ts select from aj[`time;select time,price from trade where date=d,sym=`CSCO;select time,bid from quote where date=d,sym=`CSCO]where price<bid
-
+\ts a:select from aj[`time;select time,price from trade where date=d,sym=`QQQ;select time,bid from quote where date=d,sym=`QQQ]where price<bid
+count a
 \
 
 /ETL
