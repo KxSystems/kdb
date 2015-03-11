@@ -1,13 +1,12 @@
 / generate trades and quotes for ~7000 syms with log normal counts
 
 N:5600000 /small day
-N:100000 /test
 
 c:{x?"A"} /chars
 
 S:?`QQQ,"n"$+c'3#9000 /syms
 
-n@:>n:-_-n*N%+/n:exp 1.8*?-#S /counts
+n@:>n:1+_n*N%+/n:exp 1.8*?-#S /counts
 
 S@:i:<S;n@:i
 
