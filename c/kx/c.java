@@ -7,13 +7,14 @@ public class c{
 /*public static void main(String[]args){try{c c=new c("",5001);
 // O(c.k("0N!",c.k("0N!1999.01.01D-1")));
 //c.k("0N!",NULL('z'));
-//c.setEncoding("UTF-8");O("Unicode "+c.k("{`$x}","Ranby BjÃ¶rklund AB".toCharArray()));O("Unicode "+c.k("{x}",(String)c.k("{`$x}",(char[])c.k("\"c\"$0x52616e627920426ac3b6726b6c756e64204142"))));   
+//c.setEncoding("UTF-8");O("Unicode "+c.k("{`$x}","Ranby BjÃƒÂ¶rklund AB".toCharArray()));O("Unicode "+c.k("{x}",(String)c.k("{`$x}",(char[])c.k("\"c\"$0x52616e627920426ac3b6726b6c756e64204142"))));   
  c.close();}catch(Exception e){e.printStackTrace();}}
 */
 private static String e="ISO-8859-1";private static PrintStream out=System.out;private int sync=0;
 public static void setEncoding(String e)throws UnsupportedEncodingException{c.e=e;out=new PrintStream(System.out,true,e);}
-public Socket s;DataInputStream i;OutputStream o;byte[]b,B;int j,J,vt;boolean a;
-void io(Socket x)throws IOException{s=x;i=new DataInputStream(s.getInputStream());o=s.getOutputStream();}public void close()throws IOException{if(null!=s){s.close();s=null;};if(null!=i){i.close();i=null;}if(null!=o){o.close();o=null;}}
+public Socket s;DataInputStream i;OutputStream o;byte[]b,B;int j,J,vt;boolean a,l,zip;
+public void zip(boolean b){zip=b;}
+void io(Socket x)throws IOException{s=x;{InetAddress a=s.getInetAddress();l=a.isAnyLocalAddress()||a.isLoopbackAddress();}i=new DataInputStream(s.getInputStream());o=s.getOutputStream();}public void close()throws IOException{if(null!=s){s.close();s=null;};if(null!=i){i.close();i=null;}if(null!=o){o.close();o=null;}}
 public interface IAuthenticate{public boolean authenticate(String s);}
 public c(ServerSocket s,IAuthenticate a)throws IOException{io(s.accept());int n=i.read(b=new byte[99]);if(a!=null&&!a.authenticate(new String(b,0,n>1?n-2:0))){close();throw new IOException("access");}vt=n>1?b[n-2]:0;b[0]=(byte)(vt<'\3'?vt:'\3');o.write(b,0,1);} //c c=new c(new ServerSocket(5010));while(true)c.w(2,c.k());
 public c(ServerSocket s)throws IOException{this(s,null);}
@@ -30,7 +31,7 @@ public boolean equals(final Object o){return(o instanceof Timespan)?((Timespan)o
 public static class Dict{public Object x;public Object y;public Dict(Object X,Object Y){x=X;y=Y;}}
 public static class Flip{public String[]x;public Object[]y;public Flip(Dict X){x=(String[])X.x;y=(Object[])X.y;}public Object at(String s){return y[find(x,s)];}}
 public static class KException extends Exception{KException(String s){super(s);}}
-
+private void z(){byte i=0;boolean g;int j=J,f=0,h0=0,h=0;byte[]y=B;B=new byte[y.length/2];int c=12,d=c,e=B.length,p=0,q,r,s0=0,s=8,t=J,a[]=new int[256];System.arraycopy(y,0,B,0,4);B[2]=1;J=8;w(j);for(;s<t;i*=2){if(0==i){if(d>e-17){J=j;B=y;return;}i=1;B[c]=(byte)f;c=d++;f=0;}g=(s>t-3)||(0==(p=a[h=0xFF&(y[s]^y[s+1])]))||(0!=(y[s]^y[p]));if(0<s0){a[h0]=s0;s0=0;}if(g){h0=h;s0=s;B[d++]=y[s++];}else{a[h]=s;f|=i;p+=2;r=s+=2;q=Math.min(s+255,t);for(;y[p]==y[s]&&++s<q;)++p;B[d++]=(byte)h;B[d++]=(byte)(s-r);}}B[c]=(byte)f;J=4;w(d);J=d;}
 private void u(){int n=0,r=0,f=0,s=8,p=s;short i=0;j=0;byte[]dst=new byte[ri()];int d=j;int[]aa=new int[256];while(s<dst.length){if(i==0){f=0xff&(int)b[d++];i=1;}if((f&i)!=0){r=aa[0xff&(int)b[d++]];dst[s++]=dst[r++];dst[s++]=dst[r++];n=0xff&(int)b[d++];for(int m=0;m<n;m++)dst[s+m]=dst[r+m];}else dst[s++]=b[d++];while(p<s-1)aa[(0xff&(int)dst[p])^(0xff&(int)dst[p+1])]=p++;if((f&i)!=0)p=s+=n;i*=2;if(i==256)i=0;}b=dst;j=8;}
 void w(byte x){B[J++]=x;}static int ni=Integer.MIN_VALUE;static long nj=Long.MIN_VALUE;static double nf=Double.NaN;
 boolean rb(){return 1==b[j++];}void w(boolean x){w((byte)(x?1:0));}  char rc(){return(char)(b[j++]&0xff);}void w(char c){w((byte)c);}
@@ -98,7 +99,7 @@ void w(Object x)throws UnsupportedEncodingException{int i=0,n,t=t(x);w((byte)t);
  else if(t==11)w(((String[])x)[i]);else if(t==12)w(((Timestamp[])x)[i]);else if(t==13)w(((Month[])x)[i]);else if(t==14)w(((Date[])x)[i]);
  else if(t==15)w(((java.util.Date[])x)[i]);else if(t==16)w(((Timespan[])x)[i]);else if(t==17)w(((Minute[])x)[i]);else if(t==18)w(((Second[])x)[i]);
  else w(((Time[])x)[i]);}
-protected void w(int i,Object x)throws IOException{int n=nx(x)+8;synchronized(o){B=new byte[n];B[0]=0;B[1]=(byte)i;J=4;w(n);w(x);o.write(B);}}
+protected void w(int i,Object x)throws IOException{int n=nx(x)+8;synchronized(o){B=new byte[n];B[0]=0;B[1]=(byte)i;J=4;w(n);w(x);if(zip&&J>2000&&!l)z();o.write(B,0,J);}}
 public void kr(Object x)throws IOException{if(sync==0)throw new IOException("Unexpected response msg");sync--;w(2,x);}
 public void ke(String s)throws IOException{if(sync==0)throw new IOException("Unexpected error msg");sync--;int n=2+ns(s)+8;synchronized(o){B=new byte[n];B[0]=0;B[1]=2;J=4;w(n);w((byte)-128);w(s);o.write(B);}}
 public void ks(String s)throws IOException{w(0,cs(s));}public void ks(Object x)throws IOException{w(0,x);} char[]cs(String s){return s.toCharArray();}
@@ -125,6 +126,7 @@ public static Flip td(Object X)throws java.io.UnsupportedEncodingException{if(X 
 public static Object O(Object x){out.println(x);return x;}public static void O(int x){out.println(x);}public static void O(boolean x){out.println(x);}public static void O(long x){out.println(x);}public static void O(double x){out.println(x);}
 public static long t(){return System.currentTimeMillis();}static long t;public static void tm(){long u=t;t=t();if(u>0)O(t-u);}static String i2(int i){return new DecimalFormat("00").format(i);}static String i9(int i){return new DecimalFormat("000000000").format(i);}
 }
+//2015.05.11 added z() to optionally compress outgoing data
 //2013.12.19 qn did not detect null guid
 //2013.05.01 added compareTo() to temporal classes, timespan.toString(), kr, ke
 //2013.04.29 added hashCode() to temporal classes
