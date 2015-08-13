@@ -14,7 +14,7 @@ private static String e="ISO-8859-1";private static PrintStream out=System.out;p
 public static void setEncoding(String e)throws UnsupportedEncodingException{c.e=e;out=new PrintStream(System.out,true,e);}
 public Socket s;DataInputStream i;OutputStream o;byte[]b,B;int j,J,vt;boolean a,l,zip;
 public void zip(boolean b){zip=b;}
-void io(Socket x)throws IOException{s=x;{InetAddress a=s.getInetAddress();l=a.isAnyLocalAddress()||a.isLoopbackAddress();}i=new DataInputStream(s.getInputStream());o=s.getOutputStream();}public void close()throws IOException{if(null!=s){s.close();s=null;};if(null!=i){i.close();i=null;}if(null!=o){o.close();o=null;}}
+void io(Socket x)throws IOException{s=x;{InetAddress a=s.getInetAddress();l=a.isAnyLocalAddress()||a.isLoopbackAddress();}i=new DataInputStream(s.getInputStream());o=s.getOutputStream();s.setKeepAlive(true);}public void close()throws IOException{if(null!=s){s.close();s=null;};if(null!=i){i.close();i=null;}if(null!=o){o.close();o=null;}}
 public interface IAuthenticate{public boolean authenticate(String s);}
 public c(ServerSocket s,IAuthenticate a)throws IOException{io(s.accept());int n=i.read(b=new byte[99]);if(a!=null&&!a.authenticate(new String(b,0,n>1?n-2:0))){close();throw new IOException("access");}vt=n>1?b[n-2]:0;b[0]=(byte)(vt<'\3'?vt:'\3');o.write(b,0,1);} //c c=new c(new ServerSocket(5010));while(true)c.w(2,c.k());
 public c(ServerSocket s)throws IOException{this(s,null);}
@@ -126,6 +126,7 @@ public static Flip td(Object X)throws java.io.UnsupportedEncodingException{if(X 
 public static Object O(Object x){out.println(x);return x;}public static void O(int x){out.println(x);}public static void O(boolean x){out.println(x);}public static void O(long x){out.println(x);}public static void O(double x){out.println(x);}
 public static long t(){return System.currentTimeMillis();}static long t;public static void tm(){long u=t;t=t();if(u>0)O(t-u);}static String i2(int i){return new DecimalFormat("00").format(i);}static String i9(int i){return new DecimalFormat("000000000").format(i);}
 }
+//2015.08.13 always setKeepAlive(true) for sockets
 //2015.05.11 added z() to optionally compress outgoing data
 //2013.12.19 qn did not detect null guid
 //2013.05.01 added compareTo() to temporal classes, timespan.toString(), kr, ke
