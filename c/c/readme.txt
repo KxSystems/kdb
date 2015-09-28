@@ -69,7 +69,7 @@ e.g. http://kx.com/q/c/c/c.c (requires gcc 3.0 or later)
  int c=khp("host",port); // connect
  k(-c,"func|exp",..,(K)0); //asynch
  r=k(c,"func|exp",..,(K)0); //synch
- r=k(c,(K)0); // read incoming asynch
+ r=k(c,(S)0); // read incoming asynch
 e.g. tickerplant c client does:
 
 K x;
