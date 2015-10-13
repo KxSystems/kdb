@@ -1,864 +1,1728 @@
 Kdb+ Database Reference Manual
+
 Don Orth
+
+
 
 .Introduction
 
+
+
 Kdb+ comes with a comprehensive programming language: q (.q scripts). [We will also implement SQL.] q is similar to SQL but is simpler and more expressive. q implements all relational capabilities as well as timeseries analysis. This manual is concerned with the q versions of the standard SQL operations on tables. 
 
+
+
  s:([s:()]name:();status:();city:())	/ create a table with primary key s
+
  `s insert(`s1;`smith;20;`london)	/ insert a record
+
  select from s where name=`smith	/ select a record
+
+
 
 Additional features are defined in <u>Q Programming</u>.
 
+
+
 .The Interactive Environment
+
 q is a programming and runtime environment that starts from and runs in a shell, which is either a Unix/Linux shell or a Windows Command Prompt. After kdb+ is started, the shell becomes a q shell, or q console, in which expressions are entered and evaluated. The activity of entering and evaluating expressions in a q shell is called a q session; the entered expressions and their results are maintained in a q session log. Data created and assigned a name remains available during the current session. The data created during a session are collectively referred to as the workspace.
 
+
+
 The simplest q startup command is simply	q	. That is, type
+
  >q
+
 alone on a shell command line and press [Enter]. When q starts up you will see a copyright notice and license information. The OS shell has now become a q shell with a blinking cursor indented 2 spaces. Type any expression and then press [Enter]. The expression you entered will be evaluated and the result (if any) will be displayed below  typed, starting at the left side of the shell window. After the result display is complete you will see the blinking cursor again, indented 2 spaces, ready for the next input. For example:
+
    2+3	/ you type this
+
  5	/ the result is displayed (result displays are not indented)
+
    _ 	/ a blinking cursor is waiting for the next input expression
+
 The annotations on the right are q language comments. A q comment starts with a slash (	/	). There must be whitespace to the left of the slash. This entry-result format is used throughout this manual to display examples. You can repeat these examples in your shell, or you can make up some of your own.
+
 ..Assignment (Specification)
+
 Assignment in q is denoted by colon. For example,
+
    w:3.141
+
 The value of a data object can be displayed simply by typing its name, as follows.
+
    w
+
  3.141
+
 Note that there is no result display following the specification of w, even though specification has a result (the value given to the name). This is simply the way the q console is designed.
+
 ..Errors
+
 Errors are reported in the console by displaying the error type, generally type or length, the failed primitive function, and its argument(s). If you see the default prompt, you can simply continue with your work. If you see a leading ")" on the prompt, type "\" and press [Enter]. You should then see the default prompt. Debugging is discussed in the <u>Q Programming</u> manual.
+
 ..End a Session
+
 Exit from the q console with
+
    \\
+
 .Atomic Datatypes
+
 The atomic datatypes are the same as those in SQL3. Here is a list.
+
  q	sql3	null	example
+
  -
+
  boolean	boolean		0b	
+
  byte	byte		0xa1
+
  short	smallint	0Nh	45h
+
  int	int	0N	45
+
  long	bigint	0Nj	4294967296j
+
  real	real	0ne	3.14e
+
  float	float	0n	3.14
+
  char 	char(1)	" "	"a"
+
  symbol	varchar	`	`abcde
+
  date	date	0Nd	2003.03.23
+
  time	time	0Nt	09:10:35.021
+
  datetime	timestamp	0Nz	2003.03.23T09:10:35.021
+
 The boolean atoms are denoted 0b and 1b. A boolean occupies 1 byte. Int (4 bytes) atoms are written in the usual way, and float atoms (8 bytes) can be written in the usual decimal and exponential formats. Short (2 bytes) and long atoms (8 bytes) are written like ints but also have a trailing h or j. Real atoms (4 bytes) are written like floats or ints but with a trailing e. 
+
 Symbols are character strings preceded by back-quote, as in `abc. (Not all syms can be formed simply by putting back-quote in front a sequence of characters.) Syms are also called symbols and varchars.
+
 Date atoms must be specified in the form	yyyy.mm.dd	. For example, 2003.03.23 for March 23, 2003 is correct; 2003.3.23 is not. Time values have millisecond resolution and are specified in the form	hh:mm:ss.uuu	. For example,
 
+
+
    09:10:35.021                             
+
  09:10:35.021
+
+
 
 q also has month (yyyy.mm), minute (hh:mm) and second (hh:mm:ss) types.
 
+
+
 ..Temporal Fields
+
 The following table defines the fields of the temporal datatypes. Field values can be extracted from temporal data using field names and dot notation (<a href="#Extracting Temporal Field Values">Extracting Temporal Field Values</a>). Given:
+
+
 
  date:2003.11.23
 
+
+
  date.year	2003
+
  date.mm	11
+
  date.dd	23
+
+
 
  time:09:10:52.039
 
+
+
  time.hh	 9
+
  time.mm	10
+
  time.ss	52
 
+
+
  date.month	2003.11m
+
  time.second	09:10:52
+
  time.minute	09:10	
 
+
+
 .Atom Functions
+
 Atom functions are those that apply to atomic arguments and produce atomic results. The following is a list of the primitive q atomic functions.
+
  a+b	Plus
+
  a-b	Minus
+
  a*b	Times
+
  a%b	Divide
+
  a=b	Equal
+
  a>b	More
+
  a<b	Less
+
  a|b	Or
+
  a&b	And
+
  neg b	Negate
+
  not b	(equal zero)
+
  abs b	Absolute Value
+
  floor b	(integer part)
+
 Binary operations in mathematics are called dyadic functions in q, and unary operations are called monadic functions. For example,	+	 is a dyadic function and	floor	is a monadic function.
+
 ..Arithmetic Functions
+
 The dyadic arithmetic functions are +, - , * and % for Divide. Note that Divide is denoted by %, not /. Numeric datatypes can be mixed in arithmetic expressions and required conversions from one to another are automatic. The result of any arithmetic expression that contains % is of type float. The arguments of % are converted to float before the operation is performed. For example,
+
    4%2
+
  2.00
+
 The result type is int if there are no occurrences of % and all the datatypes are boolean, byte, short or int. Everything is converted to int before the operations are performed. For example, 
+
    1b+1h
+
  2
+
    10*0xab
+
  1710
+
 If long integers are included among the arguments and there are still no occurrences of % then the results are always of type long.
+
    1b+1h+1j
+
  3j
+
    10j*0xab
+
  1710j
+
 The Sum, Product and Difference of two bools are ints.
+
    1b+1b
+
  2
+
 ..Relational Functions
+
 The dyadic relational functions are =, < and >. These functions produce boolean values, where 1b means that the relation holds, or is true. For example,
+
    3<5	/ 3 is less than 5
+
  1b
+
    3>5	/ 3 is not greater than 5
+
  0b
+
    "z">"a"	/ chars have byte order
+
  1b  
+
    `abc<`ac	/ symbols have lexicographical order
+
  1b
+
    2=2.0	/ relations between numeric value are independent of datatypes
+
  1b
+
 There is one monadic relational function, named 	not	. This function gives the relationship of all numeric values to zero: the result is 1b if the argument is identical to 0 and 0b if it is not. For example,
+
    not 34.56 
+
  0b
+
    not 0
+
  1b
+
 Less or Equal in q is	not a>b	, Greater or Equal is	not a<b	and Not Equal is	not a=b	.
 
+
+
 The relational functions in q use a multiplicative tolerance when applied to floats. This makes arithmetic work better.
+
 For example,
+
   x:1%3	/ one third
+
   2=(x+x+x+x+x+x)	/ should be 2
+
  1b	/ it is  (try that in java)
 
+
+
 ..Comparison Functions
+
 The comparison functions are | for Max and & for Min.
+
    9|5	/ Max
+
  9
+
    9&5	/ Min
+
  5
+
 The arguments can be of any numeric types, or both can be chars, or both syms. When the numeric types are different the result is one of the types, always the one to which the other argument can be safely converted. For example,
+
    9.0|5
+
  9.00
+
    9.0e&5
+
  5.00e
+
    0x18|1b
+
  0x18
+
 The Max of 2 chars is the one with the highest byte order. For example,
+
    "z"|"a"
+
  "z"
+
 ..Logical Functions
+
 The logical functions (And, Or and Logical Negation) do not have separate symbols; they are, respectively, the restrictions of Min, Max and Not to boolean arguments. For example, 
+
    1b&1b	/ And (Min) 
+
  1b
+
    1b|0b	/ Or (Max)
+
  1b
+
    not 1b	/ Logical Negate (Not)
+
  0b
+
 ..Floor and Absolute Value
+
 The Floor and Absolute Value functions are useful companions to the arithmetic functions. Floor applies to floats and reals and produces their integer parts as ints. For example,
+
    floor 2.7
+
  2
+
    floor -3.4
+
  -4
+
  
+
 Floor is often used to truncate and round floats to a specified number of decimal places. For example, the first expression truncates the float 72.277 to 2 decimal places and the second expression rounds it to 2 decimal places.
+
    0.01*floor 100*72.277
+
  72.27
+
    0.01*floor 0.5+100*72.277
+
  72.28
+
 Absolute Value leaves non-negative numbers unchanged and negates negative numbers. For example,
+
    abs -4.7
+
  4.7
+
 .Match
+
 Match is not an atom function, but is related to Equal and is so useful when experimenting with the language that we'll define it here.
+
+
 
 It often happens that you want to compare two results to determine whether or not they are identical. This is often done in this manual simply by looking at them, but that doesn't always work, e.g. when the console display doesn't contain all the details. Sometimes Equal can be used, but not always. The primitive function called Match is the function to use. For example,   
 
+
+
    (1 2 3+4 5 6)~4 5 6+1 2 3	
+
  1b	/ the arguments are identical
+
    (1 2 3-4 5 6)~4 5 6-1 2 3	
+
  0b	/ these are not
+
    1 2 3 ~`a`b
+
  0b	/ any two data objects can be compared
+
+
 
 Comparison tolerance is used when matching floats. 
 
+
+
 Match depends on the datatype of the arguments, not just the values. For example,
 
+
+
    1~1h
+
  0b
+
   3~3.0
+
  0b
+
+
 
 .Order of Evaluation
 
+
+
 q is a rich orthogonal language and therefore has no precedence among functions. Expressions are written and read from left to right. Expressions are evaluated left OF right -- unlike SQL and conventional mathematical notation. For example,
+
  qty*1+rate
+
 is
+
  qty* 1+ rate
+
 is
+
  qty*(1+rate)
+
 Anyone who has gone to school in the last 150 years may find this surprisingly simple. Watch out for logical or's. For example,
+
  x within(low;high)
+
 is
+
  not(x<low)|x>high
+
 .Arithmetic
+
 ..Temporal Arithmetic
+
 Ints representing day counts can be added to and subtracted from dates. As a result, dates can be added to and subtracted from dates to give day counts. For example,
+
    2001.11.21+3	/ date +/- day count equals date
+
  2001.11.24
+
    2001.11.21-23
+
  2001.10.29
+
    2002.12.31-2001.11.21 	/ date +/- date equals day count
+
  405
+
 Ints representing milliseconds can be added to and subtracted from times. For example,
+
    05:30:20.100+15100	/ time +/- milliseconds equals time
+
  05:30:35.200
+
 Floats can be added to and subtracted from datetime values. The integer part of a float represents a day count and the fractional part represents a fraction of a day. For example, 2 hours and a half can be added to a datetime as follows.
+
    2002.12.31T09:10:35.000+2.5%24	/ % is Divide in q
+
  2002.12.31T11:40:35.000
+
    2002.12.31T09:10:35.0+5.0	/ Add 5 days to a datetime
+
  2003.01.05T09:10:35.000
 
+
+
 Dates and datetimes can be compared to one another, while times can only be compared to times.
+
    2002.12.31T09:10:35.005<2003.12.31
+
  1b
+
    09:10:35.005<09:11:03.000
+
  1b
+
 ..IEEE NaNs and Infinities
+
 The IEEE arithmetic NaN (not-a-number) for floats is a float denoted by	0n	. Plus-infinity and Minus-infinity for floats are denoted by	0w	and	-0w	. For example:
+
    0%0
+
  0n
+
    1%0
+
  0w
+
    -1%0
+
  -0w
+
 ..Integer Arithmetic
+
 The sum, difference and product of two ints is always an int, the modulo 2<sup>32</sup> value of the mathematical result. For example,
+
    a:256
+
    b:a+a*a
+
    b
+
  65792
+
    c:65792j
+
    c*c
+
  4328587264j	/ long result of long arithmetic   
+
    b*b
+
  33619968        / int result of int arithmetic
+
   (c*c)-b*b
+
  4294967296j    / 2<sup>32</sup>, as a float
+
 Analogously, the sum, difference and product of two longs or a long and an int is always a long, the modulo 2<sup>64</sup> value of the mathematical result.
+
 .Relational Tables and Insert
+
 Kdb+ has two distinct primitive datatypes to which q applies: tables and keyed tables. With regard to traditional RDBMS's treat both datatypes as tables except for the key check on inserts. Tables can be created functionally with q primitive functions or with the syntactic form	([...]...)	. The syntactic form is used here. 
+
 Tables are collections of data whose items, or "columns", have names. Following the SQL convention, tables are created by naming the items and initializing the items as empty lists. For example, the following expression creates a table named t.
+
    t:([n:()]x:();y:())
+
 Let's look at the parts of this expression. Colon (:) denotes specification. The above expression defines a table named t with items named n, x and y. The parentheses pair	()	denotes an empty list, which means that each of the table items is defined to be an empty list. The column n, which is defined within square brackets, is the primary key of the table. The columns x and y are the data columns. Note that the definitions of x and y are separated by a semicolon. If there had been more than one primary key then those definitions would also have been separated by semicolons. If there is nothing between the square brackets then there are no primary keys.
+
 At this point the datatypes of the items are unspecified. They will be fixed the first time data is inserted in the table, which is done with the function named	insert	. For example,
+
    `t insert(`a;1;4.56)
+
  `t
+
 The symbol	`t	holds the name of the table. In general, data objects in the q workspace can be referred to in two ways, simply by their names or by symbols whose contents are those names. In the case of insert, using the name instead of the symbol will produce a new table with the new data, while using the symbol causes the named object to be modified with the new data. The above insert statement modifies the table t, which now has one row. The datatypes of the items are now fixed. Here's another row of data.
+
    `t insert(`b;103;275)
+
  `t
+
 Note that the inserted data (275) will be automatically converted to the datatype of the column (float). An error will occur if the conversion cannot be done.
+
 It is possible to specify the datatypes of the items when the table is initialized. This is necessary for foreign keys; see <a href="#Foreign Keys">Foreign Keys</a>.
+
 The insert function is a dyadic function, and as such is usually evaluated by an expression of the form
+
    `t insert(`b;103;275)
+
 The alternative	insert[`t](`b;103;275)	, is explained in <u>Q Programming</u>.
+
 ..Table Displays
+
 If you type the name of the table t you will see its value, but what you see in the console requires an explanation that is beyond this manual. Consequently we will use a more intuitive display format for tables in this manual. For example, the table t will be displayed as follows. 
+
    t
 
+
+
  n|	x	y
+
  -
+
  a	1	4.56
+
  b	103	275.00
+
 The display shows an input line with the name of the table followed by a display of the table, as if this is done in a console. The name and the table display are separated by a blank line to make the name stand out. The table display has a header line with the column names, which is separated from the data by a horizontal rule. A vertical line separates the primary key columns from the data columns. There will be no vertical line if there are no primary key columns.
+
 ..The Kdb+ Web Viewer
+
 You can see a similar table display in the q web viewer. To do this you must first start kdb+ as a web server. For example, the following startup command creates a q shell listening on the web port 5001.
+
  >q -p 5001
+
 If you are working through this manual at a console, first exit and restart as a web server. Next, define the table t and insert a record, as above. Finally, connect to the server from a browser by entering the following in the browser address area.
+
  http://localhost:5001
+
 You will then see a browser display of table t like the one above. You should also see a list of tables to the left of the display of t, although at this point t is the only table name in the list. When there is more than one table, simply click on any table name to view its contents.
 
+
+
 .Example Tables
+
 The tables used in this manual for q examples are defined in the q distribution script sp.q. There are 3 tables, s (suppliers), p (parts) and sp (shipments). They are based on the supplier-parts sample database in <u>A Guide to THE SQL STANDARD, Fourth Edition</u> by C.J. Date with Hugh Darwen. You can load these tables into a q session (and create a web server as well) with the startup command
+
  >q sp.q -p 5001
+
 You can display the tables in a web browser by restarting the q session with this command and reconnecting from a browser with the above URL. Here are the tables.
+
+
 
    s
 
+
+
  s|	name	status	city
+
  -
+
  s1	smith	20	london
+
  s2	jones	10	paris
+
  s3	blake	30	paris
+
  s4	clark	20	london
+
  s5	adams	30	athens
+
+
 
    p
 
+
+
  p|	name	color	weight	city
+
  -
+
  p1	nut  	red	12	london
+
  p2	bolt 	green	17	paris 
+
  p3	screw	blue	17	rome  
+
  p4	screw	red	14	london
+
  p5	cam  	blue	12	paris 
+
  p6	cog  	red	19	london
+
+
 
    sp
 
+
+
  s	p	qty
+
  -
+
  s1	p1	300
+
  s1	p2	200
+
  s1	p3	400
+
  s1	p4	200
+
  s4	p5	100
+
  s1	p6	100
+
  s2	p1	300
+
  s2	p2	400
+
  s3	p2	200
+
  s4	p2	200
+
  s4	p4	300
+
  s1	p5	400
+
 Note that the supplier table	s	and the parts table	p	have primary keys. The shipments table	sp	has two foreign keys, although the display doesn't show it. These tables were initialized by the following expressions and filled in with the insert function; the insert expressions are not shown here.
+
  s:([s:()]name:();status:();city:())
+
  p:([p:()]name:();color:();weight:();city:()) 
+
  sp:([]s:`s$();p:`p$();qty:())
+
 The last expression contains something new. Columns	s	and	p	of	sp	are foreign keys; see <a href="#Foreign Keys">Foreign Keys</a> below.
+
 Another table that is useful in examples is the following security trade table. This table is not defined in the sp.q script. You can cut-and-paste the following expressions into a q console to create and populate the table.
+
  trade:([]time:`time$();sym:`symbol$();price:`float$();size:`int$())
+
  `trade insert(09:30:01.000;`xx;59.25;1900)
+
  `trade insert(09:30:01.000;`aaa;53.75;1200)
+
  `trade insert(09:30:02.000;`dd;81.00;1600)
+
  `trade insert(09:30:02.000;`aaa;96.25;2200)
+
  `trade insert(09:30:02.000;`ccc;93.25;2100)
+
  `trade insert(09:30:03.000;`xx;84.00;2200)
+
  `trade insert(10:00:03.000;`aaa;58.25;1000)
+
  `trade insert(10:00:04.000;`yyyy;73.25;2300)
+
  `trade insert(10:00:04.000;`aaa;89.50;1400)
+
  `trade insert(10:00:05.000;`ccc;84.25;1500)
+
 You can also cut and paste these lines into a text file to be saved as the script trade.q. The file can then be loaded into a q console with
+
    \l [path]trade.q
+
 The trade table is a simulation of financial data for securities trading. It has the same format as the daily trade tables in the kdb+taq historical database product and the taq ticker plant in the kdb+tick realtime tickerplant product. The items of the column named	sym	are sym atoms holding simulated ticker symbols, such as MSFT for Microsoft and GE for General Electric. For example, the data in the fourth row of the trade table is the following list.
+
  (09:30:02.000;`aaa;96.25;2200)  
+
 The data indicates that a trade was made at 2 seconds after 9:30AM for 2200 shares of the stock with ticker symbol aaa at the price of $96.25 per share.
+
 .Foreign Keys
+
 A foreign key defines a mapping from the rows of the table in which it is defined to the rows of the table with the corresponding primary key. Foreign keys in SQL provide referential integrity. Namely, an attempt to insert a foreign key value that is not in the primary key will fail. This is also true in q. For example, the following insert into the shipments table will fail because s0 is not a defined supplier.
+
  `sp insert(`s0;`p1;450)
+
 An entry for s0 must first be inserted in the suppliers table. In SQL one says that a foreign key represents a reference from its host table to the primary key table; hence the term referential integrity. In q the reference is actually a mapping from one table to the other; it may be more accurate to use the term domain integrity here.
+
 The foreign key expression	`s$()	in the definition of sp, which denotes the mapping of sp to s, is called an enumeration. The symbol `s in the expression refers to the suppiers table. You can rename column	s	in the suppliers table or column	s	in the	sp	table and the expression	`s$()	remains the same. However, if you change the name of the suppliers table to, say suppliers, then the foreign key expression must be changed to	`suppliers$()	.
+
 ..Virtual Columns
+
 The mapping represented by a foreign key defines each column of the corresponding primary key table as a so-called virtual column in the foreign key table. For example, the color column of the parts table	p	 is a virtual column of shipments table	sp	, as the following display indicates.
+
  s	 p	 qty	color
+
  -
+
  s1	p1	300	red
+
  s1	p2	200	green
+
  s1	p3	400	blue
+
  s1	p4	200	red
+
  s4	p5	100	blue
+
  s1	p6	100	red
+
  s2	p1	300	red
+
  s2	p2	400	green
+
  s3	p2	200	green
+
  s4	p2	200	green
+
  s4	p4	300	red
+
  s1	p5	400	blue
+
 The first 3 columns are identical to the shipments table. You can see that wherever two items of the parts column are identical, the corresponding items of the colors column are identical. For example, according to the suppliers table the part p1 is red, and red appears in the above color column wherever p1 is in the	p	column. q has a simple mechanism for specifying virtual columns in queries; see <A href="#Dot Notation">Dot Notation</A>.
+
 .Select Expressions
+
 Select expressions are q expressions that create new tables from existing ones. In their simplest form, select expressions extract subtables. However, it is also possible for them to create new columns. Select expressions have the following general form.
+
  select columns by columns from table where conditions
+
 The subexpression	columns	following the	select	keyword is called the	select	phrase. Analogously, there is a	by	phrase following the	by	keyword (	columns	),a	from	expression following the	from	keyword (	table	) and a	where	phrase following the	where	keyword (	conditions	). Only the	from	expression is required. The result of a select expression is a table.
+
 The	where	phrase is a list of conditional expressions that applies to	table	and defines the rows that contribute to the result. If there is no	where	phrase then all rows of	table	are used. The	select	phrase defines the data columns of the result. If there is no	select	phrase then the result has the same column names as	table	.
+
 The	by	phrase defines how the	select	phrase columns are aggregated; see <a href="#Aggregation">Aggregation</a>. The columns named in the	by	phrase are the primary key columns of the result. If there is no	by	phrase then there are no aggregations and no primary key columns in the result. Note that unlike SQL, the columns named in the	by	phrase must not be repeated in the	select	phrase.
+
 Foreign keys in the	select	phrase become foreign keys in the result unless their values are modified. 
+
 ..Select Examples
+
 1. Sub-tables of specific columns can be selected.
+
    select name,city from s
 
+
+
  name	city  
+
  -
+
  smith	london
+
  jones	paris 
+
  blake	paris 
+
  clark	london
+
  adams	athens
+
 2. Specific rows and columns can be selected.
+
    select name,city from s where status=30
 
+
+
  name	city
+
  -
+
  blake	paris 
+
  adams	athens
+
 3. Specific rows can be eliminated.
+
    select name,city from s where not status=30
 
+
+
  name	city
+
  -
+
  smith	london
+
  jones	paris 
+
  clark	london
+
 4. The result is not necessarily a sub-table of the one named in the	from	espression; result columns can be computed or renamed.
+
    select name,adjstatus:status+10 from s where city=`paris
 
+
+
  name	adjstatus
+
  -
+
  jones	       20
+
  blake	       40
+
 5. The following example is a reminder of the q execution rules (see <a HREF="#Order of Evaluation">Order of Evaluation</a>). The parentheses in the following	where	phrase are required.
+
    select sym,size,price,cost:size*price from trade where size>1300,(sym=`aaa)|sym=`xx
 
+
+
  sym	size	price	cost
+
  -
+
  xx	1900	59.25	112575.00
+
  aaa	2200	96.25	211750.00
+
  xx	2200	84.00	184800.00
+
  aaa	1400	89.50	125300.00
+
+
 
 .Browser Queries
+
 You can evaluate a query in a browser by entering the expression in the address area after the host:port designation. For example, enter
+
  http://localhost:5001/?select name,city from s where status=30
+
 and you will see the following result.
+
  name	city
+
  -
+
  blake	paris 
+
  adams	athens
+
 .Dot Notation
+
 If you are familiar with SQL then you have seen dot notation in that context, where for example,	sp.s	denotes column	s	of the shipments table	sp	. This notation allows references to multiple tables in a single query. It has a similar meaning in q, but there is also another use of the dot notation in q. Namely, if b is a foreign key in table t and c is any column in the corresponding primary key table w, then	b.c	is the virtual column of c in t defined by the foreign key mapping from t to w. The example in <a href="#Virtual Columns">Virtual Columns</a> shows the color column of table	s	as a virtual column of table	sp	. The table in that example can be produced using dot notation as follows.
+
    select s,p,qty,p.color from sp
 
+
+
  s	 p	 qty	color
+
  -
+
  s1	p1	300	red
+
  s1	p2	200	green
+
  s1	p3	400	blue
+
  s1	p4	200	red
+
  s4	p5	100	blue
+
  s1	p6	100	red
+
  s2	p1	300	red
+
  s2	p2	400	green
+
  s3	p2	200	green
+
  s4	p2	200	green
+
  s4	p4	300	red
+
  s1	p5	400	blue
+
 This use of dot notation is analogous to SQL natural joins. For example, the above result is also produced by the SQL query
+
  SQL: select s,p,qty,p.color from sp,p where sp.p=p.p  
+
 In the SQL query the p in p.color refers to the table p; in q it refers to the foreign key p in the table sp. The script sp.q has several examples of q queries using q dot notation and equivalent SQL natural joins.  
+
 Just as every column of table p defines a virtual column of sp, so does every column of table s. For example, 
+
    select p,s,s.status from sp where qty=200
 
+
+
  p	s	status
+
  -
+
  p2	s1	20
+
  p4	s1	20
+
  p2	s3	30
+
  p2	s4	20
+
 As before, equal values in the result column s correspond to equal values in the status column.
+
 ..Extracting Temporal Field Values
+
 Temporal field values are extracted from temporal values by using dot notation, as in<code> data.field</code>. For example,
+
    d:2001.11.21 2001.11.22 2001.11.25 2002.11.26
+
    d.year
+
  2001 2001 2001 2002
+
    d.mm
+
  11 11 11 11
+
    d.dd
+
  21 22 25 26
+
    t:14:30:47.383
+
    t.hh
+
  14
+
    t.mm
+
  30
+
    t.ss
+
  47
+
 ..Dot Notation and Temporal Columns
+
 The underlying concept of temporal dot notation and foreign key dot notation are the same. Foreign key dot notation gives access to every column in the corresponding primary key table as a virtual column. Likewise, temporal dot notation gives access to every field of a temporal column as a virtual column. For example, the following query accesses the seconds virtual column of the trade table time column.
+
    select sym,time,time.ss from trade where size<2000
 
+
+
  sym	time	ss
+
  -
+
  xx	09:30:01.000	1
+
  aaa	09:30:01.000	1
+
  dd	09:30:02.000	2
+
  aaa	10:00:03.000	3
+
  aaa	10:00:04.000	4
+
  ccc	10:00:05.000	5
+
 .More Boolean-Valued Functions
+
 The boolean primitive functions discussed in this section broaden the range of "where" phrases. All three functions are dyadic and produce boolean results.
+
 All three are list functions, not atom functions, and therefore we begin this section with more about lists.
+
 ..Simple Lists and List Notation
+
 We have already seen lists and list notation in the formation of row data to be inserted in a table with the insert function (<a href="#Relational Tables and the Insert Function">Relational Tables and the Insert Function</a>). For example, a list of an int atom, boolean atom and symbol atom is expressed as follows.
+
  (-234;1b;`abc)
+
 There are simpler forms. When the items are all atoms of the same datatype, the list is called a simple list. For example,
+
  2 -34 5792
+
 is a simple int list,
+
  0101110b
+
 is a simple boolean list, and
+
  `a`b`xy
+
 is a simple symbol list. Note that the items in a simple int list must be separated by at least one space, but there can be no spaces between the items of a simple sym or boolean list. 
+
 Every atomic datatype has a simple list form. Simple lists of a temporal type require spaces between items. Simple char and byte lists, like simple boolean lists, allow no spaces between items. For example,
+
  "abcd"
+
 and
+
  0xa1b2c3
+
 Simple short, long, real and float lists are like int lists, with items separated by at least one space. In general, the type of the last item determines the type of a simple, numeric list, as in the above boolean example.
 
+
+
 A simple float list is a list of int and float numbers where only one item is in float format, and that item can be any position. For example,	2 3.4 -10 11	is a simple float list. The following display shows its entry in a q console, followed by the response.
+
    2 3.4 -10 11
+
  2.00 3.40 -10.00 11.00
+
 Here is a summary of simple list types.
 
+
+
  Type	Atom	Simple List
+
  -  
+
  boolean	0b	010b	
+
  byte	0xa1	0x00a1ff 
+
  short	45h	2 -5 45h
+
  int	45	2 -5 45
+
  long	4294967296j	2 -5 45j
+
  real	3.14e	10 -1.4 3.5e 
+
  float	3.14	10 -1.3 17
+
  char 	"a"	"abc"
+
  sym	`abcde	`abc`de`f
+
  date	2003.03.23	2003.03.23 2003.04.12
+
  time	09:10:35.021	09:10:35.021 11:05:08.010
+
  datetime	2003.03.23T09:10:35.021	2003.03.23T09:10:35.021 ..
 
+
+
 ..Atom Functions Apply to Lists
+
 Atom functions apply to lists in an item-by-item manner. For example,
+
    1 2 3+10 20 30
+
  11 22 33
+
    1 2 3+100
+
  101 102 103
+
 In the first example, two lists of the same length are summed item-by-item. In the second example, an atom is summed with each item of a list. 
+
 These rules govern the way atom functions apply to table columns within q expressions. 
+
 For example, in the phrase
+
  where size<2000
+
 each item of the size column is compared to 2000.
+
 Table columns are lists; in this manual they are simple lists, but this is not a requirement, as you will see in <u>Q Programming</u>. For the remainder of this manual, we'll assume that lists are simple lists unless stated otherwise. For example, we will say that	1 -3 4	in an int list, meaning a simple int list. 
+
 ..In
+
 The function named	in	determines whether or not each item of the left argument list is among the items of the right argument list. For example,
+
    1 3 10 6 4 in 15 4 1 5
+
  10001b
+
 That is, both 1 and 4 from the left argument are also in the right argument; the other items of the left argument are not. Note that the number of items in the boolean result always equals the number of items in the left argument. Moreover, an item in the result depends only on the corresponding item in the left argument (and the entire right argument). Consequently, this function is said to be an atom function of the left argument.  All three functions in this section are atom functions of their left arguments and list functions of their right arguments.
+
 The expression	(sym=`aaa)|sym=`xx	in the	where	phrase of example 5 in <a href="#Select Examples">Select Examples</a> can be rewritten in terms of the	in	function as	sym in`aaa`xx	.
+
    select sym,size,price,cost:size*price from trade where size>1300,sym in`aaa`xx
 
+
+
  sym	size	price	cost
+
  -
+
  xx	1900	59.25	112575.00
+
  aaa	2200	96.25	211750.00
+
  xx	2200	84.00	184800.00
+
  aaa	1400	89.50	125300.00
+
 The function 	in	is strict about the datatypes of its arguments; the datatypes of simple list arguments must be the same.
+
 ..Within
+
 The right argument of this primitive function is always a two-item list. The result is a boolean list with the same number of items as the left argument. The result indicates whether or not each item of the left argument is within the bounds defined by the right argument. That is, if the right argument is	(a;b)	and c is the ith item of the left argument, then the ith item of the result is 1b if both a is less or equal c and c is less or equal b.  For example,
+
    1 3 10 6 4 within 2 6
+
  01011b
+
 Items 3, 6 and 4 are within the interval<CODE> 2 6</CODE>, but items 1 and 10 are not. This function is not as strict about the datatypes of its arguments as the	in	function. For example, if both arguments are numeric then they need not have the same datatype. 
+
    1 3 10 6 4 within 2.0 6.0
+
  01011b
+
 The	within	function also applies to chars and syms because both are ordered (see <a href="#Comparison Functions">Comparison Functions</a>. For example,
+
    "acyxmpu" within "br"
+
  0100110b
+
 and
+
    select sym from trade where sym within`c`d
 
+
+
  sym
+
  -
+
  dd
+
  ccc
+
  ccc
+
 ..Like
+
 The primitive function	like	 is the q pattern-matching primitive. Patterns in text are expressed by using certain reserved characters that have special meanings. The right argument of	like	is a char list holding the pattern. The left argument can be a symbol atom, a char list, or any list of these two. The result is a boolean list with 1b for every item in the left argument that matches the pattern, and 0b otherwise. The following examples use a list of char lists because we have not yet discussed how to create complex syms. The left argument in the following example is a list of a few telephone book entries.
+
  tb:("Smith John 101 N Broadway Elmsville 123-4567"
+
      "Smyth Barbara 27 Maple Ave Elmstwn 321-7654"
+
      "Smythe Ken 321-a Maple Avenue Elmstown 123-9999"
+
      "Smith-Hawkins K Maple St Elmwood 321-832e")
 
+
+
 The reserved pattern-matching characters are "?", "*", the pair "[]", and "^" within square brackets. The reserved character "?" represents an arbitrary character in the pattern. The reserved character "*" represents an arbitrary sequence of characters in the pattern. For example, the pattern "Smith*" will locate all entries whose last name begins with Smith. The pattern "Sm?th*" will locate all four entries.
+
    tb like"Smith*"
+
  1001b
+
    tb like"Sm?th*"
+
  1111b
+
 The reserved characters "[]" are used in pairs to list alternatives. For example, the pattern "Sm?th*" would select all entries in a more extensive list that contains the last name Smothers or Smathers. However, by using the alternative pattern "[iy]" in place of "?", we can restrict the selection to names that start with Smith or Smyth. 
+
    tb like "Sm[iy]th*"
+
  1111b
+
 We can try finding everyone with the telephone exchange code 321 as follows.
+
   tb like "*321-*"
+
  0111b
+
 Unfortunately, this pattern also picks up the item for Ken Smythe, who has "321-" as part of his address. Since the exchange code is part of a telphone number the "-" must be followed by a digit, which can be expressed by the pattern	"*321-[0123456789]*"	. There is a shorthand for long sequences of alternatives, which in this case is	"*321-[0-9]*"	.
+
    tb like "*321-[0-9]*"
+
  0101b
+
 Other sequences for which this shorthand works are sequences of alphabetic characters (in alphabetic order). The pattern in the last example isn't foolproof. We would also have picked up Ken Smythe's item if his street number had been 321-1a instead of 321-a. Since the telephone number comes at the end of the text, we could repeat the above alternative four times and leave out the final "*", indicating that there are four digits are at the end of each item.
+
    tb like "*321-[0-9][0-9][0-9][0-9]"
+
  0100b
+
 Unfortunately again, this pattern misses the last item, which has an error in the last position of the telephone number. However, in this case the simpler pattern	"*321-????"	will work. It is generally best to not over-specify the pattern constraint.
+
    tb like "*321-????"
+
  0101b
+
 Finally, the reserved character "^" is used to select characters that are not among the specified alternatives. For example, there are errors in some items where the last position in the telephone number is not a digit. We can locate all those errors as follows.
+
    tb like "*[^0-9]"
+
  0001b
+
+
 
 ..Bin (Binary Search)
 
+
+
 Bin is a verb that can be used in place of In for left arguments that are simple lists of items in increasing order. Bin uses a binary search algorithm, which is generally more efficient than the linear search algorithm used by In. The result is also more useful when an item of the right argument is not among the items of the left argument. 
+
+
 
 The items of the left argument must be unique. The right argument can be either an atom or simple list of the same type as the left argument. Otherwise, a type error is reported. In the case
 
+
+
  r:x bin y
+
+
 
 for an atom y, r is an int atom whose value is either a valid index of x or -1. Specifically, the result r is the int i if y is either equal to	x[i]	or strictly between	x[i]	and	x[i+1]	. Otherwise, the result is -1 if	y<x[0]	. For example,
 
+
+
    1 3 7 bin 3	 
+
  1	/ y equals x[1]
+
    `a`c`e`d bin `b	
+
  0	/ x[0]<y and y<x[1]
+
    10.5 12 19 bin 9.5	
+
  -1	/ y<x[0]
+
+
 
 Bin is a atom function of its right argument. That is, if the right argument is a simple list then so is the result r, and	r[j]	equals	x bin y[j]	for every index j of y.
 
+
+
 Note that Bin expects the left argument to be in sort order, but does not enforce it.
 
+
+
 .Nested where Phrases
+
 Consider the following two queries.
+
  select from trade where (size>2000)&sym in`aaa`xx
+
  select from trade where size>2000,sym in`aaa`xx
+
 The essential difference is that & in the first	where	phrase is replaced by comma in the second. In this context comma is also an expression separator, so that there is no need for parentheses around the sub-expression	size>2000	. These two queries produce the same result, but in ways that can be significantly different with regard to execution efficiency for large tables.
+
 We know how the the first query works. Logically, the	where	phrase	(size>2000)&sym in`aaa`xx	is evaluated to give a boolean list and the	select	phrase extracts the rows of the trade table corresponding to 1b's in that list. The second query works differently. Logically, the following query is evaluated first to give a temporary table.
+
  temp:select from trade where size>2000
+
 The evaluation requires evaluating the	where	phrase on the size column of the trade table. The original query is then completed by applying the following query to the temporary table.
+
   select from temp where sym in`aaa`xx
+
 This evaluation requires evaluating the	where	phrase on the sym column of the temporary table. 
+
 The two queries can be put together in one nested query, which is the reason the	where	phrase in the second of the above queries is called a nested	where	phrase.
+
  select from (select from trade where size>2000) where sym in`aaa`xx
+
 There are two significant differences in the way the above queries are evaluated. First of all, the expression	sym in`aaa`xx	is evaluated on the entire trade table in the first query but on the smaller (often much smaller) temporary table in the second query. Secondly, the & in the expression	 (size>2000)&sym in`aaa`xx	is not evaluated at all in the second query. The greatest performance improvement comes from the first of the two differences in evaluation. In practice, it can be two orders of magnitude.
+
 Since & is commutative, the order of the expressions in the nested where phrase doesn't affect the end result. That is, the query with the nested	where	phrase could just as well be the following one.
+
  select from trade where sym in`aaa`xx,size>2000
+
 When this query is evaluated the temporary table will consist of all rows of the trade table for the securities aaa and xx and the phrase	size>2000	will be applied to that table.
+
 If possible, you should choose an order for the expressions in a nested	where	phrase that produces the smallest temporary tables at each step. This can't always be done, but perhaps in this case it can. In a realistic trade table the trading activity on indivdual securities is generally known, as is the average size of trades. For example, if the securities aaa and xx are lightly traded it would most likely be best to put the phrase	sym in`aaa`xx	on the left because the temporary table will be relatively small.
+
 The arrangement of expressions in a nested	where	phrase for optimal performance is not always so obvious. There is more on this topic in <u>Q Programming</u>.
+
 There is an important example where the order of the expressions in nested	where	phrases makes a truly significant difference. The kdb+tick product from Kx Systems, Inc. creates historical databases of trades and quotes from various security exchanges. Each database is a parallel database stored in separate segments, with one segment for each trading date. Queries are applied separately to the segments and the results are combined to give final results. A typical query applies to some date range, not the entire history. All such queries can use nested where phrases in which the first expression defines the date range. In that way, the remaining evaluations are applied only to the segments for those dates instead of the entire history.
+
 .Aggregation
+
 Aggregation functions, also called summarization functions, apply to lists of atoms and produce atoms. For example,
+
    sum 1 2 3 4
+
  10.00
+
    select volume:sum size from trade
 
+
+
  volume
+
  -
+
  17400.00
+
 (The sum function converts its argument to floats before summing.) 
+
 Select statements with aggregation functions in their select phrases usually also have by phrases. The simplest	by	phrase is the name of a single column. For example,
+
    select volume:sum size by sym from trade
 
+
+
  sym|	volume
+
  -
+
  xx	4100.00
+
  aaa	5800.00
+
  dd	1600.00
+
  ccc	3600.00
+
  yyyy	2300.00
+
+
 
 The sym column of the result, which is the primary key, has one instance of each unique ticker symbol in the trade table. Each item of the volume column is the volume of all trades for the corresponding ticker symbol in the sym column. (We say that the volume calculation is grouped by ticker symbols). For example, the aggregation result says the the volume of all trades for ticker symbol aaa is 5800 shares. That value can also be computed as follows.
 
+
+
    select volume:sum size from trade where sym=`aaa
 
+
+
  volume
+
  -
+
  5800.00
+
+
 
 Unlike SQL, the	by	columns (sym in this case) automatically appear in the result and therefore should not be included in the	select	phrase. The result of an aggregation is always a key table with the "by columns" as the primary key columns.
 
+
+
 There can be more than one column in the	by	phrase; multiple columns are separated by commas. For example, the following query calculates the volume for each ticker symbol during each hour of trading.
+
    select sum size by sym,time.hh from trade
 
+
+
  sym	hh|	volume
+
  -
+
  xx	9	4100.00
+
  aaa	9	3400.00
+
  dd	9	1600.00
+
  ccc	9	2100.00
+
  aaa	10	2400.00
+
  yyyy	10	2300.00
+
  ccc	10	1500.00
+
 Note that the result has a dual primary key, columns sym and hh. Even though the items in these columns are not unique, pairs of the items in the same rows of the two columns are unique.
+
 The columns in a	by	phrase are not necessarily the ones in the table. In the preceding example the by column	time.hh	is a virtual column. By columns can also be computed columns; see <a xref="#The xbar Function">The xbar Function</a>.
+
 ..Basic Aggregation Functions
+
 The basic aggregation functions are the ones that have been part of SQL from the beginning (or nearly so). Here is a list.
+
  Name/Syntax	Example	Result Column (*)
+
  -
+
  count b	select count price by sym from trade	2 4 1 2 1
+
  sum b	select sum size by sym from trade	4100 5800 1600 3600 2300
+
  avg b	select avg size by sym from trade	2050 1450 1600 1800 2300.0
+
  max b	select max price by sym from trade	84 96.25 81 93.25 73.25
+
  min b	select min price by sym from trade	59.25 53.75 81 84.25 73.25
+
+
 
    (*) corresponding to sym:`xx`aaa`dd`ccc`yyyy
 
+
+
 The max and min functions are useful in financial calculations, giving high and low prices over specified time intervals. The time interval in the above examples is the time span of the trading day, but it can also be specified by including the time column in the	by	phrase. See the above trade volume example. Here is another example.
+
    select high:max price,low:min price by sym,time.hh from trade
 
+
+
  sym	hh	high	low
+
  -
+
  xx	9	84.00	59.25
+
  aaa	9	96.25	53.75
+
  dd	9	81.00	81.00
+
  ccc	9	93.25	93.25
+
  aaa	10	89.50	58.25
+
  yyyy	10	73.25	73.25
+
  ccc	10	84.25	84.25
+
 There are two companion functions in finance that give the open and close prices. q has aggregation functions for those calculations but SQL does not, which brings up a fundamental difference between kdb+ tables and standard SQL tables.
+
 ...Kdb+ tables are Ordered
-Tables in standard SQL are not ordered. That is, there is no concept of one table row coming before another. It is possible to define a cursor on a result set and then manipulate the cursor rows in order, but that can't be done in the SQL query language. kdb+ tables are ordered. In particular there is the concept of the first row and last row of kdb+ table. The aggregation functions named first and last give open and close prices in financial calculations. For example,
+
+Tables in standard SQL are not ordered. That is, there is no concept of one table row coming before another. It is possible to define a cursor on a result set and then manipulate the cursor rows in order, but that can't be done in the SQL query language. Kdb+ tables are ordered. In particular there is the concept of the first row and last row of kdb+ table. The aggregation functions named first and last give open and close prices in financial calculations. For example,
+
  Name/Syntax	Example	Result Column
+
  -
+
  first b	select first price by sym from trade	59.25 53.75 81 93.25 73.25
+
  last b	select last price by sym from trade	84 89.5 81 84.25 73.25
+
+
 
    select open:first price,close:last price by sym,time.hh from trade
 
+
+
  sym	hh	open	close
+
  -
+
  xx	9	59.25	84.00
+
  aaa	9	53.75	96.25
+
  dd	9	81.00	81.00
+
  ccc	9	93.25	93.25
+
  aaa	10	58.25	89.50
+
  yyyy	10	73.25	73.25
+
  ccc	10	84.25	84.25
+
 Every table has a virtual column named i which holds the indices the rows, starting at 0. For example,    
+
    select s,i from sp where s=`s1
 
+
+
  s	x
+
  -
+
  s1	0
+
  s1	1
+
  s1	2
+
  s1	3
+
  s1	5
+
  s1	11
+
 Note that	count i	plays the role of	count(*)	in SQL. The count function is special because it gives the same result when applied to any column of a table. This function does not depend on the values of the items in a column, only on the number of items. Consequently, SQL has a special construct	count(*)	that is used in queries whenever a row count is needed. The comparable thing in q is	count i	, although it only a convention here, not a requirement.
+
 ...More Aggregation Functions
+
  Name/Syntax	Description
+
  -
+
  prd b	the product of the items in b
+
  a wavg b	the weighted average of b by a
+
  a wsum b	the weighted sum of b by a
+
  
+
 The	prd	aggregation function has fewer applications than	sum	, but there is an interesting example in <u>Joe Celko's SQL for Smarties</u> (2nd edition, Morgan Kaufman Publishers). Given a table named portfolio with columns id (security id), date and rate (daily rate of return), calculate the rate of return for each portfolio over a date range. The author points out that the query to accomplish this is essentially, in q
+
  select prd 1+rate by id from performance where date within (start;end)
+
 However, the author then goes on to other solutions because there is no	prd	aggregation function in SQL.   
+
 The weighted average aggregation function	wavg	produces the average of the items of its right argument weighted by the items of its left argument. For example:
+
    w wavg 1 2 4
+
  2.17
+
    (+/w*1 2 4)%+/w
+
  2.17
+
 The financial analytic called vwap is a weighted average (volume-weighted-average-price). For example:
+
    select size wavg price by sym from trade
 
+
+
  sym	price
+
  -
+
  xx	72.53
+
  aaa	79.28
+
  dd	81.00
+
  ccc	89.50
+
  yyyy	73.25
+
 ...The Xbar Function
+
+
 
 Interval bars are prominent in aggregation queries. For example, to roll-up prices and sizes in 10 minute bars:
 
+
+
  select last price, sum size by 10 xbar time.minute from trade
 
+
+
 Or suppose you want to calculate the number of securities with prices in each $5 increment. The following calculation using the Floor primitive (<a href="#Floor and Absolute Value">Floor and Absolute Value</a>) determines the bars for a given price list. The following example of a bar calculation with Floor uses the price column from the trade table.
+
    price:59.25 53.75 81.00 96.25 93.25 58.25 73.25 89.50 84.00 84.25
+
    5*floor price%5
+
  55 50 80 95 90 55 70 85 80 80
+
 The calculation based on floor can be used in an aggregation query.
+
+
 
    select c:count sym by 5 xbar price from trade
 
+
+
  price|	c
+
  -
+
  55.00	2
+
  50.00	1
+
  80.00	3
+
  95.00	1
+
  90.00	1
+
  70.00	1
+
  85.00	1
+
+
 
 Note that q permits expressions in "by phrases". Xbar applies to all numeric and temporal datatypes and produces a result of the same type.
 
+
+
 .More on Insert
+
 It is possible to insert more than one row at a time.  This is called a bulk insert. To do this, list d is replaced with a table having the same column names as t. For example,
+
    t:([]a:();b:())
+
    `t insert(1;10.70)
+
    `t insert ([]a:20 31;b:31 -26.20)
 
+
+
  a	b
+
  -
+
  1	10.70
+
  20	25.00
+
  31	-26.20
 
+
+
 .Select and Update
+
 The keywords select and update define q expressions which execute in a certain order. The general form is:
 
+
+
  select .. by .. from x where ..
+
  update .. by .. from x where ..  
 
+
+
 The content represented by an elipsis mark is called a phrase. Usually the word "phrase" is preceded by the keyword immediately to the left of the phrase, as in	where	phrase and	by	phrase. Only the	from	keyword is required in these expressions. The	from	expression defines the table to which the rest of a expression is applied and can be another q expression. If it is itself a select expression it must have surrounding parentheses if there is a	where	phrase that belongs to the top-level expression. For example,
+
  select from (select from trade where time>10:30:00) where sym=`aa
+
 The	from	expression is always evaluated first, followed by the	where	phrase. Next comes the	by	phrase, and finally the	select	phrase.
+
 A	select	,	by	or	where	phrase is a list of expressions separated by commas, as in	price,size,cost:price*size	or	time>10:30:00,sym=`aa	. As the examples show, the sub-phrases do not require surrounding parentheses. The sub-phrases are evaluated left to right. For example, if the	where	phrase is	time>10:30:00,sym=`aa	then	time>10:30:00	is evaluated first and applied to the "from table", and then	sym=`aa	is evaluated and applied. Phrases and sub-phrases are evaluated by the rules described in <a HREF="#Order of Evaluation">Order of Evaluation</a>.
 
+
+
 .Union, Inter(sect), Except and Distinct
+
 The primitives in this section are the standard SQL set operation primitives. The following tables t1 and and t2 are used in examples. 
+
+
 
 The Distinct function can be used in aggregations in the same way as in SQL. The following example compares a	count qty	aggregation with a	count distinct qty	aggregation of the sp table.
 
+
+
    select count qty,dqty:count distinct qty by p from sp
 
+
+
  p	qty	dqty
+
  -
+
  p1	2	1
+
  p2	4	2
+
  p3	1	1
+
  p4	2	2
+
  p5	2	2
+
  p6	1	1
+
+
 
 In SQL, the DISTINCT keyword is permitted in the	select	phrase, while in q, the Distinct function can be applied to any table to remove duplicate rows. For example,
 
+
+
    t:([]a:();b:())
+
    `t insert(1;10.70)
+
    `t insert(1;10.70)
+
    `t insert(1;10.70)
+
    t
 
+
+
  a	b
+
  -
+
  1	10.70
+
  1	10.70
+
  1	10.70
+
+
 
    distinct t
 
+
+
  a	b
+
  -
+
  1	10.70
+
+
 
 These primitives also apply to lists, not only tables.  Some simple examples are the following.
 
+
+
    1 2 2 3 4 4 5 union 3 3 4 5 5 6 7 7 8
+
  1 2 3 4 5 6 7 8
+
    1 2 3 4 5 inter 3 3 4 5 5 6 7 7 8
+
  3 4 5
+
    1 2 3 4 5 except 3 3 4 5 5 6 7 7 8
+
  1 2
+
    distinct 3 3 4 5 5 6 7 7 8
+
  3 4 5 6 7 8
+

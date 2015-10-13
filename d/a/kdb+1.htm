@@ -902,7 +902,7 @@ ccc  10 84.25 84.25
 </xmp>
 <p>There are two companion functions in finance that give the open and close prices. q has aggregation functions for those calculations but SQL does not, which brings up a fundamental difference between kdb+ tables and standard SQL tables.</p>
 <p><h5 id="Kdb+ tables are Ordered">16.1.1 Kdb+ tables are Ordered</h5></p>
-<p>Tables in standard SQL are not ordered. That is, there is no concept of one table row coming before another. It is possible to define a cursor on a result set and then manipulate the cursor rows in order, but that can't be done in the SQL query language. kdb+ tables are ordered. In particular there is the concept of the first row and last row of kdb+ table. The aggregation functions named first and last give open and close prices in financial calculations. For example,</p>
+<p>Tables in standard SQL are not ordered. That is, there is no concept of one table row coming before another. It is possible to define a cursor on a result set and then manipulate the cursor rows in order, but that can't be done in the SQL query language. Kdb+ tables are ordered. In particular there is the concept of the first row and last row of kdb+ table. The aggregation functions named first and last give open and close prices in financial calculations. For example,</p>
 
 <xmp>Name/Syntax Example                              Result Column             
 ---------------------------------------------------------------------------
