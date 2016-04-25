@@ -1,3 +1,4 @@
+// 2016.03.18 char vectors and symbols now [de]serialize [from]to utf8
 // 2014.03.18 Serialize date now adjusts for timezone.
 // 2013.04.29 Dict decodes to map, except for keyed tables.
 // 2013.02.13 Keyed tables were not being decoded correctly.
@@ -8,6 +9,32 @@
 // and then within javascript websocket.send(serialize("10+20"));
 // ws.onmessage=function(e){var arrayBuffer=e.data;if(arrayBuffer){var v=deserialize(arrayBuffer);...
 // note ws.binaryType = 'arraybuffer';
+
+function u8u16(u16){
+  var u8=[];
+  for(var i=0;i<u16.length;i++){
+    var c=u16.charCodeAt(i);
+    if(c<0x80)u8.push(c);
+    else if(c<0x800)u8.push(0xc0|(c>>6),0x80|(c&0x3f));
+    else if(c<0xd800||c>=0xe000)u8.push(0xe0|(c>>12),0x80|((c>>6)&0x3f),0x80|(c&0x3f));
+    else{
+      c=0x10000+(((c&0x3ff)<<10)|(u16.charCodeAt(++i)&0x3ff));
+      u8.push(0xf0|(c>>18),0x80|((c>>12)&0x3f),0x80|((c>>6)&0x3f),0x80|(c&0x3f));
+    }
+  }
+  return u8;
+}
+
+function u16u8(u8){
+  var u16="",c,c1,c2;
+  for(var i=0;i<u8.length;i++)
+    switch((c=u8[i])>>4){ 
+      case 0:case 1:case 2:case 3:case 4:case 5:case 6:case 7:u16+=String.fromCharCode(c);break;
+      case 12:case 13:c1=u8[++i];u16+=String.fromCharCode(((c&0x1F)<<6)|(c1&0x3F));break;
+      case 14:c1=u8[++i];c2=u8[++i];u16+=String.fromCharCode(((c&0x0F)<<12)|((c1&0x3F)<<6)|((c2&0x3F)<<0));break;
+    }
+  return u16;
+}
 
 function deserialize(x){
   var a=x[0],pos=8,j2p32=Math.pow(2,32),ub=new Uint8Array(x),sb=new Int8Array(x),bb=new Uint8Array(8),hb=new Int16Array(bb.buffer),ib=new Int32Array(bb.buffer),eb=new Float32Array(bb.buffer),fb=new Float64Array(bb.buffer);
@@ -22,7 +49,7 @@ function deserialize(x){
   function rInt64(){rNUInt8(8);var x=ib[1],y=ib[0];return x*j2p32+(y>=0?y:j2p32+y);}// closest number to 64 bit int...
   function rFloat32(){rNUInt8(4);return eb[0];}
   function rFloat64(){rNUInt8(8);return fb[0];}
-  function rSymbol(){var i=pos,c,s="";for(;(c=rInt8())!==0;s+=String.fromCharCode(c));return s;};
+  function rSymbol(){var i=pos,c,s=[];while((c=rUInt8())!==0)s.push(c);return u16u8(s);};
   function rTimestamp(){return date(rInt64()/86400000000000);}
   function rMonth(){var y=rInt32();var m=y%12;y=2000+y/12;return new Date(Date.UTC(y,m,01));}
   function date(n){return new Date(86400000*(10957+n));}
@@ -66,7 +93,7 @@ function deserialize(x){
         A[j]=o;}
       return A;}
     n=rInt32();
-    if(10==t){var s="";n+=pos;for(;pos<n;s+=rChar());return s;}
+    if(10==t){var s=[];n+=pos;for(;pos<n;s.push(rUInt8()));return u16u8(s);}
     var A=new Array(n);
     var f=fns[t];
     for(i=0;i<n;i++)A[i]=f();
@@ -86,9 +113,9 @@ function serialize(x){var a=1,pos=0,ub,bb=new Uint8Array(8),ib=new Int32Array(bb
       case'number':return 9;
       case'array':{var n=6;for(var i=0;i<x.length;i++)n+=calcN(x[i],null);return n;}
       case'symbols':{var n=6;for(var i=0;i<x.length;i++)n+=calcN(x[i],'symbol');return n;}
-      case'string':return x.length+(x[0]=='`'?1:6);
+      case'string':return u8u16(x).length+(x[0]=='`'?1:6);
       case'date':return 9;
-      case'symbol':return 2+x.length;}
+      case'symbol':return 2+u8u16(x).length;}
     throw "bad type "+t;}
   function wb(b){ub[pos++]=b;}
   function wn(n){for(var i=0;i<n;i++)ub[pos++]=bb[i];}
@@ -99,8 +126,8 @@ function serialize(x){var a=1,pos=0,ub,bb=new Uint8Array(8),ib=new Int32Array(bb
       case 'boolean':{wb(-1);wb(x?1:0);}break;
       case 'number':{wb(-9);fb[0]=x;wn(8);}break;
       case 'date':{wb(-15);fb[0]=((x.getTime()-(new Date(x)).getTimezoneOffset()*60000)/86400000)-10957;wn(8);}break;
-      case 'symbol':{wb(-11);for(var i=0;i<x.length;i++)wb(x[i].charCodeAt());wb(0);}break;
-      case 'string':if(x[0]=='`'){w(x.substr(1),'symbol');}else{wb(10);wb(0);ib[0]=x.length;wn(4);for(var i=0;i<x.length;i++)wb(x[i].charCodeAt());}break;
+      case 'symbol':{wb(-11);x=u8u16(x);for(var i=0;i<x.length;i++)wb(x[i]);wb(0);}break;
+      case 'string':if(x[0]=='`'){w(x.substr(1),'symbol');}else{wb(10);wb(0);x=u8u16(x);ib[0]=x.length;wn(4);for(var i=0;i<x.length;i++)wb(x[i]);}break;
       case 'object':{wb(99);w(getKeys(x),'symbols');w(getVals(x),null);}break;
       case 'array':{wb(0);wb(0);ib[0]=x.length;wn(4);for(var i=0;i<x.length;i++)w(x[i],null);}break;
       case 'symbols':{wb(0);wb(0);ib[0]=x.length;wn(4);for(var i=0;i<x.length;i++)w(x[i],'symbol');}break;}}

@@ -1,0 +1,52 @@
+LISP/SCHEME/CLOJURE           APL/K(1992)
+
+1958 mccarthy mit             1957 iverson harvard
+
+artificial intelligence       database/analytics
+
+functional                    functional
+
+dynamic typing                dynamic typing
+
+REPL                          REPL
+
+lexical                       lexical
+
+atom list map                 atom list map
+
+sym char num bool             sym char num datetime
+
+constant prepend              constant append&get&set
+
+immutable                     immutable
+
+compose recur                 compose recur
+
+s-expression                  m-expression
+(f(g(h x y)))                 f[g[h[x;y]]]
+                              f g h[x;y]
+                              noun verb adverb
+
+(lambda(x)(+ 32(* 1.8 x)))    {32+1.8*x}
+                              32+1.8*
+
+cons car                      , *
+
+setq cond                     : $
+
+map reduce                    ' /
+
++ - * / < > = min max         + - * % < > = & |
+
+length reverse member         # | ?
+
+APL -> K evolution
+
+lambda        1973
+cond          1973
+operators     1979
+map/reduce    1979
+ascii(j&k)    1989
+atom/list     1992
+m-expressions 1992
+

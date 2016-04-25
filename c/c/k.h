@@ -4,8 +4,8 @@ typedef char*S,C;typedef unsigned char G;typedef short H;typedef int I;typedef l
 #ifdef __cplusplus
 extern"C"{
 #endif
-#ifndef KXVER
-#error "Set KXVER=3 for kdb+3.0 or standalone c-api after 2011-04-20. Otherwise set KXVER=2"
+#if !defined(KXVER)
+#error "Set KXVER=3 for kdb+3.0 or standalone c-api after 2011-04-20. Otherwise set KXVER=2. e.g. #define KXVER 3 or gcc -DKXVER=3"
 #endif
 #if KXVER>=3
 typedef struct k0{signed char m,a,t;C u;I r;union{G g;H h;I i;J j;E e;F f;S s;struct k0*k;struct{J n;G G0[1];};};}*K;
@@ -82,7 +82,7 @@ extern K ktj(I,J),ka(I),kb(I),kg(I),kh(I),ki(I),kj(J),ke(F),kf(F),kc(I),ks(S),kd
 #define wi ((I)0x7FFFFFFF)
 #define nj ((J)0x8000000000000000LL) 
 #define wj 0x7FFFFFFFFFFFFFFFLL
-#if WIN32 || _WIN32
+#if defined(WIN32) || defined(_WIN32)
 #define nf (log(-1.0))
 #define wf (-log(0.0))
 #define isnan _isnan
