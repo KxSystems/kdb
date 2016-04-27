@@ -1,24 +1,25 @@
 package kx; //jar cf c.jar kx/*.class
-import java.net.*;import java.io.*;import java.sql.*;import java.lang.reflect.Array;import java.text.*;import java.util.UUID;
-//tick: c c=new c("",5010);Object[]x={"GE",new Double(2.5),new Integer(23)};c.k(".u.upd","trade",x);
-//Object[]x={new Time(t()),"xx",new Double(93.5),new Integer(300)};for(int i=0;i<1000;++i)c.ks("upsert","trade",x);c.k("");
-//Flip t=td(c.k("select sum size by sym from trade"));O(n(t.x));O(n(t.y[0]));O(at(t.y[0],0)); //cols rows data
-public class c{
-/*public static void main(String[]args){try{c c=new c("",5001);
-// O(c.k("0N!",c.k("0N!1999.01.01D-1")));
-//c.k("0N!",NULL('z'));
-//c.setEncoding("UTF-8");O("Unicode "+c.k("{`$x}","Ranby BjÃƒÂ¶rklund AB".toCharArray()));O("Unicode "+c.k("{x}",(String)c.k("{`$x}",(char[])c.k("\"c\"$0x52616e627920426ac3b6726b6c756e64204142"))));   
- c.close();}catch(Exception e){e.printStackTrace();}}
+import java.net.*;import javax.net.ssl.*;import java.io.*;import java.sql.*;import java.lang.reflect.Array;import java.text.*;import java.util.UUID;
+/*
+ Regarding SSL/TLS: To import a servers certificate into your keystore
+ keytool -printcert -rfc -sslserver localhost:5010 > example.pem
+ keytool -importcert -file example.pem -alias example.com -storepass changeit -keystore ./keystore
+ java -Djavax.net.ssl.trustStore=./keystore -Djavax.net.ssl.keystore=./keystore kx.c
+ To debug ssl, supply -Djavax.net.debug=ssl on cmd line
 */
+public class c{
 private static String e="ISO-8859-1";private static PrintStream out=System.out;private int sync=0;
 public static void setEncoding(String e)throws UnsupportedEncodingException{c.e=e;out=new PrintStream(System.out,true,e);}
 public Socket s;DataInputStream i;OutputStream o;byte[]b,B;int j,J,vt;boolean a,l,zip;
 public void zip(boolean b){zip=b;}
 void io(Socket x)throws IOException{s=x;{InetAddress a=s.getInetAddress();l=a.isAnyLocalAddress()||a.isLoopbackAddress();}i=new DataInputStream(s.getInputStream());o=s.getOutputStream();s.setKeepAlive(true);}public void close()throws IOException{if(null!=s){s.close();s=null;};if(null!=i){i.close();i=null;}if(null!=o){o.close();o=null;}}
 public interface IAuthenticate{public boolean authenticate(String s);}
-public c(ServerSocket s,IAuthenticate a)throws IOException{io(s.accept());int n=i.read(b=new byte[99]);if(a!=null&&!a.authenticate(new String(b,0,n>1?n-2:0))){close();throw new IOException("access");}vt=n>1?b[n-2]:0;b[0]=(byte)(vt<'\3'?vt:'\3');o.write(b,0,1);} //c c=new c(new ServerSocket(5010));while(true)c.w(2,c.k());
+public c(ServerSocket s,IAuthenticate a)throws IOException{io(s.accept());int n=i.read(b=new byte[99]);if(a!=null&&!a.authenticate(new String(b,0,n>1?n-2:0))){close();throw new IOException("access");}vt=n>1?b[n-2]:0;b[0]=(byte)(vt<'\3'?vt:'\3');o.write(b,0,1);}
 public c(ServerSocket s)throws IOException{this(s,null);}
-public c(String h,int p,String u)throws KException,IOException{B=new byte[2+ns(u)];io(new Socket(h,p));J=0;w(u+"\3");o.write(B);if(1!=i.read(B,0,1)){close();B=new byte[1+ns(u)];io(new Socket(h,p));J=0;w(u);o.write(B);if(1!=i.read(B,0,1)){close();throw new KException("access");}}vt=Math.min(B[0],3);}
+public c(String h,int p,String u)throws KException,IOException{this(h,p,u,false);}
+public c(String h,int p,String u,boolean useTLS)throws KException,IOException{B=new byte[2+ns(u)];s=new Socket(h,p);
+if(useTLS){s=((SSLSocketFactory)SSLSocketFactory.getDefault()).createSocket(s,h,p,true);((SSLSocket)s).startHandshake();}
+io(s);J=0;w(u+"\3");o.write(B);if(1!=i.read(B,0,1)){close();B=new byte[1+ns(u)];io(new Socket(h,p));J=0;w(u);o.write(B);if(1!=i.read(B,0,1)){close();throw new KException("access");}}vt=Math.min(B[0],3);}
 public c(String h,int p)throws KException,IOException{this(h,p,System.getProperty("user.name"));}
 protected c(){};
 public static class Month implements Comparable<Month>{public int i;public Month(int x){i=x;}public String toString(){int m=i+24000,y=m/12;return i==ni?"":i2(y/100)+i2(y%100)+"-"+i2(1+m%12);}public boolean equals(final Object o){return(o instanceof Month)?((Month)o).i==i:false;}public int hashCode(){return i;}public int compareTo(Month m){return i-m.i;}}
@@ -125,7 +126,87 @@ static int find(String[]x,String y){int i=0;for(;i<x.length&&!x[i].equals(y);)++
 public static Flip td(Object X)throws java.io.UnsupportedEncodingException{if(X instanceof Flip)return(Flip)X;Dict d=(Dict)X;Flip a=(Flip)d.x,b=(Flip)d.y;int m=n(a.x),n=n(b.x);String[]x=new String[m+n];System.arraycopy(a.x,0,x,0,m);System.arraycopy(b.x,0,x,m,n);Object[]y=new Object[m+n];System.arraycopy(a.y,0,y,0,m);System.arraycopy(b.y,0,y,m,n);return new Flip(new Dict(x,y));}
 public static Object O(Object x){out.println(x);return x;}public static void O(int x){out.println(x);}public static void O(boolean x){out.println(x);}public static void O(long x){out.println(x);}public static void O(double x){out.println(x);}
 public static long t(){return System.currentTimeMillis();}static long t;public static void tm(){long u=t;t=t();if(u>0)O(t-u);}static String i2(int i){return new DecimalFormat("00").format(i);}static String i9(int i){return new DecimalFormat("000000000").format(i);}
+/*public static void main(String[]args){ // example tick feed
+  boolean useTLS=false;
+  c c=null;
+  try{
+    c=new c("localhost",5010,System.getProperty("user.name"),useTLS);
+    for(int i=0;i<10;i++){
+      // Assumes a remote schema of mytable:([]time:`time$();sym:`symbol$();price:`float$();size:`long$())
+      Object[]x={new Time(t()),"SYMBOL HERE",new Double(93.5),new Integer(300)};
+      c.ks(".u.upd","mytable",x); // send as async. .u.upd could just be insert
+    }
+    c.k(""); // sync chase ensures the remote has processed all msgs
+  }
+  catch(Exception e){e.printStackTrace();
+  }finally{
+    try{c.close();}catch(IOException e){}
+  }
+}*/
+/*public static void main(String[]args){ // example tick subscriber
+  boolean useTLS=false;
+  c c=null;
+  try{
+    c=new c("localhost",5010,System.getProperty("user.name"),useTLS);
+  //  c.ks(".u.sub","mytable",x);
+    while(true)
+      O("Received "+c.k());
+  }catch(Exception e){e.printStackTrace();
+  }finally{
+    try{c.close();}catch(IOException e){}
+  }
+}*/
+/*public static void main(String[]args){ // example client for query/response
+  boolean useTLS=true;
+  c c=null;
+  try{
+    c=new c("localhost",5010,System.getProperty("user.name"),useTLS);
+    Object result=c.k("2+3");
+    O("result is "+result);
+
+    //Unicode example test
+    //c.setEncoding("UTF-8");
+    //O("Unicode "+c.k("{`$x}","Ranby BjÃƒÂ¶rklund AB".toCharArray()));
+    //O("Unicode "+c.k("{x}",(String)c.k("{`$x}",(char[])c.k("\"c\"$0x52616e627920426ac3b6726b6c756e64204142"))));
+
+    // select some data into a flip
+    //Flip t=td(c.k("select sum size by sym from trade"));
+    //O(n(t.x));       // number of columns
+    //O(n(t.y[0]));    // number of rows
+    //O(at(t.y[0],0)); //data at 0,0
+    c.close();
+  }catch(Exception e){e.printStackTrace();
+  }finally{
+    try{c.close();}catch(IOException e){}
+  }
+}*/
+/*public static void main(String[]args){ // example echo server for a single client
+  boolean useTLS=false;
+  int port=5010;
+  c c=null;
+  try{
+    ServerSocket s;
+    if(useTLS){
+      SSLServerSocket sslSocket=(SSLServerSocket)((SSLServerSocketFactory)SSLServerSocketFactory.getDefault()).createServerSocket(port);
+      sslSocket.setEnabledCipherSuites(sslSocket.getSupportedCipherSuites());
+      s=sslSocket;
+    }
+    else
+      s=new ServerSocket(port);
+    c=new c(s);
+    while(true)
+      c.w(2,c.k());
+  }
+  catch(Exception e){
+    e.printStackTrace();
+  }
+  finally{
+    if(c!=null)
+      try{c.close();}catch(IOException e){}
+  }
+}*/
 }
+//2016.04.27 added ssl/tls support
 //2015.08.13 always setKeepAlive(true) for sockets
 //2015.05.11 added z() to optionally compress outgoing data
 //2013.12.19 qn did not detect null guid
