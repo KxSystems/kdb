@@ -54,7 +54,7 @@ java.util.Date rz(){double f=rf();return new java.util.Date(Double.isNaN(f)?nj:g
 Timestamp rp(){long j=rj(),d=j<0?(j+1)/n-1:j/n;Timestamp p=new Timestamp(j==nj?j:gl(k+1000*d));if(j!=nj)p.setNanos((int)(j-n*d));return p;}
 void w(Timestamp p){long j=p.getTime();if(vt<1)throw new RuntimeException("Timestamp not valid pre kdb+2.6");w(j==nj?j:1000000*(lg(j)-k)+p.getNanos()%1000000);}
 
-String rs()throws UnsupportedEncodingException{int i=j;for(;b[j++]!=0;);return (i==j-1)?"":new String(b,i,j-1-i,e);}void w(String s)throws UnsupportedEncodingException{int i=0,n=ns(s);byte[]b=s.getBytes(e);for(;i<n;)w(b[i++]);B[J++]=0;}
+String rs()throws UnsupportedEncodingException{int i=j;for(;b[j++]!=0;);return (i==j-1)?"":new String(b,i,j-1-i,e);}void w(String s)throws UnsupportedEncodingException{int i=0,n;if(s!=null){n=ns(s);byte[]b=s.getBytes(e);for(;i<n;)w(b[i++]);}B[J++]=0;}
 Object r()throws UnsupportedEncodingException{int i=0,n,t=b[j++];if(t<0)switch(t){case-1:return new Boolean(rb());case(-2):return rg();case-4:return new Byte(b[j++]);case-5:return new Short(rh());
   case-6:return new Integer(ri());case-7:return new Long(rj());case-8:return new Float(re());case-9:return new Double(rf());case-10:return new Character(rc());case-11:return rs();
   case-12:return rp();case-13:return rm();case-14:return rd();case-15:return rz();case-16:return rn();case-17:return ru();case-18:return rv();case-19:return rt();}
@@ -206,6 +206,7 @@ public static long t(){return System.currentTimeMillis();}static long t;public s
   }
 }*/
 }
+//2016.05.25 check for null arg to w(String s)
 //2016.05.24 added s.setTcpNoDelay(true)
 //2016.04.27 added ssl/tls support
 //2015.08.13 always setKeepAlive(true) for sockets
