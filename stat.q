@@ -29,7 +29,7 @@ qtln:{[x;y;z]cf:(0 -1;1%2 2;0 0;1 1;1%3 3;3%8 8) z-4;n:count y:asc y;
 / default quantile using method 8
 qtl:qtln[;;8]
 
-/ interquartile range using method 8 for approximation (n.b. R uses method by default)
+/ interquartile range using method 8 for approximation (n.b. R uses method 7 by default)
 iqr:{last deltas qtl[0.25 0.75;x]}
 
 
