@@ -23,13 +23,12 @@ crm:{cvm[x]%u*/:u:dev each x}
 / quantile of y using method z with percents x
 / qtln[0.9 0.99;til 10; 8]
 / implements method 4 to 9 from https://stat.ethz.ch/R-manual/R-devel/library/stats/html/quantile.html
-qtln:{[x;y;z]cf:(0 -1;1%2 2;0 0;1 1;1%3 3;3%8 8) z-4;n:count y:asc y;
-    ?[hf<1;first y;last y]^y[hf-1]+(h-hf)*y[hf]-y -1+hf:floor h:cf[0]+x*n+1f-cf[0]+cf[1]}
+qtln:{[x;y;z]cf:(0 1;1%2 2;0 0;1 1;1%3 3;3%8 8) z-4;n:count y:asc y;
+    ?[hf<1;first y;last y]^y[hf-1]+(h-hf)*y[hf]-y -1+hf:floor h:cf[0]+x*n+1f-sum cf}
 
 / default quantile using method 8
 qtl:qtln[;;8]
 
 / interquartile range using method 8 for approximation (n.b. R uses method 7 by default)
 iqr:{last deltas qtl[0.25 0.75;x]}
-
 
