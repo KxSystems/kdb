@@ -1,5 +1,5 @@
 package kx; //jar cf c.jar kx/*.class
-import java.net.*;import javax.net.ssl.*;import java.io.*;import java.sql.*;import java.lang.reflect.Array;import java.text.*;import java.util.UUID;
+import java.net.*;import javax.net.ssl.*;import java.io.*;import java.sql.*;import java.lang.reflect.Array;import java.text.*;import java.util.UUID;import java.util.Calendar;import java.util.TimeZone;
 /*
  Regarding SSL/TLS: To import a servers certificate into your keystore
  keytool -printcert -rfc -sslserver localhost:5010 > example.pem
@@ -26,7 +26,7 @@ public static class Month implements Comparable<Month>{public int i;public Month
 public static class Minute implements Comparable<Minute>{public int i;public Minute(int x){i=x;}public String toString(){return i==ni?"":i2(i/60)+":"+i2(i%60);}
 public boolean equals(final Object o){return(o instanceof Minute)?((Minute)o).i==i:false;}public int hashCode(){return i;}public int compareTo(Minute m){return i-m.i;}}
 public static class Second implements Comparable<Second>{public int i;public Second(int x){i=x;}public String toString(){return i==ni?"":new Minute(i/60).toString()+':'+i2(i%60);}public boolean equals(final Object o){return(o instanceof Second)?((Second)o).i==i:false;}public int hashCode(){return i;}public int compareTo(Second s){return i-s.i;}}
-public static class Timespan implements Comparable<Timespan>{public long j;public Timespan(long x){j=x;}
+public static class Timespan implements Comparable<Timespan>{public long j;public Timespan(long x){j=x;}public Timespan(){this(TimeZone.getDefault());}public Timespan(TimeZone tz){Calendar c=Calendar.getInstance(tz);long now=c.getTimeInMillis();c.set(Calendar.HOUR_OF_DAY, 0);c.set(Calendar.MINUTE, 0);c.set(Calendar.SECOND, 0);c.set(Calendar.MILLISECOND, 0);j=(now-c.getTimeInMillis())*1000000L;}
 public String toString(){if(j==nj)return "";String s=j<0?"-":"";long jj=j<0?-j:j;int d=((int)(jj/86400000000000L));if(d!=0)s+=d+"D";return s+i2((int)((jj%86400000000000L)/3600000000000L))+":"+i2((int)((jj%3600000000000L)/60000000000L))+":"+i2((int)((jj%60000000000L)/1000000000L))+"."+i9((int)(jj%1000000000L));}public int compareTo(Timespan t){return j>t.j?1:j<t.j?-1:0;}
 public boolean equals(final Object o){return(o instanceof Timespan)?((Timespan)o).j==j:false;}public int hashCode(){return(int)(j^(j>>>32));}}
 public static class Dict{public Object x;public Object y;public Dict(Object X,Object Y){x=X;y=Y;}}
@@ -45,7 +45,7 @@ float re(){return Float.intBitsToFloat(ri());}                                  
 double rf(){return Double.longBitsToDouble(rj());}                                                        void w(double f){w(Double.doubleToLongBits(f));}
 Month rm(){return new Month(ri());}   void w(Month m){w(m.i);} Minute ru(){return new Minute(ri());}      void w(Minute u){w(u.i);}
 Second rv(){return new Second(ri());} void w(Second v){w(v.i);}Timespan rn(){return new Timespan(rj());}  void w(Timespan n){if(vt<1)throw new RuntimeException("Timespan not valid pre kdb+2.6");w(n.j);}
-public java.util.TimeZone tz=java.util.TimeZone.getDefault();
+public TimeZone tz=TimeZone.getDefault();
 static long k=86400000L*10957,n=1000000000L;long o(long x){return tz.getOffset(x);}long lg(long x){return x+o(x);}long gl(long x){return x-o(x-o(x));}
 Date rd(){int i=ri();return new Date(i==ni?nj:gl(k+86400000L*i));}                             void w(Date d){long j=d.getTime();w(j==nj?ni:(int)(lg(j)/86400000-10957));}
 Time rt(){int i=ri();return new Time(i==ni?nj:gl(i));}                                         void w(Time t){long j=t.getTime();w(j==nj?ni:(int)(lg(j)%86400000));}
@@ -132,8 +132,8 @@ public static long t(){return System.currentTimeMillis();}static long t;public s
   try{
     c=new c("localhost",5010,System.getProperty("user.name"),useTLS);
     for(int i=0;i<10;i++){
-      // Assumes a remote schema of mytable:([]time:`time$();sym:`symbol$();price:`float$();size:`long$())
-      Object[]x={new Time(t()),"SYMBOL HERE",new Double(93.5),new Integer(300)};
+      // Assumes a remote schema of mytable:([]time:`timespan$();sym:`symbol$();price:`float$();size:`long$())
+      Object[]x={new Timespan(),"SYMBOL HERE",new Double(93.5),new Integer(300)};
       c.ks(".u.upd","mytable",x); // send as async. .u.upd could just be insert
     }
     c.k(""); // sync chase ensures the remote has processed all msgs
@@ -206,6 +206,7 @@ public static long t(){return System.currentTimeMillis();}static long t;public s
   }
 }*/
 }
+//2017.03.03 add default constructor to Timespan
 //2016.05.25 check for null arg to w(String s)
 //2016.05.24 added s.setTcpNoDelay(true)
 //2016.04.27 added ssl/tls support

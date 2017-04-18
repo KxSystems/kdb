@@ -1,3 +1,4 @@
+// 2016.09.15 performance enhancement for temporal constructors and type identification
 // 2016.03.18 char vectors and symbols now [de]serialize [from]to utf8
 // 2014.03.18 Serialize date now adjusts for timezone.
 // 2013.04.29 Dict decodes to map, except for keyed tables.
@@ -38,6 +39,7 @@ function u16u8(u8){
 
 function deserialize(x){
   var a=x[0],pos=8,j2p32=Math.pow(2,32),ub=new Uint8Array(x),sb=new Int8Array(x),bb=new Uint8Array(8),hb=new Int16Array(bb.buffer),ib=new Int32Array(bb.buffer),eb=new Float32Array(bb.buffer),fb=new Float64Array(bb.buffer);
+  const msDay=86400000, QEpoch = msDay*10957;
   function rBool(){return rInt8()==1;}
   function rChar(){return String.fromCharCode(rInt8());}
   function rInt8(){return sb[pos++];}
@@ -50,15 +52,15 @@ function deserialize(x){
   function rFloat32(){rNUInt8(4);return eb[0];}
   function rFloat64(){rNUInt8(8);return fb[0];}
   function rSymbol(){var i=pos,c,s=[];while((c=rUInt8())!==0)s.push(c);return u16u8(s);};
-  function rTimestamp(){return date(rInt64()/86400000000000);}
-  function rMonth(){var y=rInt32();var m=y%12;y=2000+y/12;return new Date(Date.UTC(y,m,01));}
-  function date(n){return new Date(86400000*(10957+n));}
-  function rDate(){return date(rInt32());}
-  function rDateTime(){return date(rFloat64());}
-  function rTimespan(){return date(rInt64()/86400000000000);}
-  function rSecond(){return date(rInt32()/86400);}
-  function rMinute(){return date(rInt32()/1440);}
-  function rTime(){return date(rInt32()/86400000);}
+  function rTimestamp(){return date(rInt64()/1000000);}
+  function rMonth(){return new Date(Date.UTC(2000,rInt32(),1));}
+  function date(n){return new Date(QEpoch+n);}
+  function rDate(){return date(rInt32()*msDay);}
+  function rDateTime(){return date(rFloat64()*msDay);}
+  function rTimespan(){return date(rInt64()/1000000);}
+  function rSecond(){return date(rInt32()/1000);}
+  function rMinute(){return date(rInt32()*60000);}
+  function rTime(){return date(rInt32());}
   function r(){
     var fns=[r,rBool,rGuid,null,rUInt8,rInt16,rInt32,rInt64,rFloat32,rFloat64,rChar,rSymbol,rTimestamp,rMonth,rDate,rDateTime,rTimespan,rMinute,rSecond,rTime];
     var i=0,n,t=rInt8();
@@ -101,8 +103,9 @@ function deserialize(x){
   return r();}
 
 function serialize(x){var a=1,pos=0,ub,bb=new Uint8Array(8),ib=new Int32Array(bb.buffer),fb=new Float64Array(bb.buffer);
-  function toType(obj){return ({}).toString.call(obj).match(/\s([a-z|A-Z]+)/)[1].toLowerCase();};
-  function getKeys(x){var v=[];for(var o in x)v.push(o);return v;}
+  function toType(obj) {var jsType=typeof obj;if(jsType!=='object'&&jsType!=='function') return jsType;
+    if(!obj)return 'null';if(obj instanceof Array)return 'array';if(obj instanceof Date)return 'date';return 'object';}
+  function getKeys(x){return Object.keys(x);}
   function getVals(x){var v=[];for(var o in x)v.push(x[o]);return v;}
   function calcN(x,dt){
     var t=dt?dt:toType(x);
