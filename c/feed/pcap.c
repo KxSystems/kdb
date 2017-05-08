@@ -37,27 +37,30 @@ int main(int argc,char *argv[]){
     return -1;
   } 
   c=khpu("127.0.0.1",5000,"pcaploader:nopassword");
-  if(c<0){fprintf(stderr,"\nError connecting to kdb+\n");
-    return -1;}
+  if(c<=0){
+    fprintf(stderr,"\nError connecting to kdb+ %s\n",c?"":": Wrong credentials");
+    return -1;
+  }
   if((fp=pcap_open_offline(argv[1],errbuf))==NULL){
-    fprintf(stderr,"\nError opening dump file\n");
+    fprintf(stderr,"\nError opening dump file %s\n",argv[1]);
+    kclose(c);
     return -1;
   }
   while((res=pcap_next_ex(fp,&header,(const u_char**)&pkt_data))>=0){
     x=ktn(KG,header->caplen);
     memcpy(xG,pkt_data,header->caplen);
     if(!k(-c,"insert",ks("msgs"),knk(2,kz(zu(header->ts)),x),(K)0)){
-      printf("Error sending async msg\n");
+      fprintf(stderr,"\nError sending async msg\n");
       kclose(c);
       return -1;
     }
   }
   if(res==-1)
-    printf("Error reading the packets: %s\n", pcap_geterr(fp));
+    fprintf(stderr,"\nError reading the packets: %s\n", pcap_geterr(fp));
   x=k(c,"postprocess[]",(K)0); // waits until remote has processed and responded to this msg
   kclose(c);
   if(!x||x->t==-128){
-    printf("Error (%s) sending sync chaser msg \n",x?x->s:"network");
+    fprintf(stderr,"\nError (%s) sending sync chaser msg \n",x?x->s:"network");
     if(x)
       r0(x);
     return -1;
