@@ -1,4 +1,5 @@
-﻿//2017.04.18 added ssl/tls support
+//2017.05.23 identify string[] as type 11
+//2017.04.18 added ssl/tls support
 //2014.01.29 make method n public
 //2013.12.19 qn did not detect null guid
 //2013.12.10 remove retry logic on authentication fail. For kdb+2.5 and prior, use
@@ -23,7 +24,7 @@
 //2007.09.26 0Wz to MaxValue
 //2006.10.05 truncate string at null
 //2006.09.29 NULL  c.Date class(sync with c.java)
-//Regarding SSL/TLS: add self-signed certificates to Local Computer Trusted Root Certification Authorities
+//Regarding SSL/TLS: To use self-signed certificates add them to the Local Computer Trusted Root Certification Authorities
 using System;using System.IO;using System.Net.Sockets;using System.Net.Security;using System.Security.Cryptography.X509Certificates;
 namespace kx{
 public class c:TcpClient{
@@ -95,7 +96,7 @@ public static Flip td(object X){if(t(X)==98)return(Flip)X;Dict d=(Dict)X;Flip a=
  object[]y=new object[m+n];Array.Copy(a.y,0,y,0,m);Array.Copy(b.y,0,y,m,n);return new Flip(new Dict(x,y));}
 static int t(object x){return x is bool?-1:x is Guid?-2:x is byte?-4:x is short?-5:x is int?-6:x is long?-7:x is float?-8:x is double?-9:x is char?-10:
  x is string?-11:x is DateTime?-12:x is Month?-13:x is Date?-14:x is DateTime?-15:x is KTimespan?-16:x is Minute?-17:x is Second?-18:x is TimeSpan?-19:
- x is bool[]?1:x is Guid[]?2:x is byte[]?4:x is short[]?5:x is int[]?6:x is long[]?7:x is float[]?8:x is double[]?9:x is char[]?10:
+ x is bool[]?1:x is Guid[]?2:x is byte[]?4:x is short[]?5:x is int[]?6:x is long[]?7:x is float[]?8:x is double[]?9:x is char[]?10:x is string[]?11:
  x is DateTime[]?12:x is DateTime[]?15:x is KTimespan[]?16:x is TimeSpan[]?19:x is Flip?98:x is Dict?99:0;}
 static int[]nt={0,1,16,0,1,2,4,8,4,8,1,0,8,4,4,8,8,4,4,4};// x.GetType().IsArray
 public static int n(object x){return x is Dict?n(((Dict)x).x):x is Flip?n(((Flip)x).y[0]):x is char[]?e.GetBytes((char[])x).Length:((Array)x).Length;}
@@ -152,7 +153,7 @@ object r(){int i=0,n,t=(sbyte)b[j++];if(t<0)switch(t){case-1:return rb();case-2:
   case 4:{byte[]G=new byte[n];for(;i<n;i++)G[i]=b[j++];return G;}       case 5:short[]H=new short[n];for(;i<n;i++)H[i]=rh();return H;
   case 6:int[]I=new int[n];for(;i<n;i++)I[i]=ri();return I;             case 7:long[]J=new long[n];for(;i<n;i++)J[i]=rj();return J;
   case 8:float[]E=new float[n];for(;i<n;i++)E[i]=re();return E;         case 9:double[]F=new double[n];for(;i<n;i++)F[i]=rf();return F;
-  case 10:char[] C=e.GetChars(b,j,n);j+=n;return C;                     case 11:String[]S=new String[n];for(;i<n;i++)S[i]=rs();return S;
+  case 10:char[] C=e.GetChars(b,j,n);j+=n;return C;                     case 11:string[]S=new string[n];for(;i<n;i++)S[i]=rs();return S;
   case 12:DateTime[]P=new DateTime[n];for(;i<n;i++)P[i]=rp();return P;  case 13:Month[]M=new Month[n];for(;i<n;i++)M[i]=rm();return M;
   case 14:Date[]D=new Date[n];for(;i<n;i++)D[i]=rd();return D;          case 15:DateTime[]Z=new DateTime[n];for(;i<n;i++)Z[i]=rz();return Z;
   case 16:KTimespan[]N=new KTimespan[n];for(;i<n;i++)N[i]=rn();return N;case 17:Minute[]U=new Minute[n];for(;i<n;i++)U[i]=ru();return U;
@@ -165,9 +166,9 @@ public object k(string s){return k(cs(s));}char[]cs(string s){return s.ToCharArr
 public object k(string s,object x){object[]a={cs(s),x};return k(a);}
 public object k(string s,object x,object y){object[]a={cs(s),x,y};return k(a);}
 public object k(string s,object x,object y,object z){object[]a={cs(s),x,y,z};return k(a);}
-public void ks(String s){w(0,cs(s));}
-public void ks(String s,Object x){Object[]a={cs(s),x};w(0,a);}
-public void ks(String s,Object x,Object y){Object[]a={cs(s),x,y};w(0,a);}
+public void ks(string s){w(0,cs(s));}
+public void ks(string s,Object x){Object[]a={cs(s),x};w(0,a);}
+public void ks(string s,Object x,Object y){Object[]a={cs(s),x,y};w(0,a);}
 }
 public class KException:Exception{
    public KException(){}
