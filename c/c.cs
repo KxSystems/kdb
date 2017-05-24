@@ -101,7 +101,7 @@ static int t(object x){return x is bool?-1:x is Guid?-2:x is byte?-4:x is short?
 static int[]nt={0,1,16,0,1,2,4,8,4,8,1,0,8,4,4,8,8,4,4,4};// x.GetType().IsArray
 public static int n(object x){return x is Dict?n(((Dict)x).x):x is Flip?n(((Flip)x).y[0]):x is char[]?e.GetBytes((char[])x).Length:((Array)x).Length;}
 static int nx(object x){int i=0,n,t=c.t(x),j;if(t==99)return 1+nx(((Dict)x).x)+nx(((Dict)x).y);if(t==98)return 3+nx(((Flip)x).x)+nx(((Flip)x).y);
- if(t<0)return t==-11?2+ns((string)x):1+nt[-t];j=6;n=c.n(x);if(t==0)for(;i<n;++i)j+=nx(((object[])x)[i]);else j+=n*nt[t];return j;}
+ if(t<0)return t==-11?2+ns((string)x):1+nt[-t];j=6;n=c.n(x);if(t==0||t==11)for(;i<n;++i)j+=t==0?nx(((object[])x)[i]):1+ns(((string[])x)[i]);else j+=n*nt[t];return j;}
 public static object at(object x,int i){object r=((Array)x).GetValue(i);return qn(r)?null:r;} 
 //public static void set(object x,int i,object y){Array.set(x,i,null==y?NU[t(x)]:y);}
 void w(bool x){B[J++]=(byte)(x?1:0);}bool rb(){return 1==b[j++];}void w(byte x){B[J++]=x;}byte rx(){return b[j++];}
