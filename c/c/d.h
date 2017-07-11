@@ -30,6 +30,23 @@ extern K ktn(I,I),kpn(S,I);
 typedef V*D;typedef unsigned short UH;
 #include<sqlext.h>
 #include<odbcinst.h>
+typedef struct tagSS_TIME2_STRUCT {  
+   SQLUSMALLINT hour;  
+   SQLUSMALLINT minute;  
+   SQLUSMALLINT second;  
+   SQLUINTEGER fraction;  
+} SS_TIME2;
+typedef struct tagSS_TIMESTAMPOFFSET_STRUCT {  
+   SQLSMALLINT year;  
+   SQLUSMALLINT month;  
+   SQLUSMALLINT day;  
+   SQLUSMALLINT hour;  
+   SQLUSMALLINT minute;  
+   SQLUSMALLINT second;  
+   SQLUINTEGER fraction;  
+   SQLSMALLINT timezone_hour;  
+   SQLSMALLINT timezone_minute;  
+} SS_TIMESTAMPOFFSET;
 #define S0 SQL_NTS
 #define S1 SQL_NO_DATA_FOUND
 #define A SQLRETURN SQL_API
@@ -59,12 +76,15 @@ typedef V*D;typedef unsigned short UH;
 #define KF 9  // 8 float    double kF
 #define KC 10 // 1 char     char   kC
 #define KS 11 // * symbol   char*  kS
+#define KP 12 // 8 timestamp long   kJ (nanoseconds from 2000.01.01)
 #define KM 13 // 4 month    int    kI
 #define KD 14 // 4 date     int    kI (days from 2000.01.01)
 #define KZ 15 // 8 datetime double kF (days from 2000.01.01)
+#define KN 16 // 8 timespan  long   kJ (nanoseconds)
 #define KU 17 // 4 minute   int    kI
 #define KV 18 // 4 second   int    kI
 #define KT 19 // 4 time     int    kI (millisecond)
+
 
 // table,dict
 #define XT 98 //   x->k is XD
@@ -75,7 +95,7 @@ extern"C"{
 #endif
 extern I khpu(char*,I,char*),khp(char*,I),ymd(I,I,I),dj(I);extern V r0(K),sd0(I);extern S sn(S,I),ss(S);
 extern K ka(I),kb(I),kg(I),kh(I),ki(I),kj(J),ke(F),kf(F),kc(I),ks(S),kd(I),kz(F),kt(I),sd1(I,K(*)(I)),dl(V*f,I),
- knk(I,...),kp(S),ja(K*,S),js(K*,S),jk(K*,K),k(I,char*,...),xT(K),xD(K,K),ktd(K),r1(K),krr(S),orr(S),dot(K,K);
+ knk(I,...),kp(S),ja(K*,S),js(K*,S),jk(K*,K),jv(K*,K),k(I,char*,...),xT(K),xD(K,K),ktd(K),r1(K),krr(S),orr(S),dot(K,K);
 #ifdef __cplusplus 
 }
 #endif
