@@ -1,3 +1,4 @@
+//2017.07.11 added support for Time(type#-154) and DatetimeOFFSET(type#-155), the latter with timezone info ignored
 //2015.06.19 fix for unixodbc 2.3, and indeterminate column size
 //2013.05.07 added timeout(in Secs). e.g. h:.odbc.open(`northwind;timeout);.odbc.eval[(h;timeout);"select * from Orders"]
 //2011.03.11 64bit was not detecting SQL_NULL_DATA correctly
