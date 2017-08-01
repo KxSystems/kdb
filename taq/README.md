@@ -1,4 +1,4 @@
-# Kdb+taq
+# kdb+taq
 
 Of historical interest only. 
 
