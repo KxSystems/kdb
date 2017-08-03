@@ -4,7 +4,7 @@ there are 3 cases:
 2. c dynamic load callbacks into q, e.g. feedhandlers
 3. c clients talking to q servers. e.g. feedhandlers and clients(link with c.o)
 
-http://kx.com/q/c/c/k.h
+/c/c/k.h
 q data are c structs: {I r;H t,u;..}
 r - ref count
 t - type (atom<0;list>=0;flip==98;dict==99)
@@ -55,17 +55,17 @@ r0(x) decrement ref count
 I ymd(year,month,day) e.g. 0==ymd(2000,1,1)
 
 SERVER (link c code with q.lib)
-servers, e.g. http://kx.com/q/c/a.c
+servers, e.g. /c/a.c
 
-1. dynamic load, e.g. q/c/c/a.c K f(K x,K y){return ki(x->i+y->i);}
-2. callbacks,    e.g. q/c/feed/ssl.c
+1. dynamic load, e.g. /c/c/a.c K f(K x,K y){return ki(x->i+y->i);}
+2. callbacks,    e.g. /c/feed/ssl.c
  sd1(d,f); // put K f(I d){..} on q mainloop given socket d (-d for nonblock)
  sd0(d);   // remove it
  krr(S);   // k   error, e.g. if(xt!=KI)return krr("type");
  orr(S);   // o/s error, e.g. if(-1==..)return orr("file");
 
 CLIENT (link l32/c.o s32/c.o w32/c.dll(c.lib))
-e.g. http://kx.com/q/c/c/c.c (requires gcc 3.0 or later)
+e.g. /c/c/c.c (requires gcc 3.0 or later)
  int c=khp("host",port); // connect
  k(-c,"func|exp",..,(K)0); //asynch
  r=k(c,"func|exp",..,(K)0); //synch
