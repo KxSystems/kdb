@@ -36,4 +36,4 @@ q clients:
 q)c:hopen`:host:port
 q)c("string"[;x[;y[;z]]])
 
-c clients are similar to java, c# and q clients. see http://kx.com/q/c/c
+c clients are similar to java, c# and q clients.
