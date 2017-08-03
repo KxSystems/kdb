@@ -1,7 +1,5 @@
 QDBC  (don't use jdbc/odbc. qdbc is simpler and faster.)
 
-e.g. http://www.eclipse.org/birt/phoenix/
-
 load and query q servers with java and c# clients.
 connect and execute.  (use q/c/c.jar or q/c/c.cs)
 
