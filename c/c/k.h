@@ -85,7 +85,6 @@ extern K ktj(I,J),ka(I),kb(I),kg(I),kh(I),ki(I),kj(J),ke(F),kf(F),kc(I),ks(S),kd
 #if defined(WIN32) || defined(_WIN32)
 #define nf (log(-1.0))
 #define wf (-log(0.0))
-#define isnan _isnan
 #define finite _finite
 extern double log(double);
 #else  
