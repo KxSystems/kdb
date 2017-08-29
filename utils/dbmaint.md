@@ -197,7 +197,7 @@ rentable[`:/data/taq;`trade;`transactions]
 ```
 
 
-See Also
+See also
 --------
 
 -   [`.Q.chk`](http://code.kx.com/q/ref/dotq/#qchk-fill-hdb)
