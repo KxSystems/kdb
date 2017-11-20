@@ -74,7 +74,7 @@ add1table:{[dbdir;tablename;table]
  stdout"adding ",string tablename;
  @[tablename;`;:;.Q.en[dbdir]0#table];}
 
-stdout:{-1 raze[" "sv string`date`second$.z.Z]," ",x;}
+stdout:{-1 raze[" "sv string`date`second$.z.P]," ",x;}
 validcolname:{(not x in `i,.Q.res,key`.q)and x = .Q.id x}
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////
