@@ -158,6 +158,10 @@ if the database you've been modifying is a tick database don't forget to adjust 
 
 addcol[`:.;`trade;`num;10]
 addcol[`:.;`trade;`F;`test]
+compresscol[`:.;`trade;`F;17 2 4]
+decompresscol[`:.;`trade;`F]
+compresstable[`:.;`trade;17 1 0]
+decompresstable[`:.;`trade]
 delete1col[`:./2000.10.02/trade;`F]
 fixtable[`:.;`trade;`:./2000.10.03/trade]
 reordercols[`:.;`quote;except[2 rotate cols quote;`date]]
