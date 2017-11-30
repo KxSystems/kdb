@@ -22,6 +22,13 @@ allpaths:{[dbdir;table]
  if[any files like"par.txt";:raze allpaths[;table]each hsym each`$read0(`)sv dbdir,`par.txt];
  files@:where files like"[0-9]*";(`)sv'dbdir,'files,'table}
 
+compress1col:{[tabledir;col;compressionparams]
+ if[col in allcols tabledir;
+  stdout"compressing column ",(string col)," in ",(string tabledir)," with params "," " sv string compressionparams;
+  -19!(2#` sv tabledir,col),compressionparams
+ ]
+ }
+
 copy1col:{[tabledir;oldcol;newcol]
  if[(oldcol in ac)and not newcol in ac:allcols tabledir;
   stdout"copying ",(string oldcol)," to ",(string newcol)," in `",string tabledir;
@@ -53,7 +60,7 @@ fix1table:{[tabledir;goodpartition;goodpartitioncols]
 fn1col:{[tabledir;col;fn]
  if[col in allcols tabledir;
   oldattr:-2!oldvalue:get p:tabledir,col;
-  newattr:-2!newvalue:fn oldvalue;		
+  newattr:-2!newvalue:fn oldvalue;
   if[$[not oldattr~newattr;1b;not oldvalue~newvalue];
    stdout"resaving column ",(string col)," (type ",(string type newvalue),") in `",string tabledir;
    oldvalue:0;.[(`)sv p;();:;newvalue]]]}
@@ -76,7 +83,9 @@ add1table:{[dbdir;tablename;table]
 
 stdout:{-1 raze[" "sv string`date`second$.z.P]," ",x;}
 validcolname:{(not x in `i,.Q.res,key`.q)and x = .Q.id x}
-
+validcompressionparams:@[{(type[x] in 6 7h) and
+  (x[1] within 0 3) and (x[0] within 12 20) and
+  (x[2] = 0) or (x[1] = 2) and (x[2] within 0 9)};;0b]
 //////////////////////////////////////////////////////////////////////////////////////////////////////////
 // * public
 
@@ -92,9 +101,20 @@ castcol:{[dbdir;table;col;newtype] / castcol[thisdb;`trade;`size;`short]
 clearattrcol:{[dbdir;table;col] / clearattr[thisdb;`trade;`sym]
  setattrcol[dbdir;table;col;(`)]}
 
+compresscol:{[dbdir;table;col;compressionparams]
+ if[not validcompressionparams compressionparams;'`invalid.compressionparams];
+ compress1col[;col;compressionparams] each allpaths[dbdir;table];}
+
+compresstable:{[dbdir;table;compressionparams]
+ compresscol[dbdir;table;;compressionparams] each allcols last allpaths[dbdir;table];}
+
 copycol:{[dbdir;table;oldcol;newcol] / copycol[`:/k4/data/taq;`trade;`size;`size2]
  if[not validcolname newcol;'(`)sv newcol,`invalid.newname];
  copy1col[;oldcol;newcol]each allpaths[dbdir;table];}
+
+decompresscol:compresscol[;;;17 0 0]
+
+decompresstable:compresstable[;;17 0 0]
 
 deletecol:{[dbdir;table;col] / deletecol[`:/k4/data/taq;`trade;`iz]
  delete1col[;col]each allpaths[dbdir;table];}
