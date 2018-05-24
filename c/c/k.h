@@ -12,7 +12,7 @@ typedef struct k0{signed char m,a,t;C u;I r;union{G g;H h;I i;J j;E e;F f;S s;st
 typedef struct{G g[16];}U;
 #define kU(x) ((U*)kG(x))
 #define xU ((U*)xG)
-extern K ku(U),ktn(I,J),kpn(S,J);
+extern K ku(U),knt(J,K),ktn(I,J),kpn(S,J);
 extern I setm(I);
 #define DO(n,x)	{J i=0,_i=(n);for(;i<_i;++i){x;}}
 #else
