@@ -38,7 +38,7 @@ enum:{[tabledir;val]
  .[p;();,;u@:iasc u@:where not(u:distinct enlist val)in v:$[type key p:(`)sv tabledir,`sym;get p;0#`]];`sym!(v,u)?val}
 \
 
-enum:{[tabledir;val]if[not 11=abs type val;:val];`sym set$[type key p:` sv tabledir,`sym;get p;0#`];e:`sym?val;.[p;();:;sym];e}
+enum:{[tabledir;val]if[not 11=abs type val;:val];.Q.dd[tabledir;`sym]?val}
 
 
 find1col:{[tabledir;col]
