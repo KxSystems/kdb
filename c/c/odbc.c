@@ -17,8 +17,8 @@
 extern V free(V*p);
 ZS err(I f,D d){ZC e[1006];I i;H j;SQLError(0,f?0:d,f?d:0,e,(SQLINTEGER*)&i,e+6,1000,&j);R e[5]=' ',e;}
 #define Q(x,s) P(x,krr(s))
-#define Q0(x) {I r=(x);if(r){S s=err(0,d);if(r!=1)R       krr(s);if(*s)O("%s\n",s);}}
-#define Q1(x) {I r=(x);if(r){S s=err(1,d);if(r!=1)R d0(d),krr(s);if(*s)O("%s\n",s);}}
+#define Q0(x) {I r=(x);if(r){S s=err(0,d);if(r!=1)R       krr(s);if(*s)fprintf(stderr,"%s\n",s);}}
+#define Q1(x) {I r=(x);if(r){S s=err(1,d);if(r!=1)R d0(d),krr(s);if(*s)fprintf(stderr,"%s\n",s);}}
 K2(open){Z D d9;H j=xt==KS;D d,v=GetForegroundWindow();ZC b[1024];
  if(!d9)SQLAllocEnv(&d9);Q0(SQLAllocConnect(d9,&d))Q(y->t!=-KJ||!j&&xt!=-KS&&xt!=KC,(S)"type")Q(j&&xn!=3,(S)"length")
  if(y->j)SQLSetConnectAttr(d,SQL_LOGIN_TIMEOUT,(SQLPOINTER)(SQLULEN)y->j,0);
