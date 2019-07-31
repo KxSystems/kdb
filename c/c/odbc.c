@@ -14,7 +14,7 @@
 //usr/local/gcc-3.3.2/bin/gcc -G ../c/odbc.c -o odbc.so -lodbc   /-lodbcinst  [-m64 -fPIC]
 #include<string.h>
 #include"d.h" // http://www.unixodbc.org
-extern V free(V*p);
+V free(V*);
 ZS err(I f,D d){ZC e[1006];I i;H j;SQLError(0,f?0:d,f?d:0,e,(SQLINTEGER*)&i,e+6,1000,&j);R e[5]=' ',e;}
 #define Q(x,s) P(x,krr(s))
 #define Q0(x) {I r=(x);if(r){S s=err(0,d);if(r!=1)R       krr(s);if(*s)O("%s\n",s);}}
@@ -40,15 +40,15 @@ ZI ut[]={0,KS,KF,KF,KI,KH,KF,KE,KF,KD,KV,KZ,KS,0,0,0,0, KJ,KH,KH,KS,KS,0,2,KN,KP
 ZI wt[]={0, 0, 8, 8, 4, 2, 8, 4, 8, 6, 6,16, 0,0,0,0,0,  8, 1, 1, 0, 0,0,16,12,20};
 ZH ct[]={0, 1, 8, 8, 4, 5, 8, 7, 8, 9,10,11, 1,1,0,0,0,-25,-6,-7, 1, 1,1,-11,-2,-2};// -5/-25(odbc 2/3)
 ZS nu(I t){ZF f;ZE e;ZJ j=nj;ZI i=ni;ZH h=nh;ZC g;ZS ns;Z U u;if(!ns)f/=f,e=f,ns=ss((S)"");R t==KS?(S)&ns:t==KF||t==KZ?(S)&f:t==KE?(S)&e:t==KJ||t==KN||t==KP?(S)&j:t==KH?(S)&h:t==KG||t==KB?(S)&g:t==2?(S)&u:(S)&i;}
-ZK gb(D d,H j,I t){H c=ct[t],g=c?c:-2,m=512;K x=ktn(c?KC:KG,m),y=ktn(xt,0);SQLLEN n=0;SQLRETURN r;while(1){r=SQLGetData(d,j,g,kG(x),xn=m,&n);if(SQL_SUCCEEDED(r))xn=n==SQL_NULL_DATA?0:n==SQL_NO_TOTAL||n>xn?xn:n,xn-=xn&&c&&!kG(x)[xn-1],jv(&y,x);else/*if(r==SQL_NO_DATA)*/break;}r0(x);R y;}
+ZK gb(D d,H j,I t){H c=ct[t],g=c?c:-2,m=512;K x=ktn(c?KC:KG,m),y=ktn(xt,0);SQLLEN n=0;SQLRETURN r;while(1){r=SQLGetData(d,j,g,kG(x),xn=m,&n);if(SQL_SUCCEEDED(r)&&n!=SQL_NULL_DATA)xn=n==SQL_NO_TOTAL||n>xn?xn:n,xn-=xn&&c&&!kG(x)[xn-1],jv(&y,x);else/*if(r==SQL_NO_DATA)*/break;}r0(x);R y;}
 K eval(K x,K y,K z){K*k;S*b,s;SQLULEN w;SQLLEN*nb;SQLINTEGER*wb;H*tb,u,t,j=0,p,m;F f;J v;C c[128];I n=xj<0;D d=d1(n?-xj:xj);U(d)x=y;Q(z->t!=-KJ||xt!=-KS&&xt!=KC,(S)"type")
  if(z->j)SQLSetStmtAttr(d,SQL_ATTR_QUERY_TIMEOUT,(SQLPOINTER)(SQLULEN)z->j,0);
  if(xt==-KS)Q1(SQLColumns(d,(S)0,0,(S)0,0,xs,S0,(S)0,0))else{I e;K q=kpn(xG,xn);ja(&q,(S)"\0");e=SQLExecDirect(d,q->G0,xn);r0(q);Q1(e)}
  SQLNumResultCols(d,&j);P(!j,(d0(d),knk(0)))
- b=malloc(j*SZ),tb=malloc(j*2),wb=malloc(j*SZ),nb=malloc(j*SZ),x=ktn(KS,j),y=ktn(0,j);// sqlserver: no bind past nonbind
+ b=malloc(j*SZ),tb=malloc(j*2),wb=malloc(j*SZ),nb=memset(malloc(j*SZ),0,j*SZ),x=ktn(KS,j),y=ktn(0,j);// sqlserver: no bind past nonbind
  DO(j,Q1(SQLDescribeCol(d,(H)(i+1),c,128,&u,&t,&w,&p,&m))xS[i]=sn(c,u);
  if(t>90)t-=82;if(t<-153)t+=142;Q(t<-13||t>12,xS[i])wb[i]=ut[tb[i]=t=t>0?t:12-t]==KS&&w?w+1:wt[t];if(ut[t]==KS&&(n||!wb[i]||wb[i]>9))tb[i]=13)
- DO(j,kK(y)[i]=ktn(ut[t=tb[i]],0);if(w=wb[i])Q1(SQLBindCol(d,(H)(i+1),ct[t],b[i]=malloc(w),w,nb+i)))
+ DO(j,kK(y)[i]=ktn(ut[t=tb[i]],0);if((w=wb[i]))Q1(SQLBindCol(d,(H)(i+1),ct[t],b[i]=malloc(w),w,nb+i)))
  for(;SQL_SUCCEEDED(SQLFetch(d));)DO(j,k=kK(y)+i;u=ut[t=tb[i]];s=b[i];n=SQL_NULL_DATA==(int)nb[i];if(!u)jk(k,n?ktn(ct[t]?KC:KG,0):wb[i]?kp(s):gb(d,(H)(i+1),t));else ja(k,n?nu(u):u==KH&&wb[i]==1?(t=(H)*s,(S)&t):u==KS?(s=dtb(s,nb[i]),(S)&s):u==2?na(4,s),na(2,s+4),na(2,s+6),s:u==KN?(v=ns(s),(S)&v):u==KP?(v=ps(s),(S)&v):u<KD?s:u==KZ?(f=ds(s)+(vs(s+6)+*(I*)(s+12)/1e9)/8.64e4,(S)&f):(w=u==KD?ds(s):vs(s),(S)&w))) 
  if(!SQLMoreResults(d))O("more\n");DO(j,if(wb[i])free(b[i]))R free(b),free(tb),free(wb),free(nb),d0(d),xT(xD(x,y));}
 /*
