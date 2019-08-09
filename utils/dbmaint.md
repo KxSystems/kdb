@@ -101,7 +101,7 @@ findcol[`:/data/taq;`trade;`iz]
 
 `fixtable[dbdir;table;goodpartition]`
 
-Adds missing columns to to all partitions of a table, given the location of a good partition. This _doesn’t_ delete extra columns – do that manually. Also this does not add tables to partitions in which they are missing, use [`.Q.chk`](http://code.kx.com/v2/ref/dotq/#qchk-fill-hdb) for that.
+Adds missing columns to to all partitions of a table, given the location of a good partition. This _doesn’t_ delete extra columns – do that manually. Also this does not add tables to partitions in which they are missing, use [`.Q.chk`](https://code.kx.com/v2/ref/dotq/#qchk-fill-hdb) for that.
 
 e.g.
 ```q
@@ -200,6 +200,6 @@ rentable[`:/data/taq;`trade;`transactions]
 See also
 --------
 
--   [`.Q.chk`](http://code.kx.com/v2/ref/dotq/#qchk-fill-hdb)
--   [`.Q.en`](http://code.kx.com/v2/ref/dotq/#qen-enumerate-varchar-cols)
+-   [`.Q.chk`](https://code.kx.com/v2/ref/dotq/#qchk-fill-hdb)
+-   [`.Q.en`](https://code.kx.com/v2/ref/dotq/#qen-enumerate-varchar-cols)
 
