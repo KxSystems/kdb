@@ -8,4 +8,4 @@ and can be read from the links on
 For current documentation of kdb+ and the q programming language, see
 [code.kx.com](https://code.kx.com/). 
 
-Inquiries to <librarian@code.kx.com>.
+Inquiries to <librarian@kx.com>.
