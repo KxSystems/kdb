@@ -1,3 +1,7 @@
+//2019.08.08 setFetchSize/setMaxRows are now respected.
+//           Queries still use sync request, but results>fetchSize are streamed back as async, [async...], response.
+//           also updated the DatabaseMetaData to work for kdb+3.x, dropping support for kdb+2.x.
+//           confirmed working for DBVisualizer v10.0.24.
 //2014.03.25 allow calling connection close() even if already closed, use jdk1.7 api
 //           jdk1.7 specific parts are sections after //1.7
 //2012.11.26 getRow(), use jdk6 api, return char[] as String to support Aqua Data Studio for lists of char vectors.
@@ -21,11 +25,41 @@ static int find(int[]x,int j){int i=0;for(;i<x.length&&x[i]!=j;)++i;return i;}
 static void q(String s)throws SQLException{throw new SQLException(s);}static void q()throws SQLException{throw new SQLFeatureNotSupportedException("nyi");}
 static void q(Exception e)throws SQLException{throw new SQLException(e.getMessage());}
 
-public class co implements Connection{private c c;public co(String s,Object u,Object p)throws SQLException{int i=s.indexOf(":");
- try{c=new c(s.substring(0,i),Integer.parseInt(s.substring(i+1)),u==null?"":(String)u+":"+(String)p);}catch(Exception e){q(e);}}
- public Object ex(String s,Object[]p)throws SQLException{try{return 0<c.n(p)?c.k(s,p):c.k(".o.ex",s.toCharArray());}catch(Exception e){q(e);return null;}}
- public rs qx(String s)throws SQLException{try{return new rs(null,c.k(s));}catch(Exception e){q(e);return null;}}
- public rs qx(String s,Object x)throws SQLException{try{return new rs(null,c.k(s,x));}catch(Exception e){q(e);return null;}}
+public class co implements Connection{private boolean streaming;private c c;public co(String s,Object u,Object p)throws SQLException{int i=s.indexOf(":");
+ try{c=new c(s.substring(0,i),Integer.parseInt(s.substring(i+1)),u==null?"":(String)u+":"+(String)p);c.setCollectResponseAsync(true);}catch(Exception e){q(e);}}
+ public Object getMoreRows()throws SQLException{
+   try{
+     if(streaming){
+       Object[]msg=c.readMsg();
+       if((byte)msg[0]==(byte)2) // response msg type is the last msg to be received
+         streaming=false;
+       return msg[1];
+     }
+   }
+   catch(Exception e){
+     q(e);
+   }
+   return null;
+ }
+ public Object[] ex(String s,Object[]p,int maxRows, int fetchSize)throws SQLException{
+   if(streaming)
+     throw new SQLException("A ResultSet is still open on this connection with messages queued from the server");
+   try{
+     boolean args=0<c.n(p);
+     String lambda="{[maxRows;fetchSize;fn;args]r:value[fn]args;r:$[.Q.qt r;select[maxRows]from 0!r;([]NonTabularResult:enlist -3!r)];if[fetchSize<count r;neg[.z.w]@/:-1_r:(0N;fetchSize)#r;r:last r;];r}["+maxRows+";"+fetchSize+"]";
+     if(args)
+       c.k(lambda,s.toCharArray(),p);
+     else
+       c.k(lambda,".o.ex".toCharArray(),s.toCharArray());
+     Object[]msg=c.readMsg();
+     streaming=(byte)msg[0]==(byte)0;// msg[0]==0 means async msg, i.e. streamed result. msg[0]==2 would be the final response msg already
+     return new Object[]{streaming,msg[1]};
+   }
+   catch(Exception e){q(e);}
+   return null;
+ }
+ public rs qx(String s)throws SQLException{try{c.k(s);return new rs(null,new Object[]{Boolean.FALSE,c.readMsg()[1]});}catch(Exception e){q(e);return null;}}
+ public rs qx(String s,Object x)throws SQLException{try{c.k(s,x);return new rs(null,new Object[]{Boolean.FALSE,c.readMsg()[1]});}catch(Exception e){q(e);return null;}}
  private boolean a=true;public void setAutoCommit(boolean b)throws SQLException{a=b;}public boolean getAutoCommit()throws SQLException{return a;}
  public void rollback()throws SQLException{}public void commit()throws SQLException{}
  public boolean isClosed()throws SQLException{return c==null;}
@@ -36,8 +70,8 @@ public class co implements Connection{private c c;public co(String s,Object u,Ob
  public String nativeSQL(String s)throws SQLException{return s;}
  private boolean b;private int i=TRANSACTION_SERIALIZABLE,h=rs.HOLD_CURSORS_OVER_COMMIT;
  public void setReadOnly(boolean x)throws SQLException{b=x;}public boolean isReadOnly()throws SQLException{return b;}
- public void setCatalog(String s)throws SQLException{q("cat");}
- public String getCatalog()throws SQLException{q("cat");return null;}
+ public void setCatalog(String s)throws SQLException{q("setCatalog not supported");}
+ public String getCatalog()throws SQLException{q("getCatalog not supported");return null;}
  public void setTransactionIsolation(int x)throws SQLException{i=x;}
  public int getTransactionIsolation()throws SQLException{return i;}
  public SQLWarning getWarnings()throws SQLException{return null;}
@@ -51,8 +85,8 @@ public class co implements Connection{private c c;public co(String s,Object u,Ob
 //3
  public void setHoldability(int holdability)throws SQLException{h=holdability;}
  public int getHoldability()throws SQLException{return h;}
- public Savepoint setSavepoint()throws SQLException{q("sav");return null;}
- public Savepoint setSavepoint(String name)throws SQLException{q("sav");return null;}
+ public Savepoint setSavepoint()throws SQLException{q("setSavepoint not supported");return null;}
+ public Savepoint setSavepoint(String name)throws SQLException{q("setSavepoint not supported");return null;}
  public void rollback(Savepoint savepoint)throws SQLException{}
  public void releaseSavepoint(Savepoint savepoint)throws SQLException{}
  public Statement createStatement(int resultSetType,int resultSetConcurrency,int resultSetHoldability)throws SQLException{return new st(this);}
@@ -84,13 +118,16 @@ public class co implements Connection{private c c;public co(String s,Object u,Ob
  public String getSchema(){return null;}
 }
 
-public class st implements Statement{private co co;private Object r;private int R,T;
+public class st implements Statement{private co co;private ResultSet resultSet;private int maxRows=Integer.MAX_VALUE,T,fetchSize=Integer.MAX_VALUE;
  protected Object[]p={};public st(co x){co=x;}
- public int executeUpdate(String s)throws SQLException{co.ex(s,p);return -1;}
- public ResultSet executeQuery(String s)throws SQLException{return new rs(this,co.ex(s,p));}
- public boolean execute(String s)throws SQLException{return null!=(r=co.ex(s,p));}
- public ResultSet getResultSet()throws SQLException{return new rs(this,r);}public int getUpdateCount(){return -1;}
- public int getMaxRows()throws SQLException{return R;}public void setMaxRows(int i)throws SQLException{R=i;}
+ public int executeUpdate(String s)throws SQLException{co.ex(s,p,maxRows,fetchSize);return -1;}
+ public ResultSet executeQuery(String s)throws SQLException{execute(s);return getResultSet();}
+ public boolean execute(String s)throws SQLException{
+   Object[]nrsTuple=co.ex(s,p,maxRows,fetchSize); // get tuple of {streaming,first chunk of results}
+   resultSet=new rs(this,nrsTuple);
+   return null!=nrsTuple[1];}
+ public ResultSet getResultSet()throws SQLException{return resultSet;}public int getUpdateCount(){return -1;}
+ public int getMaxRows()throws SQLException{return maxRows;}public void setMaxRows(int n)throws SQLException{if(n<0)q("setMaxRows(int), rows must be >=0. Passed "+n);maxRows=n;}
  public int getQueryTimeout()throws SQLException{return T;}public void setQueryTimeout(int i)throws SQLException{T=i;}
  // truncate excess BINARY,VARBINARY,LONGVARBINARY,CHAR,VARCHAR,and LONGVARCHAR fields
  public int getMaxFieldSize()throws SQLException{return 0;}public void setMaxFieldSize(int i)throws SQLException{}
@@ -98,16 +135,16 @@ public class st implements Statement{private co co;private Object r;private int 
  public void cancel()throws SQLException{}
  public SQLWarning getWarnings()throws SQLException{return null;}public void clearWarnings()throws SQLException{}
  // positioned update? different statement?
- public void setCursorName(String name)throws SQLException{q("cur");}
+ public void setCursorName(String name)throws SQLException{q("setCursorName not supported");}
  public boolean getMoreResults()throws SQLException{return false;}
- public void close()throws SQLException{co=null;}
- public void setFetchDirection(int direction)throws SQLException{q("fd");}
+ public void close()throws SQLException{if(resultSet!=null)resultSet.close();resultSet=null;co=null;}
+ public void setFetchDirection(int direction)throws SQLException{q("setFetchDirection not supported");}
  public int getFetchDirection()throws SQLException{return 0;}
- public void setFetchSize(int rows)throws SQLException{}
- public int getFetchSize()throws SQLException{return 0;}
+ public void setFetchSize(int rows)throws SQLException{if(fetchSize<0)throw new SQLException("setFetchSize(rows), rows must be >=0. Passed"+fetchSize);fetchSize=rows==0?Integer.MAX_VALUE:rows;}
+ public int getFetchSize()throws SQLException{return fetchSize;}
  public int getResultSetConcurrency()throws SQLException{return rs.CONCUR_READ_ONLY;}
  public int getResultSetType()throws SQLException{return rs.TYPE_SCROLL_INSENSITIVE;}
- public void addBatch(String sql)throws SQLException{q("bat");}public void clearBatch()throws SQLException{}
+ public void addBatch(String sql)throws SQLException{q("addBatch not supported");}public void clearBatch()throws SQLException{}
  public int[]executeBatch()throws SQLException{return new int[0];}
  public Connection getConnection()throws SQLException{return co;}
 //3
@@ -165,14 +202,14 @@ public class ps extends st implements PreparedStatement{private String s;public 
  public void setBlob(int i,Blob x)throws SQLException{q();}
  public void setClob(int i,Clob x)throws SQLException{q();}
  public void setArray(int i,Array x)throws SQLException{q();}
- public ResultSetMetaData getMetaData()throws SQLException{q("m");return null;}
+ public ResultSetMetaData getMetaData()throws SQLException{q("getMetaData not supported");return null;}
  public void setDate(int parameterIndex,Date x,Calendar cal)throws SQLException{q();}
  public void setTime(int parameterIndex,Time x,Calendar cal)throws SQLException{q();}
  public void setTimestamp(int parameterIndex,Timestamp x,Calendar cal)throws SQLException{q();}
  public void setNull(int paramIndex,int sqlType,String typeName)throws SQLException{q();}
 //3
  public void setURL(int parameterIndex,URL x)throws SQLException{q();}
- public ParameterMetaData getParameterMetaData()throws SQLException{q("m");return null;}
+ public ParameterMetaData getParameterMetaData()throws SQLException{q("getParameterMetaData not supported");return null;}
 //4
  public void setRowId(int i,RowId rowid)throws SQLException{q();}
  public void setNString(int i,String string)throws SQLException{q();}
@@ -314,17 +351,50 @@ public class cs extends ps implements CallableStatement{
  public <T>T getObject(int parameterIndex,Class<T>t)throws SQLFeatureNotSupportedException{throw new SQLFeatureNotSupportedException("nyi");} 
 }
 
-public class rs implements ResultSet{private st st;private String[]f;private Object o,d[];private int r,n;
- public rs(st s,Object x)throws SQLException{st=s;c.Flip a;try{a=c.td(x);f=a.x;d=a.y;n=c.n(d[0]);r=-1;}catch(UnsupportedEncodingException ex){throw new SQLException(ex);}}
+public class rs implements ResultSet{
+ private st st;
+ private String[]f;
+ private Object o,d[];
+ private boolean streamed;
+ private int r, // cursor position
+             n, // number of rows in the current chunk
+             offset; // first absolute row number for this chunk
+ public rs(st s,Object[]nrsTuple)throws SQLException{
+   st=s;
+   init(nrsTuple[1]);
+   streamed=(boolean)nrsTuple[0];
+   offset=0;
+   r=-1;
+ }
+ private void init(Object x)throws SQLException{
+   c.Flip a;
+   try{
+     a=c.td(x);
+     f=a.x;
+     d=a.y;
+     n=c.n(d[0]);
+   }catch(UnsupportedEncodingException ex){throw new SQLException(ex);}
+ }
  public ResultSetMetaData getMetaData()throws SQLException{return new rm(f,d);}
  public int findColumn(String s)throws SQLException{return 1+find(f,s);}
- public boolean next()throws SQLException{return++r<n;}
+ public boolean next()throws SQLException{
+   if(r+1>=offset+n&&streamed){
+     if(st!=null){ //qx() doesn't register an enclosing statement
+       Object x=st.co.getMoreRows();
+       if(x!=null){
+         offset+=n;
+         init(x);
+       }
+     }
+   }
+   if(r+1<offset+n){r++;return true;}else return false;
+}
  public boolean wasNull()throws SQLException{return o==null;}
- public Object getObject(int i)throws SQLException{o=c.at(d[i-1],r);return o instanceof char[]?new String((char[])o):o;}  
+ public Object getObject(int i)throws SQLException{o=c.at(d[i-1],r-offset);return o instanceof char[]?new String((char[])o):o;}  
  public boolean getBoolean(int i)throws SQLException{return((Boolean)getObject(i)).booleanValue();}
  public byte getByte(int i)throws SQLException{return((Byte)getObject(i)).byteValue();}
  public short getShort(int i)throws SQLException{Object x=getObject(i);return x==null?0:((Short)x).shortValue();}
- public int getInt(int i)throws SQLException{Object x=getObject(i);return x==null?0:((Integer)x).intValue();}
+ public int getInt(int i)throws SQLException{Object x=getObject(i);return x==null?0:x instanceof Integer?((Integer)x).intValue():((Short)x).intValue();}
  public long getLong(int i)throws SQLException{Object x=getObject(i);return x==null?0:((Long)x).longValue();}
  public float getFloat(int i)throws SQLException{Object x=getObject(i);return x==null?0:((Float)x).floatValue();}
  public double getDouble(int i)throws SQLException{Object x=getObject(i);return x==null?0:((Double)x).doubleValue();}
@@ -355,28 +425,28 @@ public class rs implements ResultSet{private st st;private String[]f;private Obj
  public InputStream getUnicodeStream(String s)throws SQLException{return getUnicodeStream(findColumn(s));}
  public InputStream getBinaryStream(String s)throws SQLException{return getBinaryStream(findColumn(s));}
  public SQLWarning getWarnings()throws SQLException{return null;}public void clearWarnings()throws SQLException{}
- public String getCursorName()throws SQLException{q("cur");return"";}
- public void close()throws SQLException{d=null;}
+ public String getCursorName()throws SQLException{q("getCursorName not supported");return"";}
+ public void close()throws SQLException{d=null;while(null!=st.co.getMoreRows());}// drain remaining streamed messages
  public Reader getCharacterStream(int columnIndex)throws SQLException{q();return null;}
  public Reader getCharacterStream(String columnName)throws SQLException{q();return null;}
  public BigDecimal getBigDecimal(int columnIndex)throws SQLException{q();return null;}
  public BigDecimal getBigDecimal(String columnName)throws SQLException{q();return null;}
  public boolean isBeforeFirst()throws SQLException{return r<0;}
- public boolean isAfterLast()throws SQLException{return r>=n;}
+ public boolean isAfterLast()throws SQLException{if(streamed)q("beforeFirst not supported on a streamed ResultSet");return r>=n;}
  public boolean isFirst()throws SQLException{return r==0;}
- public boolean isLast()throws SQLException{return r==n-1;}
- public void beforeFirst()throws SQLException{r=-1;}
- public void afterLast()throws SQLException{r=n;}
- public boolean first()throws SQLException{r=0;return n>0;}
- public boolean last()throws SQLException{r=n-1;return n>0;}
+ public boolean isLast()throws SQLException{if(streamed)q("beforeFirst not supported on a streamed ResultSet");return r==n-1;}
+ public void beforeFirst()throws SQLException{if(streamed)q("beforeFirst not supported on a streamed ResultSet");r=-1;}
+ public void afterLast()throws SQLException{if(streamed)q("afterLast not supported on a streamed ResultSet");r=n;}
+ public boolean first()throws SQLException{if(streamed)q("first not supported on a streamed ResultSet");r=0;return n>0;}
+ public boolean last()throws SQLException{if(streamed)q("last not supported on a streamed ResultSet");r=n-1;return n>0;}
  public int getRow()throws SQLException{return r+1;}
- public boolean absolute(int row)throws SQLException{r=row-1;return r<n;}
- public boolean relative(int rows)throws SQLException{r+=rows;return r>=0&&r<n;}
- public boolean previous()throws SQLException{--r;return r>=0;}
- public void setFetchDirection(int direction)throws SQLException{q("fd");}
+ public boolean absolute(int row)throws SQLException{if(streamed)q("absolute not supported on a streamed ResultSet");r=row-1;return r<n;}
+ public boolean relative(int rows)throws SQLException{if(streamed)q("relative not supported on a streamed ResultSet");r+=rows;return r>=0&&r<n;}
+ public boolean previous()throws SQLException{if(streamed)q("previous not supported on a streamed ResultSet");--r;return r>=0;}
+ public void setFetchDirection(int direction)throws SQLException{q("setFetchDirection not supported");}
  public int getFetchDirection()throws SQLException{return FETCH_FORWARD;}
- public void setFetchSize(int rows)throws SQLException{}public int getFetchSize()throws SQLException{return 0;}
- public int getType()throws SQLException{return TYPE_SCROLL_SENSITIVE;}
+ public void setFetchSize(int rows)throws SQLException{}public int getFetchSize()throws SQLException{return st.getFetchSize();}
+ public int getType()throws SQLException{return streamed?TYPE_FORWARD_ONLY:TYPE_SCROLL_SENSITIVE;}
  public int getConcurrency()throws SQLException{return CONCUR_READ_ONLY;}
  public boolean rowUpdated()throws SQLException{q();return false;}
  public boolean rowInserted()throws SQLException{q();return false;}
@@ -532,7 +602,7 @@ public class rm implements ResultSetMetaData{private String[]f;private Object[]d
  public boolean isCaseSensitive(int i)throws SQLException{return true;}
  public boolean isSearchable(int i)throws SQLException{return true;}
  public boolean isCurrency(int i)throws SQLException{return false;}
- public String getColumnClassName(int column)throws SQLException{q("col");return null;}
+ public String getColumnClassName(int column)throws SQLException{q("getColumnClassName not supported");return null;}
 //4
  public <T> T unwrap(Class<T> type)throws SQLException{q();return null;}
  public boolean isWrapperFor(Class<?> type)throws SQLException{q();return false;}
@@ -545,27 +615,27 @@ public class dm implements DatabaseMetaData{private co co;public dm(co x){co=x;}
  public ResultSet getTables(String a,String b,String t,String x[])throws SQLException{return co.qx(
   "raze{([]TABLE_CAT:`;TABLE_SCHEM:`;TABLE_NAME:system string`a`b x=`VIEW;TABLE_TYPE:x)}each",x);}
  public ResultSet getTypeInfo()throws SQLException{return co.qx(
-  "`DATA_TYPE xasc([]TYPE_NAME:`boolean`byte`short`int`long`real`float`symbol`date`time`timestamp;DATA_TYPE:16 -2 5 4 -5 7 8 12 91 92 93;PRECISION:11;LITERAL_PREFIX:`;LITERAL_SUFFIX:`;CREATE_PARAMS:`;NULLABLE:1h;CASE_SENSITIVE:1b;SEARCHABLE:1h;UNSIGNED_ATTRIBUTE:0b;FIXED_PREC_SCALE:0b;AUTO_INCREMENT:0b;LOCAL_TYPE_NAME:`;MINIMUM_SCALE:0h;MAXIMUM_SCALE:0h;SQL_DATA_TYPE:0;SQL_DATETIME_SUB:0;NUM_PREC_RADIX:10)");}
+  "`DATA_TYPE xasc([]TYPE_NAME:`boolean`byte`short`int`long`real`float`symbol`date`time`timestamp;DATA_TYPE:16 -2 5 4 -5 7 8 12 91 92 93i;PRECISION:11i;LITERAL_PREFIX:`;LITERAL_SUFFIX:`;CREATE_PARAMS:`;NULLABLE:1h;CASE_SENSITIVE:1b;SEARCHABLE:1h;UNSIGNED_ATTRIBUTE:0b;FIXED_PREC_SCALE:0b;AUTO_INCREMENT:0b;LOCAL_TYPE_NAME:`;MINIMUM_SCALE:0h;MAXIMUM_SCALE:0h;SQL_DATA_TYPE:0i;SQL_DATETIME_SUB:0i;NUM_PREC_RADIX:10i)");}
  public ResultSet getColumns(String a,String b,String t,String c)throws SQLException{if(t.startsWith("%"))t="";return co.qx(
-  "select TABLE_CAT:`,TABLE_SCHEM:`,TABLE_NAME:n,COLUMN_NAME:c,DATA_TYPE:0,TYPE_NAME:t,COLUMN_SIZE:2000000000,BUFFER_LENGTH:0,DECIMAL_DIGITS:16,NUM_PREC_RADIX:10,NULLABLE:1,REMARKS:`,COLUMN_DEF:`,SQL_DATA_TYPE:0,SQL_DATETIME_SUB:0,CHAR_OCTET_LENGTH:2000000000,ORDINAL_POSITION:1+til count n,NULLABLE:`YES from .Q.nct`"+t);}
- public ResultSet getPrimaryKeys(String a,String b,String t)throws SQLException{q("pk");return co.qx(
+  "select TABLE_CAT:`,TABLE_SCHEM:`,TABLE_NAME:n,COLUMN_NAME:c,DATA_TYPE:0i,TYPE_NAME:`int$t,COLUMN_SIZE:2000000000i,BUFFER_LENGTH:0i,DECIMAL_DIGITS:16i,NUM_PREC_RADIX:10i,NULLABLE:1i,REMARKS:`,COLUMN_DEF:`,SQL_DATA_TYPE:0i,SQL_DATETIME_SUB:0i,CHAR_OCTET_LENGTH:2000000000i,ORDINAL_POSITION:`int$1+til count n,NULLABLE:`YES from .Q.nct`"+t);}
+ public ResultSet getPrimaryKeys(String a,String b,String t)throws SQLException{q("getPrimaryKeys not supported");return co.qx(
   "");} //"q)([]TABLE_CAT:'',TABLE_SCHEM:'',TABLE_NAME:'"+t+"',COLUMN_NAME:key "+t+",KEY_SEQ:1+asc count key "+t+",PK_NAME:'')");}
- public ResultSet getImportedKeys(String a,String b,String t)throws SQLException{q("imp");return co.qx(
+ public ResultSet getImportedKeys(String a,String b,String t)throws SQLException{q("getImportedKeys not supported");return co.qx(
   "");} //"q)select PKTABLE_CAT:'',PKTABLE_SCHEM:'',PKTABLE_NAME:x,PKCOLUMN_NAME:first each key each x,FKTABLE_CAT:'',FKTABLE_SCHEM:'',FKTABLE_NAME:'"+t+"',FKCOLUMN_NAME:y,KEY_SEQ:1,UPDATE_RULE:1,DELETE_RULE:0,FK_NAME:'',PK_NAME:'',DEFERRABILITY:0 from('x','y')vars fkey "+t);}
- public ResultSet getProcedures(String a,String b,String p)throws SQLException{q("pr");return co.qx(
+ public ResultSet getProcedures(String a,String b,String p)throws SQLException{q("getProcedures not supported");return co.qx(
   "");} // "q)([]PROCEDURE_CAT:'',PROCEDURE_SCHEM:'',PROCEDURE_NAME:varchar(),r0:0,r1:0,r2:0,REMARKS:'',PROCEDURE_TYPE:0)");}
- public ResultSet getExportedKeys(String a,String b,String t)throws SQLException{q("exp");return null;}
- public ResultSet getCrossReference(String pa,String pb,String pt,String fa,String fb,String ft)throws SQLException{q("cr");return null;}
- public ResultSet getIndexInfo(String a,String b,String t,boolean unique,boolean approximate)throws SQLException{q("ii");return null;}
- public ResultSet getProcedureColumns(String a,String b,String p,String c)throws SQLException{q("pc");return null;}
+ public ResultSet getExportedKeys(String a,String b,String t)throws SQLException{q("getExportedKeys not supported");return null;}
+ public ResultSet getCrossReference(String pa,String pb,String pt,String fa,String fb,String ft)throws SQLException{q("getCrossReference not supported");return null;}
+ public ResultSet getIndexInfo(String a,String b,String t,boolean unique,boolean approximate)throws SQLException{q("getIndexInfo not supported");return null;}
+ public ResultSet getProcedureColumns(String a,String b,String p,String c)throws SQLException{q("getProcedureColumns not supported");return null;}
 // PROCEDURE_CAT PROCEDURE_SCHEM PROCEDURE_NAME ...
- public ResultSet getColumnPrivileges(String a,String b,String table,String columnNamePattern)throws SQLException{q("cp");return null;}
+ public ResultSet getColumnPrivileges(String a,String b,String table,String columnNamePattern)throws SQLException{q("getColumnPrivileges not supported");return null;}
 //select TABLE_CAT TABLE_SCHEM TABLE_NAME COLUMN_NAME GRANTOR GRANTEE PRIVILEGE IS_GRANTABLE ordered by COLUMN_NAME and PRIVILEGE.
- public ResultSet getTablePrivileges(String a,String b,String t)throws SQLException{q("tp");return null;}
+ public ResultSet getTablePrivileges(String a,String b,String t)throws SQLException{q("getTablePrivileges not supported");return null;}
 //select TABLE_CAT TABLE_SCHEM TABLE_NAME GRANTOR GRANTEE PRIVILEGE IS_GRANTABLE ordered by TABLE_SCHEM,TABLE_NAME,and PRIVILEGE.
- public ResultSet getBestRowIdentifier(String a,String b,String t,int scope,boolean nullable)throws SQLException{q("br");return null;}
+ public ResultSet getBestRowIdentifier(String a,String b,String t,int scope,boolean nullable)throws SQLException{q("getBestRowIdentifier not supported");return null;}
 //select SCOPE COLUMN_NAME DATA_TYPE TYPE_NAME COLUMN_SIZE DECIMAL_DIGITS PSEUDO_COLUMN ordered by SCOPE
- public ResultSet getVersionColumns(String a,String b,String t)throws SQLException{q("vc");return null;}
+ public ResultSet getVersionColumns(String a,String b,String t)throws SQLException{q("getVersionColumns not supported");return null;}
 //select SCOPE COLUMN_NAME DATA_TYPE TYPE_NAME COLUMN_SIZE DECIMAL_DIGITS PSEUDO_COLUMN ordered by SCOPE
  public boolean allProceduresAreCallable()throws SQLException{return true;}
  public boolean allTablesAreSelectable()throws SQLException{return true;}
