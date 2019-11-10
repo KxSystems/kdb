@@ -1,4 +1,5 @@
-//2019.08.08 setFetchSize/setMaxRows are now respected.
+//2019.10.10 Cleaned up logic from last commit.
+//2019.10.08 setFetchSize/setMaxRows are now respected.
 //           Queries still use sync request, but results>fetchSize are streamed back as async, [async...], response.
 //           also updated the DatabaseMetaData to work for kdb+3.x, dropping support for kdb+2.x.
 //           confirmed working for DBVisualizer v10.0.24.
@@ -42,11 +43,12 @@ public class co implements Connection{private boolean streaming;private c c;publ
    return null;
  }
  public Object[] ex(String s,Object[]p,int maxRows, int fetchSize)throws SQLException{
+fetchSize=13;
    if(streaming)
      throw new SQLException("A ResultSet is still open on this connection with messages queued from the server");
    try{
      boolean args=0<c.n(p);
-     String lambda="{[maxRows;fetchSize;fn;args]r:value[fn]args;r:$[.Q.qt r;select[maxRows]from 0!r;([]NonTabularResult:enlist -3!r)];if[fetchSize<count r;neg[.z.w]@/:-1_r:(0N;fetchSize)#r;r:last r;];r}["+maxRows+";"+fetchSize+"]";
+     String lambda="{[maxRows;fetchSize;fn;args]$[not .Q.qt r:value[fn]args;::;count r:select[maxRows]from 0!r;{neg[.z.w]@/:-1_x;last x}(0N;fetchSize)#r;r]}["+maxRows+";"+fetchSize+"]";
      if(args)
        c.k(lambda,s.toCharArray(),p);
      else
@@ -120,12 +122,18 @@ public class co implements Connection{private boolean streaming;private c c;publ
 
 public class st implements Statement{private co co;private ResultSet resultSet;private int maxRows=Integer.MAX_VALUE,T,fetchSize=Integer.MAX_VALUE;
  protected Object[]p={};public st(co x){co=x;}
- public int executeUpdate(String s)throws SQLException{co.ex(s,p,maxRows,fetchSize);return -1;}
- public ResultSet executeQuery(String s)throws SQLException{execute(s);return getResultSet();}
+ public int executeUpdate(String s)throws SQLException{
+   if(resultSet!=null)resultSet.close();resultSet=null;
+   Object[]nrsTuple=co.ex(s,p,maxRows,fetchSize);
+   if(nrsTuple[1] instanceof c.Flip)q("Statement produced a ResultSet");
+   return 0;}
+ public ResultSet executeQuery(String s)throws SQLException{if(!execute(s))q("Statement did not produce a ResultSet");return getResultSet();}
  public boolean execute(String s)throws SQLException{
+   if(resultSet!=null)resultSet.close();resultSet=null;
    Object[]nrsTuple=co.ex(s,p,maxRows,fetchSize); // get tuple of {streaming,first chunk of results}
-   resultSet=new rs(this,nrsTuple);
-   return null!=nrsTuple[1];}
+   if(nrsTuple[1] instanceof c.Flip)
+     resultSet=new rs(this,nrsTuple);
+   return resultSet!=null;}
  public ResultSet getResultSet()throws SQLException{return resultSet;}public int getUpdateCount(){return -1;}
  public int getMaxRows()throws SQLException{return maxRows;}public void setMaxRows(int n)throws SQLException{if(n<0)q("setMaxRows(int), rows must be >=0. Passed "+n);maxRows=n;}
  public int getQueryTimeout()throws SQLException{return T;}public void setQueryTimeout(int i)throws SQLException{T=i;}
@@ -356,7 +364,8 @@ public class rs implements ResultSet{
  private String[]f;
  private Object o,d[];
  private boolean streamed;
- private int r, // cursor position
+ private boolean endOfStream;
+private int r, // cursor position
              n, // number of rows in the current chunk
              offset; // first absolute row number for this chunk
  public rs(st s,Object[]nrsTuple)throws SQLException{
@@ -378,13 +387,15 @@ public class rs implements ResultSet{
  public ResultSetMetaData getMetaData()throws SQLException{return new rm(f,d);}
  public int findColumn(String s)throws SQLException{return 1+find(f,s);}
  public boolean next()throws SQLException{
-   if(r+1>=offset+n&&streamed){
+   if(r+1>=offset+n&&streamed&&!endOfStream){
      if(st!=null){ //qx() doesn't register an enclosing statement
        Object x=st.co.getMoreRows();
        if(x!=null){
          offset+=n;
          init(x);
        }
+       else
+         endOfStream=true;
      }
    }
    if(r+1<offset+n){r++;return true;}else return false;
@@ -426,7 +437,7 @@ public class rs implements ResultSet{
  public InputStream getBinaryStream(String s)throws SQLException{return getBinaryStream(findColumn(s));}
  public SQLWarning getWarnings()throws SQLException{return null;}public void clearWarnings()throws SQLException{}
  public String getCursorName()throws SQLException{q("getCursorName not supported");return"";}
- public void close()throws SQLException{d=null;while(null!=st.co.getMoreRows());}// drain remaining streamed messages
+ public void close()throws SQLException{d=null;if(st!=null)while(null!=st.co.getMoreRows());}// drain remaining streamed messages
  public Reader getCharacterStream(int columnIndex)throws SQLException{q();return null;}
  public Reader getCharacterStream(String columnName)throws SQLException{q();return null;}
  public BigDecimal getBigDecimal(int columnIndex)throws SQLException{q();return null;}
@@ -445,7 +456,7 @@ public class rs implements ResultSet{
  public boolean previous()throws SQLException{if(streamed)q("previous not supported on a streamed ResultSet");--r;return r>=0;}
  public void setFetchDirection(int direction)throws SQLException{q("setFetchDirection not supported");}
  public int getFetchDirection()throws SQLException{return FETCH_FORWARD;}
- public void setFetchSize(int rows)throws SQLException{}public int getFetchSize()throws SQLException{return st.getFetchSize();}
+ public void setFetchSize(int rows)throws SQLException{}public int getFetchSize()throws SQLException{return st!=null?st.getFetchSize():0;}
  public int getType()throws SQLException{return streamed?TYPE_FORWARD_ONLY:TYPE_SCROLL_SENSITIVE;}
  public int getConcurrency()throws SQLException{return CONCUR_READ_ONLY;}
  public boolean rowUpdated()throws SQLException{q();return false;}
