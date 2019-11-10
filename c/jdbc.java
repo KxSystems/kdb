@@ -43,7 +43,6 @@ public class co implements Connection{private boolean streaming;private c c;publ
    return null;
  }
  public Object[] ex(String s,Object[]p,int maxRows, int fetchSize)throws SQLException{
-fetchSize=13;
    if(streaming)
      throw new SQLException("A ResultSet is still open on this connection with messages queued from the server");
    try{
