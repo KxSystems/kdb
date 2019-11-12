@@ -1,5 +1,5 @@
-//2019.10.10 Cleaned up logic from last commit.
-//2019.10.08 setFetchSize/setMaxRows are now respected.
+//2019.11.10 Cleaned up logic from last commit.
+//2019.11.08 setFetchSize/setMaxRows are now respected.
 //           Queries still use sync request, but results>fetchSize are streamed back as async, [async...], response.
 //           also updated the DatabaseMetaData to work for kdb+3.x, dropping support for kdb+2.x.
 //           confirmed working for DBVisualizer v10.0.24.
