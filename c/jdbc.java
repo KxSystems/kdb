@@ -1,4 +1,5 @@
 //2019.12.16 getTimestamp() was throwing an exception when given a java.util.date
+//           setMaxRows/setFetchSize was not interpreting 0 to indicate unlimited.
 //2019.11.10 Cleaned up logic from last commit.
 //2019.11.08 setFetchSize/setMaxRows are now respected.
 //           Queries still use sync request, but results>fetchSize are streamed back as async, [async...], response.
@@ -48,7 +49,7 @@ public class co implements Connection{private boolean streaming;private c c;publ
      throw new SQLException("A ResultSet is still open on this connection with messages queued from the server");
    try{
      boolean args=0<c.n(p);
-     String lambda="{[maxRows;fetchSize;fn;args]$[not .Q.qt r:value[fn]args;::;count r:select[maxRows]from 0!r;{neg[.z.w]@/:-1_x;last x}(0N;fetchSize)#r;r]}["+maxRows+";"+fetchSize+"]";
+     String lambda="{[maxRows;fetchSize;fn;args]$[not .Q.qt r:value[fn]args;::;count r:select[maxRows]from 0!r;{neg[.z.w]@/:-1_x;last x}(0N;fetchSize)#r;r]}["+(maxRows>0?maxRows:Integer.MAX_VALUE)+";"+(fetchSize>0?fetchSize:Integer.MAX_VALUE)+"]";
      if(args)
        c.k(lambda,s.toCharArray(),p);
      else
@@ -120,7 +121,7 @@ public class co implements Connection{private boolean streaming;private c c;publ
  public String getSchema(){return null;}
 }
 
-public class st implements Statement{private co co;private ResultSet resultSet;private int maxRows=Integer.MAX_VALUE,T,fetchSize=Integer.MAX_VALUE;
+public class st implements Statement{private co co;private ResultSet resultSet;private int maxRows=0,T,fetchSize=0;
  protected Object[]p={};public st(co x){co=x;}
  public int executeUpdate(String s)throws SQLException{
    if(resultSet!=null)resultSet.close();resultSet=null;
@@ -148,7 +149,7 @@ public class st implements Statement{private co co;private ResultSet resultSet;p
  public void close()throws SQLException{if(resultSet!=null)resultSet.close();resultSet=null;co=null;}
  public void setFetchDirection(int direction)throws SQLException{q("setFetchDirection not supported");}
  public int getFetchDirection()throws SQLException{return 0;}
- public void setFetchSize(int rows)throws SQLException{if(fetchSize<0)throw new SQLException("setFetchSize(rows), rows must be >=0. Passed"+fetchSize);fetchSize=rows==0?Integer.MAX_VALUE:rows;}
+ public void setFetchSize(int rows)throws SQLException{if(fetchSize<0)throw new SQLException("setFetchSize(rows), rows must be >=0. Passed"+fetchSize);fetchSize=rows;}
  public int getFetchSize()throws SQLException{return fetchSize;}
  public int getResultSetConcurrency()throws SQLException{return rs.CONCUR_READ_ONLY;}
  public int getResultSetType()throws SQLException{return rs.TYPE_SCROLL_INSENSITIVE;}
