@@ -1,3 +1,4 @@
+//2019.12.16 getTimestamp() was throwing an exception when given a java.util.date
 //2019.11.10 Cleaned up logic from last commit.
 //2019.11.08 setFetchSize/setMaxRows are now respected.
 //           Queries still use sync request, but results>fetchSize are streamed back as async, [async...], response.
@@ -411,7 +412,7 @@ private int r, // cursor position
  public String getString(int i)throws SQLException{Object x=getObject(i);return x==null?null:x.toString();}
  public Date getDate(int i)throws SQLException{return(Date)getObject(i);}
  public Time getTime(int i)throws SQLException{return(Time)getObject(i);}
- public Timestamp getTimestamp(int i)throws SQLException{return(Timestamp)getObject(i);}
+ public Timestamp getTimestamp(int i)throws SQLException{Object o=getObject(i);return o instanceof java.util.Date?new Timestamp(((java.util.Date)o).getTime()):(Timestamp)o;}
  public byte[]getBytes(int i)throws SQLException{q();return null;}
  public BigDecimal getBigDecimal(int i,int scale)throws SQLException{q();return null;}
  public InputStream getAsciiStream(int i)throws SQLException{q();return null;}
