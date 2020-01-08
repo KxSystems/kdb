@@ -67,7 +67,7 @@ rename1col:{[tabledir;oldname;newname]
  if[(oldname in ac)and not newname in ac:allcols tabledir;
   stdout"renaming ",(string oldname)," to ",(string newname)," in `",string tabledir;
   .os.ren[` sv tabledir,oldname;` sv tabledir,newname];
-  if[key ` sv tabledir,oldname1:`$(string oldname),"#";
+  if[not ()~key ` sv tabledir,oldname1:`$(string oldname),"#";
    .os.ren[` sv tabledir,oldname1;` sv tabledir,`$(string newname),"#"]];
   @[tabledir;`.d;:;.[ac;where ac=oldname;:;newname]]]}
 
