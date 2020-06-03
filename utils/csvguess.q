@@ -1,5 +1,6 @@
 / guess a reasonable loadstring for a csv file (kdb+ 2.4 or greater)
-"kdb+csvguess 0.52 2020.05.19"
+"kdb+csvguess 0.53 2020.06.03"
+/ 2020.06.03 adjust basic handling of timespan (210,211)
 / 2020.05.19 add basic types option -basic
 / 2017.12.20 add {} around GUIDS for MS GUID 
 / 2016.11.09 add " " as valid delimiter in P
@@ -121,7 +122,8 @@ info:update t:"V",(rules:rules,'170),maybe:0b from info where t="T",mw in 7 8,md
 info:update t:"T",(rules:rules,'180),maybe:1b from info where EXTENDED,t in"EF",mw within 7 10,mdot=1,{all x like"*[0-9][0-5][0-9][0-5][0-9].*"}peach sdv,cancast["T"]peach sdv
 / info:update t:"Z",(rules:rules,'190),maybe:0b from info where t="n",mw within 11 24,mdot<4,cancast["Z"]peach sdv
 info:update t:"P",(rules:rules,'200),maybe:1b from info where t="n",mw within 11 29,mdot<4,{all x like"[12][0-9][0-9][0-9][ ./-][01][0-9][ ./-][0-3][0-9]*"}peach sdv,cancast["P"]peach sdv
-info:update t:"N",(rules:rules,'210),maybe:1b from info where EXTENDED,t="n",mw within 3 28,mdot=1,cancast["N"]peach sdv
+info:update t:"N",(rules:rules,'210),maybe:0b from info where t="n",mw within 3 28,mdot=1,{all x like"*[0-9]D[0-9]*"}peach sdv,cancast["N"]peach sdv
+info:update t:"N",(rules:rules,'211),maybe:1b from info where EXTENDED,t="n",mw within 3 28,mdot=1,cancast["N"]peach sdv
 info:update t:"?",(rules:rules,'220),maybe:0b from info where t="n" / reset remaining maybe numeric
 info:update t:"C",(rules:rules,'230),maybe:0b from info where t="?",mw=1 / char
 info:update t:"D",(rules:rules,'231),maybe:0b from info where t="?",mdot=0,mw within 5 9,{all x like"*[0-9][a-sA-S][a-uA-U][b-yB-Y][0-9][0-9]*"}peach sdv,cancast["D"]peach sdv / 1dec12..01dec2011
