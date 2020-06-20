@@ -56,16 +56,16 @@ WIDTHHDR:25000 / initial width read to look for header record
 READLINES:5555 / approximate number of records to check
 FORCECHARWIDTH:30 / width beyond which we just set a column to be text and finished
 CHUNKSIZE:4194000 / chunksize read when bulk load/save - much larger than safe default in .Q.fs
-COMPRESSZD:(17;2;6)
+COMPRESSZD:(17;3;0)
 SAVEDB:`:csvdb / database top level, where things like `:sym live
 SAVEPTN:` / individual partition, 2006.12.25 frinstance; ` => none
 PRESAVEEACH:{x} / function to be run before each incremental save (delete date field?)
 POSTLOADEACH:{x} / function to be run after each incremental load from file
-/ POSTLOADALL:{update `p#sym from`sym`time xasc x}
 POSTLOADALL:{x} / function to be run after complete load from file (LOAD/BULKLOAD only, not BULKSAVE as never all data in one place)
+/ POSTLOADALL:{update `p#sym from`sym`time xasc x}
+POSTSAVEALL:{x} / function to be run after all saved, to set `p# on `sym for example: {@[x;`sym;`p#]} or sort by sym {`sym xasc x}
 / POSTSAVEALL:{@[`sym`time xasc x;`sym;`p#]}
 / POSTSAVEALL:{dasc[x;`sym`time;`p#]} / faster than xasc on disk
-POSTSAVEALL:{x} / function to be run after all saved, to set `p# on `sym for example: {@[x;`sym;`p#]} or sort by sym {`sym xasc x}
 @[.:;"\\l csvguess.custom.q";::]; / save your custom settings in csvguess.custom.q to override those set above
 
 if[0=hcount LOADFILE;-2"empty file: ",first .Q.x;exit 1]

@@ -28,6 +28,7 @@
 / .csv.read[file]/read10[file] - for when you don't care about checking/tweaking the <info> before reading
 / .csv.basicread[file]/basicread10[file] - read the basicdata, 20200520 is an int instead of a date frinstance
 
+/ keep these two filters at the top level, easy for users to tweak 
 POSTLOADEACH:{x}; / {delete from x where col0=-1}
 POSTLOADALL:{x}; / {`col0`col1 xasc x}
 
