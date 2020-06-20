@@ -28,6 +28,9 @@
 / .csv.read[file]/read10[file] - for when you don't care about checking/tweaking the <info> before reading
 / .csv.basicread[file]/basicread10[file] - read the basicdata, 20200520 is an int instead of a date frinstance
 
+POSTLOADEACH:{x}; / {delete from x where col0=-1}
+POSTLOADALL:{x}; / {`col0`col1 xasc x}
+
 \d .csv
 DELIM:","
 ZAPHDRS:0b / lowercase and remove _ from colhdrs (junk characters are always removed)
@@ -38,9 +41,6 @@ SYMMAXGR:10 / max symbol granularity% before we give up and keep as a * string
 FORCECHARWIDTH:30 / every field (of any type) with values this wide or more is forced to character "*"
 DISCARDEMPTY:0b / completely ignore empty columns if true else set them to "C"
 CHUNKSIZE:50000000 / used in fs2 (modified .Q.fs)
-
-POSTLOADEACH:{x}; / {delete from x where col0=-1}
-POSTLOADALL:{x}; / {`col0`col1 xasc x}
 
 k)nameltrim:{$[~@x;.z.s'x;~(*x)in aA:.Q.a,.Q.A;(+/&\~x in aA)_x;x]}
 k)fs2:{[f;s]((-7!s)>){[f;s;x]i:1+last@&0xa=r:1:(s;x;CHUNKSIZE);f@`\:i#r;x+i}[f;s]/0j}
@@ -56,7 +56,7 @@ basicread10:{[file]data10[file;basicinfo[file]]}
 colhdrs:{[file]
   {cols .Q.id flip x!(count x)#()}`$DELIM vs cleanhdrs first read0(file;0;1+first where 0xa=read1(file;0;WIDTHHDR))}
 data:{[file;info]
-  (`. `POSTLOADALL)(exec c from info where not t=" ")xcol(exec t from info;enlist DELIM)0:file}
+  (`. `POSTLOADALL)(`. `POSTLOADEACH)(exec c from info where not t=" ")xcol(exec t from info;enlist DELIM)0:file}
 data10:{[file;info]
   data[;info](file;0;1+last 11#where 0xa=read1(file;0;15*WIDTHHDR))}
 info0:{[file;onlycols;extended]
