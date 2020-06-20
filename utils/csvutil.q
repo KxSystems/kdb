@@ -1,5 +1,6 @@
 / utilities to quickly load a csv file - for more exhaustive analysis of the csv contents see csvguess.q
-/ 2020.06.03 adjust basic handling of timespan (210,211)
+/ 2020.06.20 - add POSTLOADEACH and POSTLOADALL filtering 
+/ 2020.06.03 - adjust basic handling of timespan (210,211)
 / 2020.05.17 - add basicinfo
 / 2020.05.06 - bugfix for infolike and info0 
 / 2016.11.09 - add " " as valid delimiter in P
@@ -38,6 +39,9 @@ FORCECHARWIDTH:30 / every field (of any type) with values this wide or more is f
 DISCARDEMPTY:0b / completely ignore empty columns if true else set them to "C"
 CHUNKSIZE:50000000 / used in fs2 (modified .Q.fs)
 
+POSTLOADEACH:{x}; / {delete from x where col0=-1}
+POSTLOADALL:{x}; / {`col0`col1 xasc x}
+
 k)nameltrim:{$[~@x;.z.s'x;~(*x)in aA:.Q.a,.Q.A;(+/&\~x in aA)_x;x]}
 k)fs2:{[f;s]((-7!s)>){[f;s;x]i:1+last@&0xa=r:1:(s;x;CHUNKSIZE);f@`\:i#r;x+i}[f;s]/0j}
 cleanhdrs:{{$[ZAPHDRS;lower x except"_";x]}x where x in DELIM,.Q.an}
@@ -52,7 +56,7 @@ basicread10:{[file]data10[file;basicinfo[file]]}
 colhdrs:{[file]
   {cols .Q.id flip x!(count x)#()}`$DELIM vs cleanhdrs first read0(file;0;1+first where 0xa=read1(file;0;WIDTHHDR))}
 data:{[file;info]
-  (exec c from info where not t=" ")xcol(exec t from info;enlist DELIM)0:file}
+  (`. `POSTLOADALL)(exec c from info where not t=" ")xcol(exec t from info;enlist DELIM)0:file}
 data10:{[file;info]
   data[;info](file;0;1+last 11#where 0xa=read1(file;0;15*WIDTHHDR))}
 info0:{[file;onlycols;extended]
@@ -126,6 +130,6 @@ bulkload:{[file;info]
   if[not`DATA in system"v";'`DATA.not.defined];
   if[count DATA;'`DATA.not.empty];
   loadhdrs:exec c from info where not t=" ";loadfmts:exec t from info;
-  .csv.fs2[{[file;loadhdrs;loadfmts] `DATA insert $[count DATA;flip loadhdrs!(loadfmts;.csv.DELIM)0:file;loadhdrs xcol(loadfmts;enlist .csv.DELIM)0:file]}[file;loadhdrs;loadfmts]];
-  count DATA}
+  .csv.fs2[{[file;loadhdrs;loadfmts] `DATA insert $[count DATA;flip loadhdrs!(loadfmts;.csv.DELIM)0:file;(`. `POSTLOADEACH)loadhdrs xcol(loadfmts;enlist .csv.DELIM)0:file]}[file;loadhdrs;loadfmts]];
+  count DATA::(`. `POSTLOADALL)DATA}
 @[.:;"\\l csvutil.custom.q";::]; / save your custom settings in csvutil.custom.q to override those set at the beginning of the file
