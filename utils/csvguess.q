@@ -1,5 +1,6 @@
 / guess a reasonable loadstring for a csv file (kdb+ 2.4 or greater)
-"kdb+csvguess 0.53 2020.06.03"
+"kdb+csvguess 0.54 2020.06.20"
+/ 2020.06.20 system"c" setting went AWOL in savescript
 / 2020.06.03 adjust basic handling of timespan (210,211)
 / 2020.05.19 add basic types option -basic
 / 2017.12.20 add {} around GUIDS for MS GUID 
@@ -189,7 +190,7 @@ if[COMPRESS;.z.zd:COMPRESSZD]
 / q xxx.q FILENAME -bs -savedb foo -saveptn 2006.12.25 -savename goo / to bulksave FILENAME to directory foo in the 2006.12.25 date partition as table goo
 / q xxx.q ... -exit / exit on completion of commands (only makes sense with -bs and -js)
 / q xxx.q .. -chunksize NN / non-default read chunksize - default is 25
-savescript:{f:`$":",(string LOADNAME),".load.q";f 1:"";hs:neg hopen f;
+savescript:{f:`$":",(string LOADNAME),".load.q";f 1:"";hs:neg hopen f;system"c 10000 10000";
   hs"/ ",(string .z.z)," ",(string .z.h)," ",(string .z.u);
   hs"/ q ",(string LOADNAME),".load.q FILE [-bl|bulkload] [-bs|bulksave] [-co|compress] [-js|justsym] [-exit] [-savedb SAVEDB] [-saveptn SAVEPTN] [-savename SAVENAME] [-chunksize NNN (in MB)] ";
   hs"/ q ",(string LOADNAME),".load.q FILE";
