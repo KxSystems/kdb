@@ -15,7 +15,7 @@ Both of them use a generated table <info> which contains information about the C
 * mw - max width seen.
 * dot - maximum number of dots/points - for an int this would have to be 0, for a float 1 or 0.
 * rules - the rule numbers which were used to decide on the proposed datatype (see the code for exactly what's being checked)
-* gr - granularity - a measure of the number of different values. A granularity of 0 means it’s all just one value, 100 means every value is different. A high granularity is an indicator that the column will compress well, and that it could be stored as an enumeration rather than strings.
+* gr - granularity - a measure of the number of different values. A granularity of 0 means it’s all just one value, 100 means every value is different. A LOW granularity is an indicator that the column will compress well (few distinct values), and that it could be stored as an enumeration rather than strings.
 * nov - number of default values. The exact count as used to calculate <gr> above
 * dchar - distinct characters in values.
 
