@@ -1,3 +1,4 @@
+// 2021.04.05 added decompress support
 // 2016.09.15 performance enhancement for temporal constructors and type identification
 // 2016.03.18 char vectors and symbols now [de]serialize [from]to utf8
 // 2014.03.18 Serialize date now adjusts for timezone.
@@ -36,6 +37,49 @@ function u16u8(u8){
     }
   return u16;
 }
+
+function uncompress(b) {
+  b=new Uint8Array(b)
+  if (b.length < 12 + 1) {
+    return b;
+  }
+  function i32u8(u8){return new Uint32Array(u8)[0];}
+  var n = 0,r = 0,f = 0,s = 8,p = s,i = 0,d=12;
+  var usize = i32u8(b.buffer.slice(8, 12));
+  var dst = new Uint8Array(usize);
+  var aa = new Int32Array(256);
+  for (; s < dst.length;) {
+    if (i == 0) {
+      f = 0xff & b[d++];
+      i = 1;
+    }
+    if ((f & i) != 0) {
+      r = aa[0xff & b[d++]];
+      dst[s++] = dst[r++];
+      dst[s++] = dst[r++];
+      n = 0xff & b[d++];
+      for (m = 0; m < n; m++) {
+        dst[s + m] = dst[r + m];
+      }
+    } else {
+      dst[s++] = b[d++];
+    }
+    for (; p < s - 1;) {
+      aa[(0xff & dst[p]) ^ (0xff & dst[p + 1])] = p++;
+    }
+    if ((f & i) != 0) {
+      s += n;
+      p = s;
+    }
+    i *= 2;
+    if (i == 256) {
+      i = 0;
+    }
+  }
+  return dst;
+}
+
+function compressed(x){return new Uint8Array(x)[2]==1;}
 
 function deserialize(x){
   var a=x[0],pos=8,j2p32=Math.pow(2,32),ub=new Uint8Array(x),sb=new Int8Array(x),bb=new Uint8Array(8),hb=new Int16Array(bb.buffer),ib=new Int32Array(bb.buffer),eb=new Float32Array(bb.buffer),fb=new Float64Array(bb.buffer);
@@ -100,8 +144,15 @@ function deserialize(x){
     var f=fns[t];
     for(i=0;i<n;i++)A[i]=f();
     return A;}
+  if(compressed(x)){
+    return deserialize(uncompress(ub));
+  }
   return r();}
 
+// notes:
+// all vectors are serialised as generic lists containing atoms, except strings
+// numbers are serialised as floats. date is a number.
+// null(and undefined) serialised as (::)
 function serialize(x){var a=1,pos=0,ub,bb=new Uint8Array(8),ib=new Int32Array(bb.buffer),fb=new Float64Array(bb.buffer);
   function toType(obj) {var jsType=typeof obj;if(jsType!=='object'&&jsType!=='function') return jsType;
     if(!obj)return 'null';if(obj instanceof Array)return 'array';if(obj instanceof Date)return 'date';return 'object';}
