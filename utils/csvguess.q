@@ -1,6 +1,9 @@
 / guess a reasonable loadstring for a csv file (kdb+ 2.4 or greater)
-"kdb+csvguess 0.51 2017.12.20"
-/ 2017.12.20 add {} around GUIDS for MS SSID 
+"kdb+csvguess 0.54 2020.06.20"
+/ 2020.06.20 system"c" setting went AWOL in savescript
+/ 2020.06.03 adjust basic handling of timespan (210,211)
+/ 2020.05.19 add basic types option -basic
+/ 2017.12.20 add {} around GUIDS for MS GUID 
 / 2016.11.09 add " " as valid delimiter in P
 / 2016.09.03 allow HHMMSSXYZXYZXYZ N and HHMMSSXYZ T timestamps
 / 2014.08.07 use .Q.id for colhdrs
@@ -18,7 +21,8 @@
 / 2007.07.24 allow hhmmss.mmm <-> T
 / 2007.07.13 POSTLOADALL
 
-o:.Q.opt .z.x;if[1>count .Q.x;-2"usage: q ",(string .z.f)," CSVFILE [-compress|co] [-noheader|nh] [-discardempty|de] [-semicolon|sc] [-tab|tb] [-zaphdrs|zh] [-savescript|ss] [-saveinfo|si] [-zeuro|z1] [-exit]\n";exit 1]
+o:.Q.opt .z.x;if[1>count .Q.x;-2"usage: q ",(string .z.f)," CSVFILE [-basic] [-compress|co] [-noheader|nh] [-discardempty|de] [-semicolon|sc] [-tab|tb] [-zaphdrs|zh] [-savescript|ss] [-saveinfo|si] [-zeuro|z1] [-exit]\n";exit 1]
+/ -basic - just load as basictypes, 20200519 would be an integer, not a date for example
 / -compress|co - compress low granularity (info.gr) columns with COMPRESSZD default (17;2;6)
 / -noheader|nh - the csv file doesn't have headers, so create some (c00..)
 / -discardempty|de - if a column is empty don't bother to load it
@@ -35,6 +39,7 @@ o:.Q.opt .z.x;if[1>count .Q.x;-2"usage: q ",(string .z.f)," CSVFILE [-compress|c
 if[(any`semicolon`sc in key o)&any`tab`tb in key o;-2"delimiter: -tab OR -semicolon (default \",\")";exit 1]
 
 FILE:LOADFILE:hsym`${x[where"\\"=x]:"/";x}first .Q.x
+EXTENDED:not `basic in key o
 COMPRESS:any`compress`co in key o
 NOHEADER:any`noheader`nh in key o
 DISCARDEMPTY:any`discardempty`de in key o
@@ -51,16 +56,16 @@ WIDTHHDR:25000 / initial width read to look for header record
 READLINES:5555 / approximate number of records to check
 FORCECHARWIDTH:30 / width beyond which we just set a column to be text and finished
 CHUNKSIZE:4194000 / chunksize read when bulk load/save - much larger than safe default in .Q.fs
-COMPRESSZD:(17;2;6)
+COMPRESSZD:(17;3;0)
 SAVEDB:`:csvdb / database top level, where things like `:sym live
 SAVEPTN:` / individual partition, 2006.12.25 frinstance; ` => none
 PRESAVEEACH:{x} / function to be run before each incremental save (delete date field?)
 POSTLOADEACH:{x} / function to be run after each incremental load from file
-/ POSTLOADALL:{update `p#sym from`sym`time xasc x}
 POSTLOADALL:{x} / function to be run after complete load from file (LOAD/BULKLOAD only, not BULKSAVE as never all data in one place)
+/ POSTLOADALL:{update `p#sym from`sym`time xasc x}
+POSTSAVEALL:{x} / function to be run after all saved, to set `p# on `sym for example: {@[x;`sym;`p#]} or sort by sym {`sym xasc x}
 / POSTSAVEALL:{@[`sym`time xasc x;`sym;`p#]}
 / POSTSAVEALL:{dasc[x;`sym`time;`p#]} / faster than xasc on disk
-POSTSAVEALL:{x} / function to be run after all saved, to set `p# on `sym for example: {@[x;`sym;`p#]} or sort by sym {`sym xasc x}
 @[.:;"\\l csvguess.custom.q";::]; / save your custom settings in csvguess.custom.q to override those set above
 
 if[0=hcount LOADFILE;-2"empty file: ",first .Q.x;exit 1]
@@ -98,25 +103,28 @@ info:update t:"n",(rules:rules,'40)from info where t="?",{any x in"0123456789"}e
 info:update t:"I",(rules:rules,'50),ipa:1b from info where t="n",mw within 7 15,mdot=3,{all x in".0123456789"}each dchar,cancast["I"]peach sdv / ip-address
 info:update t:"F",(rules:rules,'51)from info where t="n",mw>2,mdot<2,{all" /"in x}each dchar,cancast["F"]peach sdv / fractions, "1 3/4" -> 1.75f
 info:update t:"G",(rules:rules,'52) from info where t="*",mw=36,mdot=0,{all x like"????????-????-????-????-????????????"}peach sdv,cancast["G"]peach sdv / GUID, v3.0 or later
-info:update t:"N",(rules:rules,'53),maybe:1b from info where t="n",mw=15,mdot=0,{all x in"0123456789"}each dchar,cancast["N"]peach sdv / N, could be T but that'd loose precision
-info:update t:"T",(rules:rules,'54),maybe:1b from info where t="n",mw=9,mdot=0,{all x in"0123456789"}each dchar,cancast["T"]peach sdv
+info:update t:"N",(rules:rules,'53),maybe:1b from info where EXTENDED,t="n",mw=15,mdot=0,{all x in"0123456789"}each dchar,cancast["N"]peach sdv / N, could be T but that'd loose precision
+info:update t:"T",(rules:rules,'54),maybe:1b from info where EXTENDED,t="n",mw=9,mdot=0,{all x in"0123456789"}each dchar,cancast["T"]peach sdv
 info:update t:"G",(rules:rules,'55) from info where t="*",mw=38,mdot=0,{all x like"{????????-????-????-????-????????????}"}peach sdv,cancast["G"]peach sdv / GUID, v3.0 or later
 info:update t:"J",(rules:rules,'60)from info where t="n",mdot=0,{all x in"+-0123456789"}each dchar,cancast["J"]peach sdv
 info:update t:"I",(rules:rules,'70)from info where t="J",mw<12,cancast["I"]peach sdv
 info:update t:"H",(rules:rules,'80)from info where t="I",mw<7,cancast["H"]peach sdv
 info:update t:"F",(rules:rules,'90)from info where t="n",mdot<2,mw>1,cancast["F"]peach sdv
 info:update t:"E",(rules:rules,'100),maybe:1b from info where t="F",mw<9
-info:update t:"M",(rules:rules,'110),maybe:1b from info where t in"nIHEF",mdot<2,mw within 4 7,cancast["M"]peach sdv
-info:update t:"D",(rules:rules,'120),maybe:1b from info where t in"nI",mdot in 0 2,mw within 6 11,cancast["D"]peach sdv
-info:update t:"V",(rules:rules,'130),maybe:1b from info where t="I",mw=6,{all x like"[012][0-9][0-5][0-9][0-5][0-9]"}peach sdv,nostar["V"]peach sdv / 235959 123456
-info:update t:"U",(rules:rules,'140),maybe:1b from info where t="H",mw=4,{all x like"[012][0-9][0-5][0-9]"}peach sdv,nostar["U"]peach sdv /2359
+info:update t:"M",(rules:rules,'110),maybe:1b from info where EXTENDED,t in"nIHEF",mdot<2,mw within 4 7,cancast["M"]peach sdv
+info:update t:"D",(rules:rules,'120),maybe:1b from info where EXTENDED,t="I",mw in 6 8,cancast["D"]peach sdv
+info:update t:"D",(rules:rules,'121),maybe:0b from info where t="n",mdot=0,mw within 8 10,cancast["D"]peach sdv
+info:update t:"D",(rules:rules,'122),maybe:0b from info where t="n",mdot=2,mw within 8 10,cancast["D"]peach sdv
+info:update t:"V",(rules:rules,'130),maybe:1b from info where EXTENDED,t="I",mw=6,{all x like"[012][0-9][0-5][0-9][0-5][0-9]"}peach sdv,nostar["V"]peach sdv / 235959 123456
+info:update t:"U",(rules:rules,'140),maybe:1b from info where EXTENDED,t="H",mw=4,{all x like"[012][0-9][0-5][0-9]"}peach sdv,nostar["U"]peach sdv /2359
 info:update t:"U",(rules:rules,'150),maybe:0b from info where t="n",mw in 4 5,mdot=0,{all x like"*[0-9]:[0-5][0-9]"}peach sdv,cancast["U"]peach sdv
 info:update t:"T",(rules:rules,'160),maybe:0b from info where t="n",mw within 7 12,mdot<2,{all x like"*[0-9]:[0-5][0-9]:[0-5][0-9]*"}peach sdv,cancast["T"]peach sdv
 info:update t:"V",(rules:rules,'170),maybe:0b from info where t="T",mw in 7 8,mdot=0,cancast["V"]peach sdv
-info:update t:"T",(rules:rules,'180),maybe:1b from info where t in"EF",mw within 7 10,mdot=1,{all x like"*[0-9][0-5][0-9][0-5][0-9].*"}peach sdv,cancast["T"]peach sdv
+info:update t:"T",(rules:rules,'180),maybe:1b from info where EXTENDED,t in"EF",mw within 7 10,mdot=1,{all x like"*[0-9][0-5][0-9][0-5][0-9].*"}peach sdv,cancast["T"]peach sdv
 / info:update t:"Z",(rules:rules,'190),maybe:0b from info where t="n",mw within 11 24,mdot<4,cancast["Z"]peach sdv
 info:update t:"P",(rules:rules,'200),maybe:1b from info where t="n",mw within 11 29,mdot<4,{all x like"[12][0-9][0-9][0-9][ ./-][01][0-9][ ./-][0-3][0-9]*"}peach sdv,cancast["P"]peach sdv
-info:update t:"N",(rules:rules,'210),maybe:1b from info where t="n",mw within 3 28,mdot=1,cancast["N"]peach sdv
+info:update t:"N",(rules:rules,'210),maybe:0b from info where t="n",mw within 3 28,mdot=1,{all x like"*[0-9]D[0-9]*"}peach sdv,cancast["N"]peach sdv
+info:update t:"N",(rules:rules,'211),maybe:1b from info where EXTENDED,t="n",mw within 3 28,mdot=1,cancast["N"]peach sdv
 info:update t:"?",(rules:rules,'220),maybe:0b from info where t="n" / reset remaining maybe numeric
 info:update t:"C",(rules:rules,'230),maybe:0b from info where t="?",mw=1 / char
 info:update t:"D",(rules:rules,'231),maybe:0b from info where t="?",mdot=0,mw within 5 9,{all x like"*[0-9][a-sA-S][a-uA-U][b-yB-Y][0-9][0-9]*"}peach sdv,cancast["D"]peach sdv / 1dec12..01dec2011
@@ -182,7 +190,7 @@ if[COMPRESS;.z.zd:COMPRESSZD]
 / q xxx.q FILENAME -bs -savedb foo -saveptn 2006.12.25 -savename goo / to bulksave FILENAME to directory foo in the 2006.12.25 date partition as table goo
 / q xxx.q ... -exit / exit on completion of commands (only makes sense with -bs and -js)
 / q xxx.q .. -chunksize NN / non-default read chunksize - default is 25
-savescript:{f:`$":",(string LOADNAME),".load.q";f 1:"";hs:neg hopen f;
+savescript:{f:`$":",(string LOADNAME),".load.q";f 1:"";hs:neg hopen f;system"c 10000 10000";
   hs"/ ",(string .z.z)," ",(string .z.h)," ",(string .z.u);
   hs"/ q ",(string LOADNAME),".load.q FILE [-bl|bulkload] [-bs|bulksave] [-co|compress] [-js|justsym] [-exit] [-savedb SAVEDB] [-saveptn SAVEPTN] [-savename SAVENAME] [-chunksize NNN (in MB)] ";
   hs"/ q ",(string LOADNAME),".load.q FILE";
