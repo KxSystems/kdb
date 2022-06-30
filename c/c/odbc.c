@@ -1,4 +1,4 @@
-//2022.06.08 fix variable width column data before fixed width could be truncated, e.g. select cast('important string' AS varchar(max)) col1, 1 col2
+//2022.06.30 fix variable width column data before fixed width could be truncated, e.g. select cast('important string' AS varchar(max)) col1, 1 col2
 //2017.12.11 added support for SQLGUID
 //2017.07.11 added support for Time(type#-154) and DatetimeOFFSET(type#-155), the latter with timezone info ignored
 //2015.06.19 fix for unixodbc 2.3, and indeterminate column size
