@@ -1,4 +1,4 @@
-//2022.01.27 eport errors from SQLFetch, set locale from environment defaults for drivers which do not call setlocale by default (e.g. exasol odbc)
+//2023.01.27 report errors from SQLFetch, set locale from environment defaults for drivers which do not call setlocale by default (e.g. exasol odbc)
 //2022.06.30 fix variable width column data before fixed width could be truncated, e.g. select cast('important string' AS varchar(max)) col1, 1 col2
 //2017.12.11 added support for SQLGUID
 //2017.07.11 added support for Time(type#-154) and DatetimeOFFSET(type#-155), the latter with timezone info ignored
