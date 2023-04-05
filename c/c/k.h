@@ -1,11 +1,12 @@
 #ifndef KX
 #define KX
-typedef char*S,C;typedef unsigned char G;typedef short H;typedef int I;typedef long long J;typedef float E;typedef double F;typedef void V;
+typedef char*S,C;typedef unsigned char G;typedef short H;typedef int I;typedef long long J;typedef float E;typedef double F;typedef void V;typedef unsigned long long UJ;
 #ifdef __cplusplus
 extern"C"{
 #endif
 #if !defined(KXVER)
-#error "Set KXVER=3 for kdb+3.0 or standalone c-api after 2011-04-20. Otherwise set KXVER=2. e.g. #define KXVER 3 or gcc -DKXVER=3"
+// Asof 2023.03.30, default to 3. For kdb+2.x or standalone c-api before 2011-04-20 used KXVER=2
+#define KXVER 3
 #endif
 #if KXVER>=3
 typedef struct k0{signed char m,a,t;C u;I r;union{G g;H h;I i;J j;E e;F f;S s;struct k0*k;struct{J n;G G0[];};};}*K;
@@ -70,9 +71,10 @@ extern V m9();
 #include<stdarg.h>
 extern V m9(V);
 #endif
+extern J gc(J j);
 extern I khpunc(S,I,S,I,I),khpun(const S,I,const S,I),khpu(const S,I,const S),khp(const S,I),okx(K),ymd(I,I,I),dj(I);extern V r0(K),sd0(I),sd0x(I d,I f),kclose(I);extern S sn(S,I),ss(S);
 extern K ee(K),ktj(I,J),ka(I),kb(I),kg(I),kh(I),ki(I),kj(J),ke(F),kf(F),kc(I),ks(S),kd(I),kz(F),kt(I),sd1(I,K(*)(I)),dl(V*f,J),m4(I),
- knk(I,...),kp(S),ja(K*,V*),js(K*,S),jk(K*,K),jv(K*k,K),k(I,const S,...),xT(K),xD(K,K),ktd(K),r1(K),krr(const S),orr(const S),dot(K,K),b9(I,K),d9(K),sslInfo(K x),vaknk(I,va_list),vak(I,const S,va_list);
+ knk(I,...),kp(S),ja(K*,V*),js(K*,S),jk(K*,K),jv(K*k,K),k(I,const S,...),xT(K),xD(K,K),ktd(K),r1(K),krr(const S),orr(const S),dot(K,K),b9(I,K),d9(K),sslInfo(K x),vaknk(I,va_list),vak(I,const S,va_list),vi(K,UJ),m4(I);
 #ifdef __cplusplus 
 }
 #endif
