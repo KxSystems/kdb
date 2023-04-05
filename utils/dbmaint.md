@@ -22,6 +22,38 @@ In the following:
 `col`
 : the symbol name of a column
 
+**Examples:**
+
+The examples in this document use a `trade` dir generated with the following sample data.
+
+```q
+n:100; trade:([]time:.z.t;sym:n?`3;price:n?10000f;size:n?10000);
+.Q.dpft[`:data/taq;2023.01.01;`sym;`trade];
+```
+
+_on disk_
+```txt
+data/taq
+├── 2023.01.01
+│   └── trade
+│       ├── price
+│       ├── size
+│       ├── sym
+│       └── time
+└── sym
+```
+
+_meta_
+
+```txt
+c    | t f a
+-----| -----
+date | d    
+sym  | s   p
+time | t    
+price| f    
+size | j  
+```
 
 ## addcol
 
@@ -29,11 +61,38 @@ In the following:
 
 Adds new column `col` to `table` with value `defaultvalue` in each row.
 
-e.g.
+**Example:**
+
 ```q
-addcol[`:/data/taq;`trade;`noo;0h]
+addcol[`:data/taq;`trade;`noo;0h]
 ```
 
+**Changes:**
+
+_on disk_
+```txt
+data/taq
+├── 2023.01.01
+│   └── trade
+│       ├── noo
+│       ├── price
+│       ├── size
+│       ├── sym
+│       └── time
+└── sym
+```
+
+_meta_
+```txt
+c    | t f a
+-----| -----
+date | d    
+sym  | s   p
+time | t    
+price| f    
+size | j    
+noo  | h    
+```
 
 ## castcol
 
@@ -41,11 +100,24 @@ addcol[`:/data/taq;`trade;`noo;0h]
 
 Cast the values in the column to the `newtype` and save. `newtype` can be specified in short or long form, e.g. `"f"` or `` `float `` for a cast to float. This can be used to cast nested types as well, but to cast a nested character column to symbol use `fncol` instead.
 
-e.g.
+**Example:**
+
 ```q
-castcol[`:/data/taq;`trade;`size;`short]
+castcol[`:data/taq;`trade;`size;`short]
 ```
 
+**Changes:**
+
+_meta_
+```txt
+c    | t f a
+-----| -----
+date | d    
+sym  | s   p
+time | t    
+price| f    
+size | h  
+```
 
 ## clearattrcol
 
@@ -53,11 +125,25 @@ castcol[`:/data/taq;`trade;`size;`short]
 
 Remove any attributes from column `col`.
 
-e.g.
+**Example:**
+
 ```q
-clearattr[`:/data/taq;`trade;`sym]
+clearattrcol[`:data/taq;`trade;`sym]
 ```
 
+**Changes:**
+
+_meta_
+
+```txt
+c    | t f a
+-----| -----
+date | d    
+sym  | s   
+time | t    
+price| f    
+size | j    
+```
 
 ## copycol
 
@@ -65,11 +151,40 @@ clearattr[`:/data/taq;`trade;`sym]
 
 Copy the values from `oldcol` into a new column named `newcol`, undefined in the table. This does not support nested columns.
 
-e.g.
+**Example:**
+
 ```q
-copycol[`:/data/taq;`trade;`size;`size2]
+copycol[`:data/taq;`trade;`size;`size2]
 ```
 
+**Changes:**
+
+_on disk_
+```txt
+data/taq
+├── 2023.01.01
+│   └── trade
+│       ├── price
+│       ├── size
+│       ├── size2
+│       ├── sym
+│       └── time
+└── sym
+```
+
+_meta_
+
+```txt
+meta
+c    | t f a
+-----| -----
+date | d    
+sym  | s   p
+time | t    
+price| f    
+size | j    
+size2| j   
+```
 
 ## deletecol
 
@@ -79,9 +194,32 @@ Delete column `col` from `table`.
 
 This doesn’t delete the col# files for nested columns (the files containing the actual values) – you will need to delete these manually.
 
-e.g.
+**Example:**.
 ```q
-deletecol[`:/data/taq/;`trade;`size2]
+deletecol[`:data/taq/;`trade;`size]
+```
+
+**Changes:**
+
+_on disk_
+```txt
+data/taq
+├── 2023.01.01
+│   └── trade
+│       ├── price
+│       ├── sym
+│       └── time
+└── sym
+```
+
+_meta_
+```txt
+c    | t f a
+-----| -----
+date | d    
+sym  | s   p
+time | t    
+price| f    
 ```
 
 
@@ -91,11 +229,16 @@ deletecol[`:/data/taq/;`trade;`size2]
 
 Print a list of the partition directories where `col` exists and its type in each, and a `*NOT*FOUND*` message for partition directories where `col` is missing.
 
-e.g.
+**Example:**
 ```q
-findcol[`:/data/taq;`trade;`iz]
+findcol[`:data/taq;`trade;`iz]
 ```
 
+**Output:**
+
+```txt
+2023.02.17 10:23:09 column iz *NOT*FOUND* in `:data/taq/2023.01.01/trade
+```
 
 ## fixtable
 
@@ -103,9 +246,31 @@ findcol[`:/data/taq;`trade;`iz]
 
 Adds missing columns to to all partitions of a table, given the location of a good partition. This _doesn’t_ delete extra columns – do that manually. Also this does not add tables to partitions in which they are missing, use [`.Q.chk`](https://code.kx.com/q/ref/dotq/#qchk-fill-hdb) for that.
 
-e.g.
+**Example:**
+
 ```q
-fixtable[`:/data/taq;`trade;`:/data/taq/2005.02.19/trade]
+`:data/taq/2023.01.02/trade/ set .Q.en[`:data/taq] delete size from trade;
+fixtable[`:data/taq;`trade;`:data/taq/2023.01.01/trade]
+```
+
+**Changes:**
+
+_on disk_
+```txt
+data/taq
+├── 2023.01.01
+│   └── trade
+│       ├── price
+│       ├── size
+│       ├── sym
+│       └── time
+├── 2023.01.02
+│   └── trade
+│       ├── price
+│       ├── size
+│       ├── sym
+│       └── time
+└── sym
 ```
 
 
@@ -115,13 +280,39 @@ fixtable[`:/data/taq;`trade;`:/data/taq/2005.02.19/trade]
 
 Apply a function to the list of values in `col` and save the results as its values.
 
-e.g.
+**Example:**
+
 ```q
-fncol[`:/data/taq;`trade;`price;2*]
+fncol[`:data/taq;`trade;`price;2*]
 ```
-Casting from a nested character column to a symbol column, we need to enumerate the symbol column after we cast it and before we save it.
-```q
-fncol[`:/data/taq;`trade;`nestedcharcol;{(` sv x,`sym)?`$y}`:/data/taq]
+
+**Changes:**
+
+_before_
+```txt
+q)select price from trade
+price   
+--------
+4812.041
+1399.557
+9491.982
+5034.046
+4882.605
+...
+```
+
+_after_
+
+```txt
+q)select price from trade
+price   
+--------
+9624.081
+2799.113
+18983.96
+10068.09
+9765.209
+...
 ```
 
 
@@ -131,11 +322,16 @@ fncol[`:/data/taq;`trade;`nestedcharcol;{(` sv x,`sym)?`$y}`:/data/taq]
 
 List the columns of `table` (relies on the first partition).
 
-e.g.
+**Example:**
 ```q
-listcols[`:/data/taq;`trade]
+listcols[`:data/taq;`trade]
 ```
 
+**Output:**
+
+```txt
+`sym`time`price`size
+```
 
 ## renamecol
 
@@ -143,11 +339,35 @@ listcols[`:/data/taq;`trade]
 
 Rename column `oldname` to `newname`, which must be undefined in the table. This does not support nested columns.
 
-e.g.
+**Example:**
 ```q
-renamecol[`:/data/taq;`trade;`woz;`iz]
+renamecol[`:data/taq;`trade;`woz;`iz]
 ```
 
+**Changes:**
+
+_on disk_
+```txt
+data/taq
+├── 2023.01.01
+│   └── trade
+│       ├── price
+│       ├── size
+│       ├── sym
+│       └── time
+└── sym
+```
+
+_meta_
+```txt
+c    | t f a
+-----| -----
+date | d    
+sym  | s   p
+time | t    
+price| f    
+size | j    
+```
 
 ## reordercols
 
@@ -155,9 +375,21 @@ renamecol[`:/data/taq;`trade;`woz;`iz]
 
 Reorder the columns of `table`. `neworder` is a full list of the column names as they appear in the updated table.
 
-e.g.
+**Example:**
 ```q
-reordercols[`:/data/taq;`trade;reverse cols trade]
+reordercols[`:data/taq;`trade;reverse cols trade]
+```
+**Changes:**
+
+_meta_
+```txt
+c    | t f a
+-----| -----
+date | d    
+size | j    
+price| f    
+sym  | s   p
+time | t    
 ```
 
 
@@ -167,11 +399,23 @@ reordercols[`:/data/taq;`trade;reverse cols trade]
 
 Apply an attribute to `col`. The data in the column must be valid for that attribute. No sorting occurs.
 
-e.g.
+**Example:**
 ```q
-setattrcol[`:/data/taq;`trade;`sym;`g]
+setattrcol[`:data/taq;`trade;`sym;`g]
 ```
 
+**Changes:**
+
+_meta_
+```txt
+c    | t f a
+-----| -----
+date | d    
+sym  | s   g
+time | t    
+price| f    
+size | j    
+```
 
 ## addtable
 
@@ -179,11 +423,29 @@ setattrcol[`:/data/taq;`trade;`sym;`g]
 
 Add a table called `tablename` with an empty table with the same schema as `table` created in each partition of the new table.
 
-e.g.
+**Example:**
 ```q
-addtable[`:/data/taq;`trade1;.Q.en[`:.]([]time:0#0Nt;sym:0#`;price:0#0n;size:0#0)]
+addtable[`:data/taq;`trade1;.Q.en[`:data/taq]([]time:0#0Nt;sym:0#`;price:0#0n;size:0#0)]
 ```
 
+**Changes:**
+
+_on disk_
+```txt
+data/taq
+├── 2023.01.01
+│   ├── trade
+│   │   ├── price
+│   │   ├── size
+│   │   ├── sym
+│   │   └── time
+│   └── trade1
+│       ├── price
+│       ├── size
+│       ├── sym
+│       └── time
+└── sym
+```
 
 ## rentable
 
@@ -191,9 +453,23 @@ addtable[`:/data/taq;`trade1;.Q.en[`:.]([]time:0#0Nt;sym:0#`;price:0#0n;size:0#0
 
 Rename table `old` to `new`.
 
-e.g.
+**Example:**
 ```q
-rentable[`:/data/taq;`trade;`transactions]
+rentable[`:data/taq;`trade;`transactions]
+```
+
+**Changes:**
+
+_on disk_
+```txt
+data/taq
+├── 2023.01.01
+│   └── transactions
+│       ├── price
+│       ├── size
+│       ├── sym
+│       └── time
+└── sym
 ```
 
 
