@@ -1,3 +1,4 @@
+//2023.06.07 suppress debug for return other than SQL_NO_DATA for unbound data
 //2023.01.27 report errors from SQLFetch, set locale from environment defaults for drivers which do not call setlocale by default (e.g. exasol odbc)
 //2022.06.30 fix variable width column data before fixed width could be truncated, e.g. select cast('important string' AS varchar(max)) col1, 1 col2
 //2017.12.11 added support for SQLGUID
@@ -46,7 +47,7 @@ ZI ut[]={0,KS,KF,KF,KI,KH,KF,KE,KF,KD,KV,KZ,KS,0,0,0,0, KJ,KH,KH,KS,KS,0,2,KN,KP
 ZI wt[]={0, 0, 8, 8, 4, 2, 8, 4, 8, 6, 6,16, 0,0,0,0,0,  8, 1, 1, 0, 0,0,16,12,20};
 ZH ct[]={0, 1, 8, 8, 4, 5, 8, 7, 8, 9,10,11, 1,1,0,0,0,-25,-6,-7, 1, 1,1,-11,-2,-2};// -5/-25(odbc 2/3)
 ZS nu(I t){ZF f;ZE e;ZJ j=nj;ZI i=ni;ZH h=nh;ZC g;ZS ns;Z U u;if(!ns)f/=f,e=f,ns=ss((S)"");R t==KS?(S)&ns:t==KF||t==KZ?(S)&f:t==KE?(S)&e:t==KJ||t==KN||t==KP?(S)&j:t==KH?(S)&h:t==KG||t==KB?(S)&g:t==2?(S)&u:(S)&i;}
-ZK gb(D d,H j,I t){H c=ct[t],g=c?c:-2,m=512;K x=ktn(c?KC:KG,m),y=ktn(xt,0);SQLLEN n=0;SQLRETURN r;while(1){r=SQLGetData(d,j,g,kG(x),xn=m,&n);if(SQL_SUCCEEDED(r)&&n!=SQL_NULL_DATA)xn=n==SQL_NO_TOTAL||n>xn?xn:n,xn-=xn&&c&&!kG(x)[xn-1],jv(&y,x);else if(r==SQL_NO_DATA)break;else{O("not no data\n");break;}}r0(x);R y;}
+ZK gb(D d,H j,I t){H c=ct[t],g=c?c:-2,m=512;K x=ktn(c?KC:KG,m),y=ktn(xt,0);SQLLEN n=0;SQLRETURN r;while(1){r=SQLGetData(d,j,g,kG(x),xn=m,&n);if(SQL_SUCCEEDED(r)&&n!=SQL_NULL_DATA)xn=n==SQL_NO_TOTAL||n>xn?xn:n,xn-=xn&&c&&!kG(x)[xn-1],jv(&y,x);else /*if(r==SQL_NO_DATA)*/break;}r0(x);R y;}
 K eval(K x,K y,K z){K*k;S*b,s;SQLULEN w;SQLLEN*nb;SQLINTEGER*wb;SQLRETURN sr;H*tb,u,t,j=0,p,m,ubi=0,bi=0;F f;J v;C c[128];I n=xj<0;D d=d1(n?-xj:xj);U(d)x=y;Q(z->t!=-KJ||xt!=-KS&&xt!=KC,(S)"type")
  if(z->j)SQLSetStmtAttr(d,SQL_ATTR_QUERY_TIMEOUT,(SQLPOINTER)(SQLULEN)z->j,0);
  if(xt==-KS)QC(SQLColumns(d,(S)0,0,(S)0,0,xs,S0,(S)0,0),-1)else{I e;K q=kpn(xG,xn);ja(&q,(S)"\0");QC(SQLExecDirect(d,q->G0,xn),r0(q));}
