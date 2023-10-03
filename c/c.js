@@ -1,3 +1,4 @@
+// 2023.10.03 fixed rSecond decode
 // 2021.04.05 added decompress support
 // 2016.09.15 performance enhancement for temporal constructors and type identification
 // 2016.03.18 char vectors and symbols now [de]serialize [from]to utf8
@@ -102,7 +103,7 @@ function deserialize(x){
   function rDate(){return date(rInt32()*msDay);}
   function rDateTime(){return date(rFloat64()*msDay);}
   function rTimespan(){return date(rInt64()/1000000);}
-  function rSecond(){return date(rInt32()/1000);}
+  function rSecond(){return date(rInt32()*1000);}
   function rMinute(){return date(rInt32()*60000);}
   function rTime(){return date(rInt32());}
   function r(){
