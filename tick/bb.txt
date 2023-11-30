@@ -1,6 +1,0 @@
-IBM US Equity
-IBM UN Equity
-SPY UR Equity
-MSFT UQ Equity
-IBM+PH Equity
-IBM US 4 P140 Equity

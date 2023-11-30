@@ -1,2 +1,0 @@
-CAD=D2
-EUR=EBS

@@ -1,3 +1,0 @@
-bcp from sybase to text files then ("..";"\t")0:
-or, for smaller dynamic sets,
-("IDS";"|")0:system"fsql -Sserver -Ux -Py -c 'select x,y,z from t'"

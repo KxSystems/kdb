@@ -1,2 +1,0 @@
-0#MSFT.O
-0#INTC.O

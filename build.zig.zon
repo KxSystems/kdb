@@ -1,0 +1,12 @@
+.{
+    .name = "kdb",
+    .version = "0.1.0",
+    .dependencies = .{},
+    .paths = .{
+        "build.zig",
+        "build.zig.zon",
+        "l32",
+        "l64",
+        "l64arm",
+    },
+}
