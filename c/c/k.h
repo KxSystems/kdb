@@ -74,8 +74,9 @@ extern V m9(V);
 extern J gc(J j);
 extern I khpunc(S,I,S,I,I),khpun(const S,I,const S,I),khpu(const S,I,const S),khp(const S,I),okx(K),ymd(I,I,I),dj(I);extern V r0(K),sd0(I),sd0x(I d,I f),kclose(I);extern S sn(S,I),ss(S);
 extern K ee(K),ktj(I,J),ka(I),kb(I),kg(I),kh(I),ki(I),kj(J),ke(F),kf(F),kc(I),ks(S),kd(I),kz(F),kt(I),sd1(I,K(*)(I)),dl(V*f,J),m4(I),
- knk(I,...),kp(S),ja(K*,V*),js(K*,S),jk(K*,K),jv(K*k,K),k(I,const S,...),xT(K),xD(K,K),ktd(K),r1(K),krr(const S),orr(const S),dot(K,K),b9(I,K),d9(K),sslInfo(K x),vaknk(I,va_list),vak(I,const S,va_list),vi(K,UJ),m4(I);
-#ifdef __cplusplus 
+ knk(I,...),kp(S),ja(K*,V*),js(K*,S),jk(K*,K),jv(K*k,K),k(I,const S,...),xT(K),xD(K,K),ktd(K),r1(K),krr(const S),orr(const S),dot(K,K),b9(I,K),d9(K),sslInfo(K x),vaknk(I,va_list),vak(I,const S,va_list),vi(K,UJ),m4(I),
+ vk(K);
+#ifdef __cplusplus
 }
 #endif
 
