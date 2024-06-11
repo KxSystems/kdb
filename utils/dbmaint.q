@@ -1,4 +1,5 @@
 / kdb+ partitioned database maintenance
+.os.prevctx:system"d"
 \d .os
 WIN:.z.o in`w32`w64
 pth:{p:$[10h=type x;x;string x];if[WIN;p[where"/"=p]:"\\"];(":"=first p)_ p}
@@ -6,7 +7,8 @@ cpy:{system$[WIN;"copy /v /z ";"cp "],pth[x]," ",pth y}
 del:{system$[WIN;"del ";"rm "],pth x}
 ren:{system$[WIN;"move ";"mv "],pth[x]," ",pth y}
 here:{hsym`$system$[WIN;"cd";"pwd"]}
-\d .
+system "d ",string prevctx
+delete prevctx from `.os;
 
 add1col:{[tabledir;colname;defaultvalue]
  if[not colname in ac:allcols tabledir;
