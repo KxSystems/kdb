@@ -7,7 +7,7 @@ c	    clients (c java .net)
 d	    documentation
 e	    examples
 taq     superceded by http://github.com/kxsystems/kdb-taq
-tick    superceded by http://github.com/kxsystems/kdb-tick
+tick    tick utils, kdb+tick available from http://github.com/kxsystems/kdb-tick
 
 sample database scripts
 sp.q	supplier/part
