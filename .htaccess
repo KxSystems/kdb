@@ -1,9 +1,0 @@
-<IfModule mod_rewrite.c>
-
-#Disable rewriting
-RewriteEngine Off
-
-</IfModule>
-
-Options +Indexes
-
