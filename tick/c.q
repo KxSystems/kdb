@@ -32,7 +32,7 @@ if[x~"vwap1";t:`trade;
 ind:{[t;i](key t)!flip(flip value t)@'\:i}
 if[x~"move";t:`trade;
  upd:{[t;x].[`.u.t;();,'';select time,size*price,size by sym from x];
-  move::((last each) each t)-ind[t:delete time from .u.t;exec time bin'-60000+"t"$.z.z from .u.t]}]
+  move::((last each) each t)-ind[t:delete time from .u.t;exec time bin'-60000000000+"n"$.z.Z from .u.t]}]
 
 / high low close volume
 if[x~"hlcv";t:`trade;hlcv:([sym:()]high:();low:();price:();size:());
