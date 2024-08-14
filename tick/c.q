@@ -32,7 +32,7 @@ if[x~"vwap1";t:`trade;
 ind:{[t;i](key t)!flip(flip value t)@'\:i}
 if[x~"move";t:`trade;
  upd:{[t;x].[`.u.t;();,'';select time,size*price,size by sym from x];
-  move::((last each) each t)-ind[t:delete time from .u.t;exec time bin'-60000000000+"n"$.z.Z from .u.t]}]
+  move::((last each) each t)-ind[t:delete time from .u.t;exec time bin'-0D00:01+.z.N from .u.t]}]
 
 / high low close volume
 if[x~"hlcv";t:`trade;hlcv:([sym:()]high:();low:();price:();size:());
@@ -53,7 +53,7 @@ if[x~"vwap2";t:`trade;f:{[p;s](-10#s)wavg -10#p};
   vwap::`sym xkey select sym,vwap:f'[price;size]from .u.t}]
 
 / vwap last minute (60000 milliseconds)
-if[x~"vwap3";t:`trade;f:{[t;p;s](n#s)wavg(n:(1+t bin("n"$.z.Z)-60000000000)-count t)#p};
+if[x~"vwap3";t:`trade;f:{[t;p;s](n#s)wavg(n:(1+t bin(.z.N)-0D00:01)-count t)#p};
  upd:{[t;x].[`.u.t;();,'';select time,price,size by sym from x];
   vwap::`sym xkey select sym,vwap:f'[time;price;size]from .u.t}]
 
