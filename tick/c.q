@@ -53,7 +53,7 @@ if[x~"vwap2";t:`trade;f:{[p;s](-10#s)wavg -10#p};
   vwap::`sym xkey select sym,vwap:f'[price;size]from .u.t}]
 
 / vwap last minute (60000 milliseconds)
-if[x~"vwap3";t:`trade;f:{[t;p;s](n#s)wavg(n:(1+t bin(.z.N)-0D00:01)-count t)#p};
+if[x~"vwap3";t:`trade;f:{[t;p;s](n#s)wavg(n:(1+t bin .z.N-0D00:01)-count t)#p};
  upd:{[t;x].[`.u.t;();,'';select time,price,size by sym from x];
   vwap::`sym xkey select sym,vwap:f'[time;price;size]from .u.t}]
 
