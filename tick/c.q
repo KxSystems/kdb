@@ -41,7 +41,7 @@ if[x~"hlcv";t:`trade;hlcv:([sym:()]high:();low:();price:();size:());
 
 / lvl2 book for each sym
 if[x~"lvl2";t:`quote;s:`;
- lvl2:()!();upd:{[t;x]{lvl2[x`sym]^:`mm xkey enlist x _`sym}each x}]
+ lvl2:enlist[`]!enlist(::);upd:{[t;x]{lvl2[x`sym]^:`mm xkey enlist x _`sym}each x}]
   
 / nest all data (for arbitrary trend analysis)
 if[x~"nest";t:`trade;k:enlist`sym;
