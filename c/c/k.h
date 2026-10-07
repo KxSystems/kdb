@@ -1,6 +1,6 @@
 #ifndef KX
 #define KX
-typedef char*S,C;typedef unsigned char G;typedef short H;typedef int I;typedef long long J;typedef float E;typedef double F;typedef void V;typedef unsigned long long UJ;
+typedef char*S,C;typedef const char *S2;typedef unsigned char G;typedef short H;typedef int I;typedef long long J;typedef float E;typedef double F;typedef void V;typedef unsigned long long UJ;
 #ifdef __cplusplus
 extern"C"{
 #endif
@@ -9,7 +9,7 @@ extern"C"{
 #define KXVER 3
 #endif
 #if KXVER>=3
-typedef struct k0{signed char m,a,t;C u;I r;union{G g;H h;I i;J j;E e;F f;S s;struct k0*k;struct{J n;G G0[];};};}*K;
+typedef struct k0{signed char m,a,t;C u;I r;union{G g;H h;I i;J j;E e;F f;S2 s;struct k0*k;struct{J n;G G0[];};};}*K;
 typedef struct{G g[16];}U;
 #define kU(x) ((U*)kG(x))
 #define xU ((U*)xG)
@@ -17,8 +17,8 @@ extern K ku(U),knt(J,K),ktn(I,J),kpn(const S,J);
 extern I setm(I),ver();
 #define DO(n,x)	{J i=0,_i=(n);for(;i<_i;++i){x;}}
 #else
-typedef struct k0{I r;H t,u;union{G g;H h;I i;J j;E e;F f;S s;struct k0*k;struct{I n;G G0[];};};}*K;
-extern K ktn(I,I),kpn(const S,I);
+typedef struct k0{I r;H t,u;union{G g;H h;I i;J j;E e;F f;S2 s;struct k0*k;struct{I n;G G0[];};};}*K;
+extern K ktn(I,I),kpn(S2,I);
 #define DO(n,x)	{I i=0,_i=(n);for(;i<_i;++i){x;}}
 #endif
 #ifdef __cplusplus
@@ -33,7 +33,7 @@ extern K ktn(I,I),kpn(const S,I);
 #define kJ(x)	((J*)kG(x))
 #define kE(x)	((E*)kG(x))
 #define kF(x)	((F*)kG(x))
-#define kS(x)	((S*)kG(x))
+#define kS(x)	((S2*)kG(x))
 #define kK(x)	((K*)kG(x))
 
 //      type bytes qtype     ctype  accessor
@@ -72,11 +72,10 @@ extern V m9();
 extern V m9(V);
 #endif
 extern J gc(J j);
-extern I khpunc(const S,I,const S,I,I),khpun(const S,I,const S,I),khpu(const S,I,const S),khp(const S,I),okx(K),ymd(I,I,I),dj(I);
-extern V r0(K),sd0(I),sd0x(I d,I f),kclose(I);extern S sn(const S,I),ss(const S);
-extern K ee(K),ktj(I,J),ka(I),kb(I),kg(I),kh(I),ki(I),kj(J),ke(F),kf(F),kc(I),ks(const S),kd(I),kz(F),kt(I),sd1(I,K(*)(I)),dl(V*f,J),m4(I),
- knk(I,...),kp(const S),ja(K*,V*),js(K*,S),jk(K*,K),jv(K*k,K),k(I,const S,...),xT(K),xD(K,K),ktd(K),r1(K),krr(const S),orr(const S),dot(K,K),
- b9(I,K),d9(K),sslInfo(K x),vaknk(I,va_list),vak(I,const S,va_list),vi(K,UJ),vk(K);
+extern I khpunc(S2,I,S2,I,I),khpun(S2,I,S2,I),khpu(S2,I,S2),khp(S2,I),okx(K),ymd(I,I,I),dj(I);extern V r0(K),sd0(I),sd0x(I d,I f),kclose(I);extern S sn(S2,I),ss(S2);
+extern K ee(K),ktj(I,J),ka(I),kb(I),kg(I),kh(I),ki(I),kj(J),ke(F),kf(F),kc(I),ks(S2),kd(I),kz(F),kt(I),sd1(I,K(*)(I)),dl(V*f,J),m4(I),
+ knk(I,...),kp(S2),ja(K*,V*),js(K*,S2),jk(K*,K),jv(K*k,K),k(I,S2,...),xT(K),xD(K,K),ktd(K),r1(K),krr(S2),orr(S2),dot(K,K),b9(I,K),d9(K),sslInfo(K x),vaknk(I,va_list),vak(I,S2,va_list),vi(K,UJ),
+ vk(K);
 #ifdef __cplusplus
 }
 #endif
