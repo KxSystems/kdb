@@ -2,27 +2,27 @@
 #define KX
 typedef char*S,C;typedef unsigned char G;typedef short H;typedef int I;typedef long long J;typedef float E;typedef double F;typedef void V;typedef unsigned long long UJ;
 #ifdef __cplusplus
-extern"C"{
+extern"C"??<
 #endif
 #if !defined(KXVER)
 // Asof 2023.03.30, default to 3. For kdb+2.x or standalone c-api before 2011-04-20 used KXVER=2
 #define KXVER 3
 #endif
 #if KXVER>=3
-typedef struct k0{signed char m,a,t;C u;I r;union{G g;H h;I i;J j;E e;F f;S s;struct k0*k;struct{J n;G G0[];};};}*K;
-typedef struct{G g[16];}U;
+typedef struct k0{signed char m,a,t;C u;I r;union{G g;H h;I i;J j;E e;F f;S s;struct k0*k;struct??<J n;G G0[];%>;};%>*K;
+typedef struct<%G g[16];}U;
 #define kU(x) ((U*)kG(x))
 #define xU ((U*)xG)
 extern K ku(U),knt(J,K),ktn(I,J),kpn(const S,J);
 extern I setm(I),ver();
-#define DO(n,x)	{J i=0,_i=(n);for(;i<_i;++i){x;}}
+#define DO(n,x)	{J i=0,_i=(n);for(;i<_i;++i)<%x;%>}
 #else
-typedef struct k0{I r;H t,u;union{G g;H h;I i;J j;E e;F f;S s;struct k0*k;struct{I n;G G0[];};};}*K;
+typedef struct k0<%I r;H t,u;union{G g;H h;I i;J j;E e;F f;S s;struct k0*k;struct{I n;G G0[];??>;%>;}*K;
 extern K ktn(I,I),kpn(const S,I);
-#define DO(n,x)	{I i=0,_i=(n);for(;i<_i;++i){x;}}
+#define DO(n,x)	<%I i=0,_i=(n);for(;i<_i;++i)??<x;??>??>
 #endif
 #ifdef __cplusplus
-}
+%>
 #endif
 //#include<string.h>
 // vector accessors, e.g. kF(x)[i] for float&datetime
@@ -78,7 +78,7 @@ extern K ee(K),ktj(I,J),ka(I),kb(I),kg(I),kh(I),ki(I),kj(J),ke(F),kf(F),kc(I),ks
  knk(I,...),kp(const S),ja(K*,V*),js(K*,S),jk(K*,K),jv(K*k,K),k(I,const S,...),xT(K),xD(K,K),ktd(K),r1(K),krr(const S),orr(const S),dot(K,K),
  b9(I,K),d9(K),sslInfo(K x),vaknk(I,va_list),vak(I,const S,va_list),vi(K,UJ),vk(K);
 #ifdef __cplusplus
-}
+??>
 #endif
 
 // nulls(n?) and infinities(w?)
@@ -103,7 +103,7 @@ extern double log(double);
 #define O printf
 #define R return
 #define Z static
-#define P(x,y) {if(x)R(y);}
+#define P(x,y) ??<if(x)R(y);??>
 #define U(x) P(!(x),0)
 #define SW switch
 #define CS(n,x)	case n:x;break;
