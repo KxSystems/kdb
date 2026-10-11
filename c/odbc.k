@@ -2,7 +2,7 @@
 h:();`open1`close1`eval1`fkeys1`keys`tables`views{.odbc[x]:`odbc 2:(`$(-"1"=*|$x)_$x;y)}'2 1 3 2 2 1 1;
 
 d:`$":",$["Windows_NT"~getenv`OS;getenv[`commonprogramfiles],"/odbc/data sources";"/etc/ODBCDataSources"]
-o:`mdb`mdf!("driver=Microsoft Access Driver (*.mdb);dbq="
+o:`mdb`mdf!("driver=Microsoft Access Driver (*.mdb, *.accdb);dbq="
             "driver=sql server;server=(local);trusted_connection=yes;database=")
 open:{$[~@x;[s:last x;x:*x];s:0];if[~r:@[open1[;s];$[0<@x;x;1=#p:`\:x;x;`dsn~a:*|p;";"/:1_0:$[@!f:`$":",$x;f;`/:d,x];o[a],-4_$x];{e::x;0}];'e];*|h,:r}
 close:{if[~x in h;'`invalid];h_:h?x;close1 x}
