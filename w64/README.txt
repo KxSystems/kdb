@@ -1,0 +1,3 @@
+windows/intel 64bit files
+
+qcon        q console for interacting with remote kdb+ instances (e.g. qcon host:port[:usr:pwd]). Environment variable KX_QCON_USER can be used to specify username. Environment variable KX_QCON_PASS can be used to specify password. Username/password supplied on the command line override the environment variables.
